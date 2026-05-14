@@ -1,12 +1,14 @@
 import { z } from 'zod';
 import { phoneSchema, slugSchema, uuidSchema } from './common';
 
-export const notificationTogglesSchema = z.object({
+export const secondaryChannelSchema = z.enum(['SMS', 'WHATSAPP', 'NONE']);
+export type SecondaryChannel = z.infer<typeof secondaryChannelSchema>;
+
+export const notificationPrefsSchema = z.object({
   email: z.boolean(),
-  sms: z.boolean(),
-  whatsapp: z.boolean(),
+  secondaryChannel: secondaryChannelSchema,
 });
-export type NotificationTogglesDto = z.infer<typeof notificationTogglesSchema>;
+export type NotificationPrefsDto = z.infer<typeof notificationPrefsSchema>;
 
 export const companySchema = z.object({
   id: uuidSchema,
@@ -16,7 +18,7 @@ export const companySchema = z.object({
   email: z.string().email().nullable(),
   timezone: z.string(),
   logoUrl: z.string().nullable(),
-  notificationToggles: notificationTogglesSchema,
+  notificationPrefs: notificationPrefsSchema,
 });
 export type CompanyDto = z.infer<typeof companySchema>;
 
@@ -26,7 +28,7 @@ export const updateCompanyRequestSchema = z
     slug: slugSchema.optional(),
     phone: phoneSchema.nullable().optional(),
     timezone: z.string().min(1).max(64).optional(),
-    notificationToggles: notificationTogglesSchema.optional(),
+    notificationPrefs: notificationPrefsSchema.optional(),
   })
   .refine((value) => Object.keys(value).length > 0, {
     message: 'Forneça pelo menos um campo para atualizar',

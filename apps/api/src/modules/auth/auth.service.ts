@@ -68,7 +68,7 @@ export class AuthService {
           phone: input.company.phone ?? null,
           email: input.owner.email,
           timezone: 'America/Sao_Paulo',
-          notificationToggles: { email: true, sms: false, whatsapp: false },
+          notificationPrefs: { email: true, secondaryChannel: 'NONE' },
         });
         const savedCompany = await manager.save(company);
 

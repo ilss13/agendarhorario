@@ -34,8 +34,8 @@ export class CompaniesService {
     if (input.name !== undefined) entity.name = input.name;
     if (input.phone !== undefined) entity.phone = input.phone ?? null;
     if (input.timezone !== undefined) entity.timezone = input.timezone;
-    if (input.notificationToggles !== undefined) {
-      entity.notificationToggles = input.notificationToggles;
+    if (input.notificationPrefs !== undefined) {
+      entity.notificationPrefs = input.notificationPrefs;
     }
 
     const saved = await this.repo.save(entity);
@@ -51,5 +51,5 @@ const toDto = (entity: Company): CompanyDto => ({
   email: entity.email,
   timezone: entity.timezone,
   logoUrl: entity.logoUrl,
-  notificationToggles: entity.notificationToggles,
+  notificationPrefs: entity.notificationPrefs,
 });

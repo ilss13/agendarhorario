@@ -62,11 +62,29 @@ import type { ApiError } from '../../../core/http/error.interceptor';
           </app-form-field>
         </div>
 
-        <fieldset class="toggles" formGroupName="notificationToggles">
+        <fieldset class="toggles" formGroupName="notificationPrefs">
           <legend>Notificações</legend>
-          <label> <input type="checkbox" formControlName="email" /> Enviar por e-mail </label>
-          <label> <input type="checkbox" formControlName="sms" /> Enviar por SMS </label>
-          <label> <input type="checkbox" formControlName="whatsapp" /> Enviar por WhatsApp </label>
+          <label>
+            <input type="checkbox" formControlName="email" />
+            <span>Enviar por e-mail</span>
+            <small>Sempre disponível em todos os planos.</small>
+          </label>
+          <div class="channel-group" role="radiogroup" aria-label="Canal secundário">
+            <strong>Canal secundário (escolha um)</strong>
+            <label>
+              <input type="radio" formControlName="secondaryChannel" value="NONE" />
+              <span>Apenas e-mail</span>
+            </label>
+            <label>
+              <input type="radio" formControlName="secondaryChannel" value="SMS" />
+              <span>SMS</span>
+            </label>
+            <label>
+              <input type="radio" formControlName="secondaryChannel" value="WHATSAPP" />
+              <span>WhatsApp</span>
+            </label>
+            <small class="hint">SMS e WhatsApp são exclusivos: só um pode ficar ativo.</small>
+          </div>
         </fieldset>
 
         @if (success()) {
@@ -155,10 +173,9 @@ export class SettingsPageComponent {
     slug: ['', [Validators.required, slugValidator]],
     phone: this.fb.control<string | null>(null),
     timezone: ['America/Sao_Paulo', [Validators.required]],
-    notificationToggles: this.fb.nonNullable.group({
+    notificationPrefs: this.fb.nonNullable.group({
       email: [true],
-      sms: [false],
-      whatsapp: [false],
+      secondaryChannel: ['NONE' as 'NONE' | 'SMS' | 'WHATSAPP'],
     }),
   });
 
@@ -195,7 +212,7 @@ export class SettingsPageComponent {
       slug: c.slug,
       phone: c.phone,
       timezone: c.timezone,
-      notificationToggles: { ...c.notificationToggles },
+      notificationPrefs: { ...c.notificationPrefs },
     });
   }
 
@@ -217,7 +234,7 @@ export class SettingsPageComponent {
       slug: value.slug,
       phone: value.phone ?? null,
       timezone: value.timezone,
-      notificationToggles: value.notificationToggles,
+      notificationPrefs: value.notificationPrefs,
     };
     this.api.update(payload).subscribe({
       next: (c) => {

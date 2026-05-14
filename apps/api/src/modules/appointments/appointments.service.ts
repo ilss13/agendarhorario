@@ -15,6 +15,7 @@ import { BusinessHour } from '../business-hours/business-hour.entity';
 import { Company } from '../companies/company.entity';
 import { Customer } from '../customers/customer.entity';
 import { Service } from '../services/service.entity';
+import { NotificationsService } from '../notifications/notifications.service';
 import { VerificationService } from '../verification/verification.service';
 import { Appointment, AppointmentStatus } from './appointment.entity';
 
@@ -29,6 +30,7 @@ export class AppointmentsService {
     @InjectRepository(BusinessException)
     private readonly exceptions: Repository<BusinessException>,
     private readonly verification: VerificationService,
+    private readonly notifications: NotificationsService,
     private readonly dataSource: DataSource,
     private readonly config: ConfigService,
   ) {}
@@ -166,6 +168,8 @@ export class AppointmentsService {
         }),
       );
 
+      await this.enqueueAfterCreate(appointment.id, startsAt.toJSDate());
+
       return {
         id: appointment.id,
         serviceId: service.id,
@@ -176,5 +180,17 @@ export class AppointmentsService {
         status,
       };
     });
+  }
+
+  private async enqueueAfterCreate(appointmentId: string, startsAt: Date): Promise<void> {
+    await this.notifications.enqueueImmediate(appointmentId, 'CREATED');
+    const reminder24 = new Date(startsAt.getTime() - 24 * 60 * 60 * 1000);
+    const reminder1 = new Date(startsAt.getTime() - 60 * 60 * 1000);
+    if (reminder24.getTime() > Date.now()) {
+      await this.notifications.scheduleReminder(appointmentId, 'REMINDER_24H', reminder24);
+    }
+    if (reminder1.getTime() > Date.now()) {
+      await this.notifications.scheduleReminder(appointmentId, 'REMINDER_1H', reminder1);
+    }
   }
 }

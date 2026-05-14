@@ -1,10 +1,11 @@
 import { Column, Entity, Index } from 'typeorm';
 import { BaseEntity } from '../../shared/infra/typeorm/base.entity';
 
-export interface NotificationToggles {
+export type SecondaryChannel = 'SMS' | 'WHATSAPP' | 'NONE';
+
+export interface NotificationPrefs {
   email: boolean;
-  sms: boolean;
-  whatsapp: boolean;
+  secondaryChannel: SecondaryChannel;
 }
 
 @Entity({ name: 'companies' })
@@ -30,7 +31,8 @@ export class Company extends BaseEntity {
 
   @Column({
     type: 'json',
-    default: () => `('{"email":true,"sms":false,"whatsapp":false}')`,
+    name: 'notificationPrefs',
+    default: () => `('{"email":true,"secondaryChannel":"NONE"}')`,
   })
-  notificationToggles!: NotificationToggles;
+  notificationPrefs!: NotificationPrefs;
 }

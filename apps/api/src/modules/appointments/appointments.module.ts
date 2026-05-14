@@ -7,6 +7,8 @@ import { Company } from '../companies/company.entity';
 import { Customer } from '../customers/customer.entity';
 import { Service } from '../services/service.entity';
 import { VerificationModule } from '../verification/verification.module';
+import { AppointmentActionToken } from './appointment-action-token.entity';
+import { AppointmentActionController } from './appointment-action.controller';
 import { Appointment } from './appointment.entity';
 import { AppointmentsService } from './appointments.service';
 
@@ -14,6 +16,7 @@ import { AppointmentsService } from './appointments.service';
   imports: [
     TypeOrmModule.forFeature([
       Appointment,
+      AppointmentActionToken,
       Company,
       Service,
       Customer,
@@ -23,6 +26,7 @@ import { AppointmentsService } from './appointments.service';
     AvailabilityModule,
     VerificationModule,
   ],
+  controllers: [AppointmentActionController],
   providers: [AppointmentsService],
   exports: [AppointmentsService],
 })

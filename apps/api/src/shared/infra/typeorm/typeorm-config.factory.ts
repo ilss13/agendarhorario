@@ -6,6 +6,7 @@ import { BusinessException } from '../../../modules/business-hours/business-exce
 import { BusinessHour } from '../../../modules/business-hours/business-hour.entity';
 import { Company } from '../../../modules/companies/company.entity';
 import { Customer } from '../../../modules/customers/customer.entity';
+import { NotificationLog } from '../../../modules/notifications/notification-log.entity';
 import { Service } from '../../../modules/services/service.entity';
 import { User } from '../../../modules/users/user.entity';
 import { Verification } from '../../../modules/verification/verification.entity';
@@ -27,6 +28,7 @@ export const typeOrmConfigFactory = (config: ConfigService): TypeOrmModuleOption
     Appointment,
     Verification,
     AppointmentActionToken,
+    NotificationLog,
   ],
   migrationsRun: false,
   synchronize: config.get<boolean>('DB_SYNCHRONIZE') === true,

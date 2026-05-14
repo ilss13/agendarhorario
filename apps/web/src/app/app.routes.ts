@@ -77,5 +77,10 @@ export const appRoutes: Route[] = [
     loadComponent: () =>
       import('./features/public/booking-flow.page').then((m) => m.BookingFlowPageComponent),
   },
+  {
+    path: 'a/:token',
+    loadComponent: () =>
+      import('./features/public/action-confirm.page').then((m) => m.ActionConfirmPageComponent),
+  },
   { path: '**', redirectTo: 'login' },
 ];
