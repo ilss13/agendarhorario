@@ -35,6 +35,22 @@ export interface AppConfig {
     ttlMs: number;
     limit: number;
   };
+  notifications: {
+    sendgridApiKey?: string;
+    emailFrom: string;
+    smtpHost?: string;
+    smtpPort?: number;
+    twilioAccountSid?: string;
+    twilioAuthToken?: string;
+    twilioSmsFrom?: string;
+    twilioWhatsappFrom?: string;
+  };
+  verification: {
+    jwtSecret: string;
+    otpTtlMinutes: number;
+    tokenTtlMinutes: number;
+    maxAttempts: number;
+  };
 }
 
 export const loadConfig = (): AppConfig => ({
@@ -73,5 +89,21 @@ export const loadConfig = (): AppConfig => ({
   throttle: {
     ttlMs: Number(process.env['THROTTLE_TTL_MS'] ?? 60_000),
     limit: Number(process.env['THROTTLE_LIMIT'] ?? 120),
+  },
+  notifications: {
+    sendgridApiKey: process.env['SENDGRID_API_KEY'],
+    emailFrom: process.env['EMAIL_FROM'] ?? 'no-reply@agendarhorario.com',
+    smtpHost: process.env['SMTP_HOST'],
+    smtpPort: process.env['SMTP_PORT'] ? Number(process.env['SMTP_PORT']) : undefined,
+    twilioAccountSid: process.env['TWILIO_ACCOUNT_SID'],
+    twilioAuthToken: process.env['TWILIO_AUTH_TOKEN'],
+    twilioSmsFrom: process.env['TWILIO_SMS_FROM'],
+    twilioWhatsappFrom: process.env['TWILIO_WHATSAPP_FROM'],
+  },
+  verification: {
+    jwtSecret: process.env['VERIFICATION_JWT_SECRET'] ?? 'dev-verification-secret-change-me',
+    otpTtlMinutes: Number(process.env['VERIFICATION_OTP_TTL_MINUTES'] ?? 10),
+    tokenTtlMinutes: Number(process.env['VERIFICATION_TOKEN_TTL_MINUTES'] ?? 15),
+    maxAttempts: Number(process.env['VERIFICATION_MAX_ATTEMPTS'] ?? 5),
   },
 });

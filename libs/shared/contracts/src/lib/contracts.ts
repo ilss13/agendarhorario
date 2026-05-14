@@ -4,3 +4,7 @@ export * from './time';
 export * from './service';
 export * from './business-hours';
 export * from './company';
+export * from './public-company';
+export * from './availability';
+export * from './verification';
+export * from './appointment';

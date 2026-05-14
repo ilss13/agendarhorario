@@ -67,5 +67,15 @@ export const appRoutes: Route[] = [
       },
     ],
   },
+  {
+    path: 'p/:slug',
+    loadComponent: () =>
+      import('./features/public/public-company.page').then((m) => m.PublicCompanyPageComponent),
+  },
+  {
+    path: 'p/:slug/agendar/:serviceId',
+    loadComponent: () =>
+      import('./features/public/booking-flow.page').then((m) => m.BookingFlowPageComponent),
+  },
   { path: '**', redirectTo: 'login' },
 ];

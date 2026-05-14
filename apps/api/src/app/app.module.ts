@@ -11,10 +11,15 @@ import { typeOrmConfigFactory } from '../shared/infra/typeorm/typeorm-config.fac
 import { CsrfMiddleware } from '../shared/security/csrf.middleware';
 import { TenantInterceptor } from '../shared/tenant/tenant.interceptor';
 import { TenantModule } from '../shared/tenant/tenant.module';
+import { AppointmentsModule } from '../modules/appointments/appointments.module';
 import { AuthModule } from '../modules/auth/auth.module';
+import { AvailabilityModule } from '../modules/availability/availability.module';
 import { BusinessHoursModule } from '../modules/business-hours/business-hours.module';
 import { CompaniesModule } from '../modules/companies/companies.module';
+import { NotificationsModule } from '../modules/notifications/notifications.module';
+import { PublicModule } from '../modules/public/public.module';
 import { ServicesModule } from '../modules/services/services.module';
+import { VerificationModule } from '../modules/verification/verification.module';
 import { AppController } from './app.controller';
 
 @Module({
@@ -56,10 +61,15 @@ import { AppController } from './app.controller';
     }),
     FirebaseAdminModule,
     TenantModule,
+    NotificationsModule,
     AuthModule,
     CompaniesModule,
     ServicesModule,
     BusinessHoursModule,
+    AvailabilityModule,
+    VerificationModule,
+    AppointmentsModule,
+    PublicModule,
   ],
   controllers: [AppController],
   providers: [

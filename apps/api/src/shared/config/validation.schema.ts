@@ -30,6 +30,22 @@ export const envValidationSchema = Joi.object({
 
   THROTTLE_TTL_MS: Joi.number().default(60000),
   THROTTLE_LIMIT: Joi.number().default(120),
+
+  SENDGRID_API_KEY: Joi.string().allow('').optional(),
+  EMAIL_FROM: Joi.string().email().default('no-reply@agendarhorario.com'),
+  SMTP_HOST: Joi.string().optional(),
+  SMTP_PORT: Joi.number().optional(),
+  SMTP_USE_FOR: Joi.string().valid('dev', 'never').default('dev'),
+
+  TWILIO_ACCOUNT_SID: Joi.string().allow('').optional(),
+  TWILIO_AUTH_TOKEN: Joi.string().allow('').optional(),
+  TWILIO_SMS_FROM: Joi.string().allow('').optional(),
+  TWILIO_WHATSAPP_FROM: Joi.string().allow('').optional(),
+
+  VERIFICATION_JWT_SECRET: Joi.string().min(16).default('dev-verification-secret-change-me'),
+  VERIFICATION_OTP_TTL_MINUTES: Joi.number().default(10),
+  VERIFICATION_TOKEN_TTL_MINUTES: Joi.number().default(15),
+  VERIFICATION_MAX_ATTEMPTS: Joi.number().default(5),
 }).custom((value, helpers) => {
   if (!value.FIREBASE_SERVICE_ACCOUNT_PATH && !value.FIREBASE_SERVICE_ACCOUNT_JSON) {
     return helpers.error('any.custom', {
