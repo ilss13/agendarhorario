@@ -1,0 +1,31 @@
+Crie um plano para desenvolver um sistema de agendamentos de horários.
+
+Backend
+Desenvolver api com NestJS;
+Banco de dados relacional em MySQL;
+Utilizar TypeORM;
+Utilizar Authentication do Firebase para gerenciar cadastros;
+Utilizar integração com serviços do firebase sempre que possível;
+Use soft delete;
+Use ferramentas para garantir um login seguro;
+Use uma arquitetura limpa e adequada;
+
+
+Frontend
+Desenvolver front com Angular;
+Melhores práticas de orgnização e de código;
+Use uma arquiterua limpa e adequada;
+Nenhuma integração do firebase deve ser feita no front, tudo deve passar pelo nosso backend;
+Todo o projeto deve ser responsivo, com visualização perfeita em dispositivos módeis;
+
+Considerações importantes
+
+Deve haver uma área para a empresa logar e poder definir os horários de atendimento, serviços, tempo de cada serviço e demais informações;
+Cada empresa vai ter uma página exclusiva pra agendamento do cliente;
+No dashboard da empresa ela só pode administrar, atualizar e alterar os seus próprios dados;
+No processo de agendamento na página da empresa o cliente pode ou não fazer login;
+Para confirmar o agendamento de usuários não logados, devemos validar o email ( link de validação ) ou telefone ( sms token ) antes do agendamento
+No dashboard do cliente logado, ele pode ver todos os seus agendamentos, independentemente da empresa, ele pode gerenciar os seus próprios agendamentos, remarcando ( se houver novos horários disponíveis ) ou cancelando.
+A empresa pode escolher as formas de aviso para o cliente, como um toggle, sendo por email, whatsapp e sms.
+No aviso deve ter link para uma url onde o cliente pode confirmar presença ou cancelar.
+No dashboard da empresa deve ter uma visualização clara e objetiva dos agendamentos do dia, da semana e do mês. Assim como dos dados do cliente;

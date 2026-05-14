@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Lint, test, build
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install
+        run: npm ci --no-audit --no-fund
+
+      - name: Derive affected base
+        uses: nrwl/nx-set-shas@v4
+
+      - name: Format check
+        run: npx nx format:check
+
+      - name: Lint affected
+        run: npx nx affected -t lint --parallel=3
+
+      - name: Test affected
+        run: npx nx affected -t test --parallel=3 --ci --coverage
+
+      - name: Build affected
+        run: npx nx affected -t build --parallel=3
