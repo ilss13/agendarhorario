@@ -24,6 +24,7 @@ import { Public } from '../auth/auth.guard';
 import { ZodValidationPipe } from '../../shared/pipes/zod-validation.pipe';
 import { AppointmentsService } from '../appointments/appointments.service';
 import { AvailabilityService } from '../availability/availability.service';
+import { BillingService } from '../billing/billing.service';
 import { BusinessHour } from '../business-hours/business-hour.entity';
 import { Company } from '../companies/company.entity';
 import { Service } from '../services/service.entity';
@@ -36,6 +37,7 @@ export class PublicCompaniesController {
     @InjectRepository(BusinessHour) private readonly hours: Repository<BusinessHour>,
     private readonly availability: AvailabilityService,
     private readonly appointments: AppointmentsService,
+    private readonly billing: BillingService,
   ) {}
 
   @Public()
@@ -43,7 +45,7 @@ export class PublicCompaniesController {
   async getBySlug(@Param('slug') slug: string): Promise<PublicCompanyDto> {
     const company = await this.companies.findOne({ where: { slug } });
     if (!company) throw new NotFoundException('Empresa não encontrada');
-    const [services, hours] = await Promise.all([
+    const [services, hours, billing] = await Promise.all([
       this.services.find({
         where: { companyId: company.id, active: true },
         order: { name: 'ASC' },
@@ -52,7 +54,20 @@ export class PublicCompaniesController {
         where: { companyId: company.id },
         order: { dayOfWeek: 'ASC', startTime: 'ASC' },
       }),
+      this.billing.canBookForCompany(company.id),
     ]);
+    const status: PublicCompanyDto['status'] =
+      billing.state === 'AVAILABLE'
+        ? 'AVAILABLE'
+        : billing.state === 'OVER_LIMIT'
+          ? 'OVER_LIMIT'
+          : 'SUSPENDED';
+    const statusReason =
+      status === 'OVER_LIMIT'
+        ? `Limite mensal atingido. Próxima janela em ${billing.resetAt?.toISOString() ?? '—'}.`
+        : status === 'SUSPENDED'
+          ? 'Página de agendamento temporariamente indisponível.'
+          : null;
     return {
       id: company.id,
       name: company.name,
@@ -74,6 +89,8 @@ export class PublicCompaniesController {
         bufferMinutes: s.bufferMinutes,
         price: Number(s.price),
       })),
+      status,
+      statusReason,
     };
   }
 

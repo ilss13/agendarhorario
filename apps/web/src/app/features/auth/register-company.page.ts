@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
 import { ApiError } from '../../core/http/error.interceptor';
 import { firstError, passwordStrengthValidator, slugValidator } from '../../core/forms/form-error';
@@ -177,6 +177,8 @@ export class RegisterCompanyPageComponent {
   private readonly fb = inject(FormBuilder);
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
+  readonly preselectedPlan = this.route.snapshot.queryParamMap.get('plan');
 
   readonly form = this.fb.nonNullable.group({
     companyName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(120)]],
@@ -209,7 +211,10 @@ export class RegisterCompanyPageComponent {
       .subscribe({
         next: () => {
           this.submitting.set(false);
-          void this.router.navigate(['/admin']);
+          const target = this.preselectedPlan ? ['/admin/assinatura'] : ['/admin'];
+          void this.router.navigate(target, {
+            queryParams: this.preselectedPlan ? { plan: this.preselectedPlan } : undefined,
+          });
         },
         error: (err: ApiError) => {
           this.submitting.set(false);

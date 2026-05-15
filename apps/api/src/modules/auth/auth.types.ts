@@ -6,6 +6,7 @@ export interface AuthenticatedUser {
   firebaseUid: string;
   email: string;
   name: string;
+  phone: string | null;
   role: UserRole;
   companyId: string | null;
   emailVerified: boolean;

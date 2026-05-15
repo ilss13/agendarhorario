@@ -19,6 +19,8 @@ import {
   MeResponse,
   RegisterCompanyRequest,
   registerCompanyRequestSchema,
+  RegisterCustomerRequest,
+  registerCustomerRequestSchema,
 } from '@agendarhorario/contracts';
 import { ZodValidationPipe } from '../../shared/pipes/zod-validation.pipe';
 import { AuthService, SessionResult } from './auth.service';
@@ -44,6 +46,20 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ): Promise<MeResponse> {
     const { session, me } = await this.authService.registerCompany(input);
+    this.setSessionCookie(res, session);
+    return me;
+  }
+
+  @Public()
+  @Post('register-customer')
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  @HttpCode(HttpStatus.CREATED)
+  @UsePipes(new ZodValidationPipe(registerCustomerRequestSchema))
+  async registerCustomer(
+    @Body() input: RegisterCustomerRequest,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<MeResponse> {
+    const { session, me } = await this.authService.registerCustomer(input);
     this.setSessionCookie(res, session);
     return me;
   }

@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/cor
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
+import { defaultRouteForUser } from '../../core/auth/redirect-after-login';
 import { ApiError } from '../../core/http/error.interceptor';
 import { firstError } from '../../core/forms/form-error';
 
@@ -162,9 +163,9 @@ export class LoginPageComponent {
     }
     this.submitting.set(true);
     this.auth.login(this.form.getRawValue()).subscribe({
-      next: () => {
+      next: (me) => {
         this.submitting.set(false);
-        void this.router.navigate(['/admin']);
+        void this.router.navigate([defaultRouteForUser(me)]);
       },
       error: (err: ApiError) => {
         this.submitting.set(false);

@@ -35,4 +35,10 @@ export class Company extends BaseEntity {
     default: () => `('{"email":true,"secondaryChannel":"NONE"}')`,
   })
   notificationPrefs!: NotificationPrefs;
+
+  @Column({ type: 'varchar', length: 120, nullable: true })
+  stripeCustomerId!: string | null;
+
+  @Column({ type: 'varchar', length: 120, nullable: true })
+  stripeSubscriptionId!: string | null;
 }

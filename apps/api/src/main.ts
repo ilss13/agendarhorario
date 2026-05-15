@@ -9,7 +9,7 @@ import { Logger as PinoLogger } from 'nestjs-pino';
 import { AppModule } from './app/app.module';
 
 async function bootstrap(): Promise<void> {
-  const app = await NestFactory.create(AppModule, { bufferLogs: true });
+  const app = await NestFactory.create(AppModule, { bufferLogs: true, rawBody: true });
   app.useLogger(app.get(PinoLogger));
 
   const config = app.get(ConfigService);
@@ -19,7 +19,41 @@ async function bootstrap(): Promise<void> {
   const isProd = config.get<string>('NODE_ENV') === 'production';
 
   app.setGlobalPrefix(globalPrefix);
-  app.use(helmet({ contentSecurityPolicy: isProd ? undefined : false }));
+  app.use(
+    helmet({
+      contentSecurityPolicy: isProd
+        ? {
+            useDefaults: true,
+            directives: {
+              defaultSrc: ["'self'"],
+              scriptSrc: ["'self'"],
+              styleSrc: ["'self'", "'unsafe-inline'"],
+              imgSrc: ["'self'", 'data:', 'https:'],
+              connectSrc: [
+                "'self'",
+                'https://api.stripe.com',
+                'https://identitytoolkit.googleapis.com',
+              ],
+              frameSrc: ["'self'", 'https://js.stripe.com', 'https://hooks.stripe.com'],
+              objectSrc: ["'none'"],
+              baseUri: ["'self'"],
+              formAction: ["'self'"],
+              frameAncestors: ["'none'"],
+              upgradeInsecureRequests: [],
+            },
+          }
+        : false,
+      crossOriginEmbedderPolicy: false,
+      strictTransportSecurity: isProd
+        ? { maxAge: 15552000, includeSubDomains: true, preload: false }
+        : false,
+    }),
+  );
+  // Cloud Run / load balancer: confia no X-Forwarded-* para o throttler por IP
+  const httpAdapter = app.getHttpAdapter().getInstance() as {
+    set?: (key: string, value: unknown) => void;
+  };
+  httpAdapter.set?.('trust proxy', 1);
   app.use(compression());
   app.use(cookieParser());
 

@@ -4,3 +4,5 @@ export * from './lib/services.api';
 export * from './lib/business-hours.api';
 export * from './lib/public.api';
 export * from './lib/action-token.api';
+export * from './lib/me.api';
+export * from './lib/billing.api';

@@ -57,6 +57,7 @@ export class AuthGuard implements CanActivate {
       firebaseUid: user.firebaseUid,
       email: user.email,
       name: user.name,
+      phone: user.phone,
       role: user.role,
       companyId: user.companyId,
       emailVerified: user.emailVerified,

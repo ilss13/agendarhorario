@@ -1,11 +1,12 @@
 import { Route } from '@angular/router';
-import { authGuard, guestGuard } from './core/auth/auth.guard';
+import { authGuard, guestGuard, requireRoleGuard } from './core/auth/auth.guard';
 
 export const appRoutes: Route[] = [
   {
     path: '',
     pathMatch: 'full',
-    redirectTo: 'login',
+    loadComponent: () =>
+      import('./features/landing/landing.page').then((m) => m.LandingPageComponent),
   },
   {
     path: 'login',
@@ -19,8 +20,30 @@ export const appRoutes: Route[] = [
       import('./features/auth/register-company.page').then((m) => m.RegisterCompanyPageComponent),
   },
   {
-    path: 'admin',
+    path: 'registrar-cliente',
+    canActivate: [guestGuard],
+    loadComponent: () =>
+      import('./features/auth/register-customer.page').then((m) => m.RegisterCustomerPageComponent),
+  },
+  {
+    path: 'me/agendamentos',
     canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/me/my-appointments-list.page').then(
+        (m) => m.MyAppointmentsListPageComponent,
+      ),
+  },
+  {
+    path: 'me/agendamentos/:id',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/me/my-appointment-detail.page').then(
+        (m) => m.MyAppointmentDetailPageComponent,
+      ),
+  },
+  {
+    path: 'admin',
+    canActivate: [authGuard, requireRoleGuard(['OWNER', 'STAFF'])],
     loadComponent: () =>
       import('./features/admin/admin-layout.page').then((m) => m.AdminLayoutPageComponent),
     children: [
@@ -63,6 +86,13 @@ export const appRoutes: Route[] = [
         loadComponent: () =>
           import('./features/admin/hours/business-exceptions.page').then(
             (m) => m.BusinessExceptionsPageComponent,
+          ),
+      },
+      {
+        path: 'assinatura',
+        loadComponent: () =>
+          import('./features/admin/subscription/subscription.page').then(
+            (m) => m.SubscriptionPageComponent,
           ),
       },
     ],

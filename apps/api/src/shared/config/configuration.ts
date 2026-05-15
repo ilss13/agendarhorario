@@ -51,6 +51,18 @@ export interface AppConfig {
     tokenTtlMinutes: number;
     maxAttempts: number;
   };
+  stripe: {
+    secretKey: string;
+    webhookSecret: string;
+    prices: {
+      basico: string;
+      medio: string;
+      grande: string;
+      super: string;
+    };
+    successUrl: string;
+    cancelUrl: string;
+  };
 }
 
 export const loadConfig = (): AppConfig => ({
@@ -105,5 +117,19 @@ export const loadConfig = (): AppConfig => ({
     otpTtlMinutes: Number(process.env['VERIFICATION_OTP_TTL_MINUTES'] ?? 10),
     tokenTtlMinutes: Number(process.env['VERIFICATION_TOKEN_TTL_MINUTES'] ?? 15),
     maxAttempts: Number(process.env['VERIFICATION_MAX_ATTEMPTS'] ?? 5),
+  },
+  stripe: {
+    secretKey: process.env['STRIPE_SECRET_KEY'] ?? '',
+    webhookSecret: process.env['STRIPE_WEBHOOK_SECRET'] ?? '',
+    prices: {
+      basico: process.env['STRIPE_PRICE_BASICO'] ?? '',
+      medio: process.env['STRIPE_PRICE_MEDIO'] ?? '',
+      grande: process.env['STRIPE_PRICE_GRANDE'] ?? '',
+      super: process.env['STRIPE_PRICE_SUPER'] ?? '',
+    },
+    successUrl:
+      process.env['STRIPE_SUCCESS_URL'] ?? 'http://localhost:4200/admin/assinatura?status=ok',
+    cancelUrl:
+      process.env['STRIPE_CANCEL_URL'] ?? 'http://localhost:4200/admin/assinatura?status=cancel',
   },
 });

@@ -3,6 +3,11 @@ import { DataSource } from 'typeorm';
 import { config as loadDotenv } from 'dotenv';
 import { AppointmentActionToken } from '../../../modules/appointments/appointment-action-token.entity';
 import { Appointment } from '../../../modules/appointments/appointment.entity';
+import { AuditLog } from '../../../modules/audit/audit-log.entity';
+import { BillingEvent } from '../../../modules/billing/billing-event.entity';
+import { Invoice } from '../../../modules/billing/invoice.entity';
+import { Plan } from '../../../modules/billing/plan.entity';
+import { Subscription } from '../../../modules/billing/subscription.entity';
 import { BusinessException } from '../../../modules/business-hours/business-exception.entity';
 import { BusinessHour } from '../../../modules/business-hours/business-hour.entity';
 import { Company } from '../../../modules/companies/company.entity';
@@ -32,6 +37,11 @@ export const AppDataSource = new DataSource({
     Verification,
     AppointmentActionToken,
     NotificationLog,
+    Plan,
+    Subscription,
+    Invoice,
+    BillingEvent,
+    AuditLog,
   ],
   migrations: [__dirname + '/migrations/*.{ts,js}'],
   timezone: 'Z',

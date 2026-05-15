@@ -35,6 +35,26 @@ import type { ApiError } from '../../core/http/error.interceptor';
           </div>
         </header>
 
+        @if (company()!.status === 'SUSPENDED') {
+          <section class="status-banner danger">
+            <strong>Página de agendamentos indisponível</strong>
+            <p>
+              {{
+                company()!.statusReason ??
+                  'Esta empresa está com a página de agendamentos temporariamente indisponível.'
+              }}
+            </p>
+          </section>
+        } @else if (company()!.status === 'OVER_LIMIT') {
+          <section class="status-banner warn">
+            <strong>Limite de agendamentos atingido</strong>
+            <p>
+              Esta empresa atingiu o limite mensal de agendamentos. Tente novamente após a renovação
+              do ciclo.
+            </p>
+          </section>
+        }
+
         <section>
           <h2>Serviços</h2>
           @if (company()!.services.length === 0) {
@@ -42,6 +62,20 @@ import type { ApiError } from '../../core/http/error.interceptor';
               title="Nenhum serviço disponível"
               description="Esta empresa ainda não cadastrou serviços para agendamento."
             />
+          } @else if (company()!.status !== 'AVAILABLE') {
+            <ul class="services disabled">
+              @for (s of company()!.services; track s.id) {
+                <li>
+                  <div class="service-card disabled">
+                    <div>
+                      <strong>{{ s.name }}</strong>
+                      <small>{{ s.durationMinutes }} min · R$ {{ s.price.toFixed(2) }}</small>
+                    </div>
+                    <span class="cta muted">Indisponível</span>
+                  </div>
+                </li>
+              }
+            </ul>
           } @else {
             <ul class="services">
               @for (s of company()!.services; track s.id) {
@@ -143,6 +177,35 @@ import type { ApiError } from '../../core/http/error.interceptor';
       }
       .service-card:hover {
         border-color: #2563eb;
+      }
+      .service-card.disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+      ul.services.disabled li {
+        pointer-events: none;
+      }
+      .status-banner {
+        padding: 1rem 1.25rem;
+        border-radius: 0.75rem;
+        margin-bottom: 1.25rem;
+      }
+      .status-banner strong {
+        display: block;
+        margin-bottom: 0.35rem;
+        font-size: 1.05rem;
+      }
+      .status-banner p {
+        margin: 0;
+        color: inherit;
+      }
+      .status-banner.warn {
+        background: #fef3c7;
+        color: #92400e;
+      }
+      .status-banner.danger {
+        background: #fee2e2;
+        color: #991b1b;
       }
       .service-card small {
         display: block;

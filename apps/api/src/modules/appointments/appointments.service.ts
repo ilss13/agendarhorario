@@ -15,6 +15,7 @@ import { BusinessHour } from '../business-hours/business-hour.entity';
 import { Company } from '../companies/company.entity';
 import { Customer } from '../customers/customer.entity';
 import { Service } from '../services/service.entity';
+import { BillingService } from '../billing/billing.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { VerificationService } from '../verification/verification.service';
 import { Appointment, AppointmentStatus } from './appointment.entity';
@@ -31,6 +32,7 @@ export class AppointmentsService {
     private readonly exceptions: Repository<BusinessException>,
     private readonly verification: VerificationService,
     private readonly notifications: NotificationsService,
+    private readonly billing: BillingService,
     private readonly dataSource: DataSource,
     private readonly config: ConfigService,
   ) {}
@@ -41,6 +43,18 @@ export class AppointmentsService {
   ): Promise<AppointmentDto> {
     const company = await this.companies.findOne({ where: { slug } });
     if (!company) throw new NotFoundException('Empresa não encontrada');
+
+    const billingCheck = await this.billing.canBookForCompany(company.id);
+    if (billingCheck.state === 'NO_SUBSCRIPTION' || billingCheck.state === 'SUSPENDED') {
+      throw new BadRequestException(
+        'Esta empresa está com a página de agendamentos indisponível no momento.',
+      );
+    }
+    if (billingCheck.state === 'OVER_LIMIT') {
+      throw new BadRequestException(
+        'Esta empresa atingiu o limite de agendamentos deste mês. Tente novamente após a renovação.',
+      );
+    }
 
     const service = await this.services.findOne({
       where: { id: input.serviceId, companyId: company.id, active: true },

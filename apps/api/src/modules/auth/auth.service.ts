@@ -8,7 +8,12 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
-import type { LoginRequest, MeResponse, RegisterCompanyRequest } from '@agendarhorario/contracts';
+import type {
+  LoginRequest,
+  MeResponse,
+  RegisterCompanyRequest,
+  RegisterCustomerRequest,
+} from '@agendarhorario/contracts';
 import { FirebaseAdminService } from '../../shared/infra/firebase/firebase-admin.service';
 import { FirebaseIdentityToolkitClient } from '../../shared/infra/firebase/firebase-identity-toolkit.client';
 import { Company } from '../companies/company.entity';
@@ -90,6 +95,51 @@ export class AuthService {
         role: 'OWNER',
         companyId: user.companyId,
       });
+
+      const session = await this.createSession(idToken);
+      return { session, me: toMeResponse(user) };
+    } catch (err) {
+      if (firebaseUid) {
+        try {
+          await this.firebase.auth.deleteUser(firebaseUid);
+        } catch (cleanupErr) {
+          this.logger.error(
+            `Falha ao limpar usuário Firebase após erro: ${(cleanupErr as Error).message}`,
+          );
+        }
+      }
+      throw err;
+    }
+  }
+
+  async registerCustomer(
+    input: RegisterCustomerRequest,
+  ): Promise<{ session: SessionResult; me: MeResponse }> {
+    const emailExists = await this.users.findOne({ where: { email: input.email } });
+    if (emailExists) throw new ConflictException('Email já cadastrado');
+
+    let firebaseUid: string | null = null;
+    try {
+      const { idToken, localId } = await this.identity.signUpWithPassword(
+        input.email,
+        input.password,
+      );
+      firebaseUid = localId;
+
+      const user = await this.users.save(
+        this.users.create({
+          firebaseUid: localId,
+          email: input.email,
+          name: input.name,
+          phone: input.phone ?? null,
+          role: 'CUSTOMER',
+          emailVerified: false,
+          phoneVerified: false,
+          companyId: null,
+        }),
+      );
+
+      await this.firebase.auth.setCustomUserClaims(localId, { role: 'CUSTOMER' });
 
       const session = await this.createSession(idToken);
       return { session, me: toMeResponse(user) };

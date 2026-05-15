@@ -14,8 +14,10 @@ import { TenantModule } from '../shared/tenant/tenant.module';
 import { AppointmentsModule } from '../modules/appointments/appointments.module';
 import { AuthModule } from '../modules/auth/auth.module';
 import { AvailabilityModule } from '../modules/availability/availability.module';
+import { BillingModule } from '../modules/billing/billing.module';
 import { BusinessHoursModule } from '../modules/business-hours/business-hours.module';
 import { CompaniesModule } from '../modules/companies/companies.module';
+import { MeModule } from '../modules/me/me.module';
 import { NotificationsModule } from '../modules/notifications/notifications.module';
 import { PublicModule } from '../modules/public/public.module';
 import { ServicesModule } from '../modules/services/services.module';
@@ -70,6 +72,8 @@ import { AppController } from './app.controller';
     VerificationModule,
     AppointmentsModule,
     PublicModule,
+    MeModule,
+    BillingModule,
   ],
   controllers: [AppController],
   providers: [
@@ -79,6 +83,6 @@ import { AppController } from './app.controller';
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {
-    consumer.apply(CsrfMiddleware).forRoutes('*');
+    consumer.apply(CsrfMiddleware).exclude('webhooks/stripe', 'api/webhooks/stripe').forRoutes('*');
   }
 }

@@ -33,6 +33,7 @@ import { AuthService } from '../../core/auth/auth.service';
           <a routerLink="servicos" routerLinkActive="active">Serviços</a>
           <a routerLink="horarios" routerLinkActive="active">Horários</a>
           <a routerLink="excecoes" routerLinkActive="active">Exceções / Feriados</a>
+          <a routerLink="assinatura" routerLinkActive="active">Assinatura</a>
         </nav>
         <div class="user">
           <span>{{ auth.user()?.name }}</span>

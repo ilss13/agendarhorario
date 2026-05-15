@@ -46,6 +46,16 @@ export const envValidationSchema = Joi.object({
   VERIFICATION_OTP_TTL_MINUTES: Joi.number().default(10),
   VERIFICATION_TOKEN_TTL_MINUTES: Joi.number().default(15),
   VERIFICATION_MAX_ATTEMPTS: Joi.number().default(5),
+  APPOINTMENT_ACTION_TOKEN_TTL_HOURS: Joi.number().default(72),
+
+  STRIPE_SECRET_KEY: Joi.string().allow('').optional(),
+  STRIPE_WEBHOOK_SECRET: Joi.string().allow('').optional(),
+  STRIPE_PRICE_BASICO: Joi.string().allow('').optional(),
+  STRIPE_PRICE_MEDIO: Joi.string().allow('').optional(),
+  STRIPE_PRICE_GRANDE: Joi.string().allow('').optional(),
+  STRIPE_PRICE_SUPER: Joi.string().allow('').optional(),
+  STRIPE_SUCCESS_URL: Joi.string().uri().optional(),
+  STRIPE_CANCEL_URL: Joi.string().uri().optional(),
 }).custom((value, helpers) => {
   if (!value.FIREBASE_SERVICE_ACCOUNT_PATH && !value.FIREBASE_SERVICE_ACCOUNT_JSON) {
     return helpers.error('any.custom', {

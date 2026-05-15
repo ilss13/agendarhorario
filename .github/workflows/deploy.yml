@@ -1,0 +1,118 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'staging | production'
+        required: true
+        default: 'staging'
+
+concurrency:
+  group: deploy-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  REGION: southamerica-east1
+  REPO: agendarhorario
+  API_SERVICE: agendarhorario-api
+  NODE_VERSION: 20
+
+jobs:
+  api:
+    name: Build, push, deploy API
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WIP }}
+          service_account: ${{ secrets.GCP_DEPLOYER_SA }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+
+      - name: Build image
+        run: |
+          IMAGE="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO }}/api:${{ github.sha }}"
+          docker build -t "$IMAGE" -f apps/api/Dockerfile .
+          docker tag "$IMAGE" "${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO }}/api:latest"
+          echo "IMAGE=$IMAGE" >> $GITHUB_ENV
+
+      - name: Push image
+        run: |
+          docker push "$IMAGE"
+          docker push "${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO }}/api:latest"
+
+      - name: Run migrations (Cloud Run Job)
+        run: |
+          gcloud run jobs execute migrations \
+            --region ${{ env.REGION }} \
+            --wait \
+            --update-env-vars=DB_HOST=${{ secrets.DB_HOST }},DB_PORT=${{ secrets.DB_PORT }},DB_USER=${{ secrets.DB_USER }},DB_NAME=${{ secrets.DB_NAME }} \
+            --update-secrets=DB_PASSWORD=DB_PASSWORD:latest || true
+
+      - name: Deploy Cloud Run
+        run: |
+          gcloud run deploy ${{ env.API_SERVICE }} \
+            --image "$IMAGE" \
+            --region ${{ env.REGION }} \
+            --platform managed \
+            --allow-unauthenticated \
+            --min-instances=1 \
+            --max-instances=10 \
+            --memory=512Mi \
+            --concurrency=80 \
+            --port=3000 \
+            --set-env-vars=NODE_ENV=production,API_GLOBAL_PREFIX=api \
+            --set-secrets=DB_PASSWORD=DB_PASSWORD:latest,FIREBASE_SERVICE_ACCOUNT_JSON=FIREBASE_SERVICE_ACCOUNT:latest,STRIPE_SECRET_KEY=STRIPE_SECRET_KEY:latest,STRIPE_WEBHOOK_SECRET=STRIPE_WEBHOOK_SECRET:latest,VERIFICATION_JWT_SECRET=VERIFICATION_JWT_SECRET:latest,SENDGRID_API_KEY=SENDGRID_API_KEY:latest,TWILIO_AUTH_TOKEN=TWILIO_AUTH_TOKEN:latest
+
+      - name: Smoke test
+        run: |
+          URL=$(gcloud run services describe ${{ env.API_SERVICE }} --region ${{ env.REGION }} --format='value(status.url)')
+          curl --fail --retry 5 --retry-delay 5 "$URL/api/health"
+
+  web:
+    name: Build + Firebase Hosting
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: api
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install
+        run: npm ci --no-audit --no-fund
+
+      - name: Build web (production)
+        run: npx nx build web --configuration=production
+
+      - id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WIP }}
+          service_account: ${{ secrets.GCP_DEPLOYER_SA }}
+
+      - uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_DEPLOY }}
+          projectId: ${{ secrets.GCP_PROJECT_ID }}
+          channelId: live

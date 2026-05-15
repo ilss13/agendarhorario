@@ -12,6 +12,8 @@ export const publicServiceSchema = z.object({
 });
 export type PublicServiceDto = z.infer<typeof publicServiceSchema>;
 
+export const publicCompanyStatusEnum = z.enum(['AVAILABLE', 'OVER_LIMIT', 'SUSPENDED']);
+
 export const publicCompanySchema = z.object({
   id: uuidSchema,
   name: z.string(),
@@ -21,5 +23,7 @@ export const publicCompanySchema = z.object({
   logoUrl: z.string().nullable(),
   businessHours: z.array(businessHourSchema),
   services: z.array(publicServiceSchema),
+  status: publicCompanyStatusEnum,
+  statusReason: z.string().nullable(),
 });
 export type PublicCompanyDto = z.infer<typeof publicCompanySchema>;
