@@ -2,14 +2,15 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DateTime } from 'luxon';
-import { DataSource, IsNull, Not, Repository } from 'typeorm';
+import { Between, DataSource, IsNull, Not, Repository } from 'typeorm';
 import type { AppointmentDto, CreateAppointmentRequest } from '@agendarhorario/contracts';
-import { computeSlotsForDate } from '../availability/availability.service';
+import { computeSlotsForDate, occupiedRangesOverlap } from '../availability/availability.service';
 import { BusinessException } from '../business-hours/business-exception.entity';
 import { BusinessHour } from '../business-hours/business-hour.entity';
 import { Company } from '../companies/company.entity';
@@ -22,6 +23,8 @@ import { Appointment, AppointmentStatus } from './appointment.entity';
 
 @Injectable()
 export class AppointmentsService {
+  private readonly logger = new Logger(AppointmentsService.name);
+
   constructor(
     @InjectRepository(Appointment) private readonly appointments: Repository<Appointment>,
     @InjectRepository(Company) private readonly companies: Repository<Company>,
@@ -69,8 +72,8 @@ export class AppointmentsService {
       else verifiedPhone = payload.target;
     }
 
-    if (!input.customer.email && !input.customer.phone) {
-      throw new BadRequestException('Informe e-mail ou telefone do cliente');
+    if (!input.customer.email || !input.customer.phone) {
+      throw new BadRequestException('Informe e-mail e telefone do cliente');
     }
     if (
       input.customer.email &&
@@ -94,28 +97,27 @@ export class AppointmentsService {
     const endsAt = startsAt.plus({ minutes: service.durationMinutes });
 
     const date = startsAt.toISODate()!;
+    const dayStart = startsAt.startOf('day').toJSDate();
+    const dayEnd = startsAt.endOf('day').toJSDate();
     const hours = await this.hours.find({ where: { companyId: company.id } });
     const exceptions = await this.exceptions.find({
       where: { companyId: company.id, date },
     });
-    const conflicting = await this.appointments.find({
+    const dayAppointments = await this.appointments.find({
       where: {
         companyId: company.id,
         serviceId: service.id,
-        startsAt: startsAt.toJSDate(),
+        startsAt: Between(dayStart, dayEnd),
         status: Not('CANCELLED'),
         deletedAt: IsNull(),
       },
     });
-    if (conflicting.length > 0) {
-      throw new ConflictException('Horário não está mais disponível');
-    }
 
     const slots = computeSlotsForDate({
       service,
       hours,
       exceptions,
-      appointments: [],
+      appointments: dayAppointments,
       timezone: company.timezone,
       date,
     });
@@ -124,18 +126,23 @@ export class AppointmentsService {
       throw new BadRequestException('Horário não corresponde a um slot válido');
     }
 
-    return this.dataSource.transaction(async (manager) => {
+    const bufferMinutes = service.bufferMinutes ?? 0;
+    const created = await this.dataSource.transaction(async (manager) => {
       const lockingApptRepo = manager.getRepository(Appointment);
-      const overlap = await lockingApptRepo
+      const locked = await lockingApptRepo
         .createQueryBuilder('a')
         .setLock('pessimistic_write')
         .where('a.companyId = :companyId', { companyId: company.id })
         .andWhere('a.serviceId = :serviceId', { serviceId: service.id })
-        .andWhere('a.startsAt = :startsAt', { startsAt: startsAt.toJSDate() })
+        .andWhere('a.startsAt < :dayEnd', { dayEnd })
+        .andWhere('a.endsAt > :dayStart', { dayStart })
         .andWhere('a.status <> :cancelled', { cancelled: 'CANCELLED' })
         .andWhere('a.deletedAt IS NULL')
-        .getCount();
-      if (overlap > 0) {
+        .getMany();
+      const overlap = locked.some((a) =>
+        occupiedRangesOverlap(a, startsAt, endsAt, bufferMinutes, company.timezone),
+      );
+      if (overlap) {
         throw new ConflictException('Horário não está mais disponível');
       }
 
@@ -156,16 +163,16 @@ export class AppointmentsService {
           customerRepo.create({
             companyId: company.id,
             name: input.customer.name,
-            email: verifiedEmail ?? input.customer.email ?? null,
-            phone: verifiedPhone ?? input.customer.phone ?? null,
+            email: input.customer.email,
+            phone: input.customer.phone,
             notes: input.customer.notes ?? null,
           }),
         );
       } else {
         customer.name = input.customer.name;
         if (input.customer.notes !== undefined) customer.notes = input.customer.notes;
-        if (!customer.email && verifiedEmail) customer.email = verifiedEmail;
-        if (!customer.phone && verifiedPhone) customer.phone = verifiedPhone;
+        customer.email = input.customer.email;
+        customer.phone = input.customer.phone;
         customer = await customerRepo.save(customer);
       }
 
@@ -182,8 +189,6 @@ export class AppointmentsService {
         }),
       );
 
-      await this.enqueueAfterCreate(appointment.id, startsAt.toJSDate());
-
       return {
         id: appointment.id,
         serviceId: service.id,
@@ -194,6 +199,15 @@ export class AppointmentsService {
         status,
       };
     });
+
+    try {
+      await this.enqueueAfterCreate(created.id, startsAt.toJSDate());
+    } catch (err) {
+      this.logger.error(
+        `Falha ao enfileirar notificações do agendamento ${created.id}: ${(err as Error).message}`,
+      );
+    }
+    return created;
   }
 
   private async enqueueAfterCreate(appointmentId: string, startsAt: Date): Promise<void> {

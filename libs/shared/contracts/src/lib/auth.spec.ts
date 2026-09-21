@@ -1,4 +1,9 @@
-import { loginRequestSchema, registerCompanyRequestSchema, userRoleSchema } from './auth';
+import {
+  googleLoginRequestSchema,
+  loginRequestSchema,
+  registerCompanyRequestSchema,
+  userRoleSchema,
+} from './auth';
 
 describe('auth contracts', () => {
   it('loginRequestSchema accepts valid payload', () => {
@@ -14,6 +19,19 @@ describe('auth contracts', () => {
 
   it('loginRequestSchema rejects missing password', () => {
     const result = loginRequestSchema.safeParse({ email: 'a@b.com', password: '' });
+    expect(result.success).toBe(false);
+  });
+
+  it('googleLoginRequestSchema accepts idToken', () => {
+    const result = googleLoginRequestSchema.safeParse({
+      idToken: 'a'.repeat(24),
+      rememberMe: true,
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('googleLoginRequestSchema rejects short token', () => {
+    const result = googleLoginRequestSchema.safeParse({ idToken: 'short' });
     expect(result.success).toBe(false);
   });
 

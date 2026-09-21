@@ -24,6 +24,7 @@ export const firstError = (control: AbstractControl | null | undefined): string 
   const errors = control.errors;
   if (errors['required']) return 'Campo obrigatório';
   if (errors['email']) return 'Email inválido';
+  if (errors['pattern']) return 'Formato inválido';
   if (errors['minlength']) {
     const requiredLength = (errors['minlength'] as { requiredLength: number }).requiredLength;
     return `Mínimo de ${requiredLength} caracteres`;

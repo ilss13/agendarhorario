@@ -40,7 +40,7 @@ export class NotificationsService {
     await this.queue.add(
       jobNameFor(kind),
       { appointmentId, kind },
-      { jobId: `${appointmentId}:${kind}`, removeOnComplete: true, removeOnFail: 200 },
+      { jobId: `${appointmentId}-${kind}`, removeOnComplete: true, removeOnFail: 200 },
     );
   }
 
@@ -54,7 +54,7 @@ export class NotificationsService {
       jobNameFor(kind),
       { appointmentId, kind },
       {
-        jobId: `${appointmentId}:${kind}`,
+        jobId: `${appointmentId}-${kind}`,
         delay,
         removeOnComplete: true,
         removeOnFail: 200,
@@ -64,7 +64,7 @@ export class NotificationsService {
 
   async cancelScheduled(appointmentId: string): Promise<void> {
     for (const kind of ['REMINDER_24H', 'REMINDER_1H'] as const) {
-      const job = await this.queue.getJob(`${appointmentId}:${kind}`);
+      const job = await this.queue.getJob(`${appointmentId}-${kind}`);
       if (job) await job.remove();
     }
   }

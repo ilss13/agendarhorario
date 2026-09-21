@@ -22,6 +22,11 @@ export const appConfig: ApplicationConfig = {
       useValue: {
         apiBaseUrl: 'http://localhost:3000/api',
         csrfCookieName: 'XSRF-TOKEN',
+        firebase: {
+          apiKey: 'AIzaSyAJC1oFRT8KweA83_FK-QYfshOXwd3_TGo',
+          authDomain: 'agenda-controlador.firebaseapp.com',
+          projectId: 'agenda-controlador',
+        },
       },
     },
     {

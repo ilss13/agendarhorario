@@ -4,29 +4,17 @@ import { emailSchema, phoneSchema } from './common';
 export const verificationChannelSchema = z.enum(['EMAIL', 'SMS']);
 export type VerificationChannel = z.infer<typeof verificationChannelSchema>;
 
-export const requestVerificationSchema = z
-  .object({
-    channel: verificationChannelSchema,
-    email: emailSchema.optional(),
-    phone: phoneSchema.optional(),
-  })
-  .superRefine((value, ctx) => {
-    if (value.channel === 'EMAIL' && !value.email) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ['email'],
-        message: 'Informe um e-mail para receber o código',
-      });
-    }
-    if (value.channel === 'SMS' && !value.phone) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ['phone'],
-        message: 'Informe um telefone para receber o código',
-      });
-    }
-  });
+export const requestVerificationSchema = z.object({
+  email: emailSchema,
+  phone: phoneSchema,
+});
 export type RequestVerificationRequest = z.infer<typeof requestVerificationSchema>;
+
+export const requestVerificationResponseSchema = z.object({
+  channel: verificationChannelSchema,
+  target: z.string(),
+});
+export type RequestVerificationResponse = z.infer<typeof requestVerificationResponseSchema>;
 
 export const confirmVerificationSchema = z.object({
   channel: verificationChannelSchema,

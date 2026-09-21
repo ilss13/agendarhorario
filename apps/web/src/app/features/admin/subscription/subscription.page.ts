@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import {
   ConfirmDialogComponent,
   EmptyStateComponent,
@@ -26,6 +26,9 @@ import type { ApiError } from '../../../core/http/error.interceptor';
 
     @if (loading() && !summary()) {
       <div class="loading"><app-spinner /></div>
+      @if (confirmingReturn()) {
+        <p class="muted confirming">Confirmando sua assinatura com o Stripe...</p>
+      }
     } @else if (loadError()) {
       <app-empty-state
         title="Não foi possível carregar"
@@ -45,8 +48,8 @@ import type { ApiError } from '../../../core/http/error.interceptor';
                 {{ summary()!.plan!.monthlyAppointmentLimit }} agendamentos/mês
               </small>
             </div>
-            <span class="status" [attr.data-state]="summary()!.state">
-              {{ stateLabel(summary()!.state) }}
+            <span class="status" [attr.data-state]="statusTone()">
+              {{ statusLabel() }}
             </span>
           </header>
 
@@ -62,6 +65,13 @@ import type { ApiError } from '../../../core/http/error.interceptor';
               <small class="muted"> Renova em {{ formatDate(summary()!.usage.resetAt!) }} </small>
             }
           </div>
+
+          @if (summary()!.trialEndsAt) {
+            <p class="trial-banner">
+              Teste grátis até {{ formatDate(summary()!.trialEndsAt!) }}. Depois cobramos o plano
+              escolhido, a menos que você cancele.
+            </p>
+          }
 
           @if (summary()!.state === 'OVER_LIMIT') {
             <p class="warning">
@@ -91,9 +101,14 @@ import type { ApiError } from '../../../core/http/error.interceptor';
           </div>
         } @else {
           <h2>Você ainda não tem um plano ativo</h2>
-          <p class="muted">Escolha um plano para liberar agendamentos públicos para sua empresa.</p>
+          <p class="muted">
+            Escolha um plano para liberar agendamentos públicos. Na primeira contratação você ganha
+            {{ summary()?.trialDays ?? 14 }} dias grátis — a cobrança só começa depois do teste.
+          </p>
           <div class="actions">
-            <button type="button" class="primary" (click)="openPlanModal()">Escolher plano</button>
+            <button type="button" class="primary" (click)="openPlanModal()">
+              Começar teste grátis
+            </button>
           </div>
         }
       </section>
@@ -132,11 +147,19 @@ import type { ApiError } from '../../../core/http/error.interceptor';
       <div class="modal-backdrop" (click)="planModalOpen.set(false)">
         <div class="modal" (click)="$event.stopPropagation()">
           <header>
-            <h2>Escolha um plano</h2>
+            <h2>
+              {{
+                summary()?.trialEligible
+                  ? 'Comece com ' + (summary()?.trialDays ?? 14) + ' dias grátis'
+                  : 'Escolha um plano'
+              }}
+            </h2>
             <button type="button" class="close" (click)="planModalOpen.set(false)">×</button>
           </header>
-          @if (plans().length === 0) {
+          @if (loadingPlans()) {
             <p class="muted">Carregando planos...</p>
+          } @else if (plans().length === 0) {
+            <p class="muted">Nenhum plano disponível no momento. Tente novamente em instantes.</p>
           } @else {
             <ul class="plan-grid">
               @for (p of plans(); track p.id) {
@@ -149,6 +172,9 @@ import type { ApiError } from '../../../core/http/error.interceptor';
                   }
                   <strong>{{ p.name }}</strong>
                   <span class="price">R$ {{ p.priceBrl.toFixed(2) }}<small>/mês</small></span>
+                  @if (summary()?.trialEligible && p.trialDays > 0) {
+                    <span class="trial-note">{{ p.trialDays }} dias grátis</span>
+                  }
                   <span class="limit">{{ p.monthlyAppointmentLimit }} agendamentos</span>
                   <button
                     type="button"
@@ -161,7 +187,9 @@ import type { ApiError } from '../../../core/http/error.interceptor';
                         ? p.code === summary()?.plan?.code
                           ? 'Plano atual'
                           : 'Trocar para este'
-                        : 'Assinar'
+                        : summary()?.trialEligible
+                          ? 'Começar teste grátis'
+                          : 'Assinar'
                     }}
                   </button>
                 </li>
@@ -191,6 +219,11 @@ import type { ApiError } from '../../../core/http/error.interceptor';
         display: grid;
         place-items: center;
         padding: 3rem 0;
+      }
+      .confirming {
+        text-align: center;
+        margin-top: -2rem;
+        margin-bottom: 2rem;
       }
       .card {
         background: #fff;
@@ -235,6 +268,22 @@ import type { ApiError } from '../../../core/http/error.interceptor';
       .status[data-state='NO_SUBSCRIPTION'] {
         background: #e0e7ff;
         color: #1d4ed8;
+      }
+      .status[data-state='TRIALING'] {
+        background: #eef2ff;
+        color: #4338ca;
+      }
+      .trial-banner {
+        background: #eef2ff;
+        color: #3730a3;
+        padding: 0.75rem 1rem;
+        border-radius: 0.5rem;
+        margin: 0;
+      }
+      .trial-note {
+        color: #047857;
+        font-weight: 600;
+        font-size: 0.85rem;
       }
       .usage-header {
         display: flex;
@@ -453,6 +502,8 @@ export class SubscriptionPageComponent {
   readonly actionError = signal<string | null>(null);
   readonly planModalOpen = signal(false);
   readonly confirmingCancel = signal(false);
+  readonly loadingPlans = signal(false);
+  readonly confirmingReturn = signal(false);
 
   readonly usagePercent = computed(() => {
     const s = this.summary();
@@ -468,10 +519,18 @@ export class SubscriptionPageComponent {
   });
 
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
 
   constructor() {
-    this.load();
-    const preselected = this.route.snapshot.queryParamMap.get('plan');
+    const qp = this.route.snapshot.queryParamMap;
+    const sessionId = qp.get('session_id');
+    const status = qp.get('status');
+    if (status === 'ok' || sessionId) {
+      this.confirmReturn(sessionId);
+    } else {
+      this.load();
+    }
+    const preselected = qp.get('plan');
     if (preselected) {
       // pré-abre o modal se chegou da landing com ?plan=X
       queueMicrotask(() => this.openPlanModal());
@@ -491,6 +550,42 @@ export class SubscriptionPageComponent {
         this.loadError.set(err.message ?? 'Erro ao carregar');
       },
     });
+    this.loadInvoices();
+  }
+
+  private confirmReturn(sessionId: string | null, attempt = 0): void {
+    this.loading.set(true);
+    this.confirmingReturn.set(true);
+    this.loadError.set(null);
+    this.api.confirmCheckout(sessionId ? { sessionId } : {}).subscribe({
+      next: (s) => {
+        this.summary.set(s);
+        this.loadInvoices();
+        if (!s.hasSubscription && attempt < 4) {
+          window.setTimeout(() => this.confirmReturn(sessionId, attempt + 1), 1500);
+          return;
+        }
+        this.loading.set(false);
+        this.confirmingReturn.set(false);
+        if (s.hasSubscription) this.stripReturnParams();
+      },
+      error: () => {
+        this.confirmingReturn.set(false);
+        this.load();
+      },
+    });
+  }
+
+  private stripReturnParams(): void {
+    const plan = this.route.snapshot.queryParamMap.get('plan');
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: plan ? { plan } : {},
+      replaceUrl: true,
+    });
+  }
+
+  private loadInvoices(): void {
     this.api.invoices().subscribe({
       next: (inv) => this.invoices.set(inv),
       error: () => this.invoices.set([]),
@@ -501,9 +596,16 @@ export class SubscriptionPageComponent {
     this.actionError.set(null);
     this.planModalOpen.set(true);
     if (this.plans().length === 0) {
+      this.loadingPlans.set(true);
       this.api.plans().subscribe({
-        next: (p) => this.plans.set(p),
-        error: (err: ApiError) => this.actionError.set(err.message ?? 'Erro ao carregar planos'),
+        next: (p) => {
+          this.plans.set(p);
+          this.loadingPlans.set(false);
+        },
+        error: (err: ApiError) => {
+          this.loadingPlans.set(false);
+          this.actionError.set(err.message ?? 'Erro ao carregar planos');
+        },
       });
     }
   }
@@ -570,6 +672,16 @@ export class SubscriptionPageComponent {
       case 'NO_SUBSCRIPTION':
         return 'Sem plano';
     }
+  }
+
+  statusLabel(): string {
+    if (this.summary()?.status === 'trialing') return 'Em teste';
+    return this.stateLabel(this.summary()?.state ?? 'NO_SUBSCRIPTION');
+  }
+
+  statusTone(): string {
+    if (this.summary()?.status === 'trialing') return 'TRIALING';
+    return this.summary()?.state ?? 'NO_SUBSCRIPTION';
   }
 
   invoiceLabel(status: InvoiceDto['status']): string {

@@ -7,11 +7,13 @@ import { LoggerModule } from 'nestjs-pino';
 import { loadConfig } from '../shared/config/configuration';
 import { envValidationSchema } from '../shared/config/validation.schema';
 import { FirebaseAdminModule } from '../shared/infra/firebase/firebase-admin.module';
+import { RedisModule } from '../shared/infra/redis/redis.module';
 import { typeOrmConfigFactory } from '../shared/infra/typeorm/typeorm-config.factory';
 import { CsrfMiddleware } from '../shared/security/csrf.middleware';
 import { TenantInterceptor } from '../shared/tenant/tenant.interceptor';
 import { TenantModule } from '../shared/tenant/tenant.module';
 import { AppointmentsModule } from '../modules/appointments/appointments.module';
+import { AuditModule } from '../modules/audit/audit.module';
 import { AuthModule } from '../modules/auth/auth.module';
 import { AvailabilityModule } from '../modules/availability/availability.module';
 import { BillingModule } from '../modules/billing/billing.module';
@@ -61,8 +63,10 @@ import { AppController } from './app.controller';
         },
       ],
     }),
+    RedisModule,
     FirebaseAdminModule,
     TenantModule,
+    AuditModule,
     NotificationsModule,
     AuthModule,
     CompaniesModule,

@@ -60,6 +60,7 @@ export interface AppConfig {
       grande: string;
       super: string;
     };
+    trialDays: number;
     successUrl: string;
     cancelUrl: string;
   };
@@ -127,9 +128,11 @@ export const loadConfig = (): AppConfig => ({
       grande: process.env['STRIPE_PRICE_GRANDE'] ?? '',
       super: process.env['STRIPE_PRICE_SUPER'] ?? '',
     },
+    trialDays: Number(process.env['STRIPE_TRIAL_DAYS'] ?? 14),
     successUrl:
-      process.env['STRIPE_SUCCESS_URL'] ?? 'http://localhost:4200/admin/assinatura?status=ok',
+      process.env['STRIPE_SUCCESS_URL'] ?? 'http://localhost:4200/dashboard/assinatura?status=ok',
     cancelUrl:
-      process.env['STRIPE_CANCEL_URL'] ?? 'http://localhost:4200/admin/assinatura?status=cancel',
+      process.env['STRIPE_CANCEL_URL'] ??
+      'http://localhost:4200/dashboard/assinatura?status=cancel',
   },
 });

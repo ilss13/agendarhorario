@@ -207,8 +207,10 @@ export class BusinessHoursPageComponent {
   readonly serverError = signal<string | null>(null);
   readonly success = signal(false);
   readonly overlapError = signal<string | null>(null);
+  readonly hoursRevision = signal(0);
 
   readonly rowsByDay = computed(() => {
+    this.hoursRevision();
     const result = new Map<number, { group: FormGroup; index: number }[]>();
     this.hoursArray.controls.forEach((c, index) => {
       const day = c.get('dayOfWeek')?.value as number;
@@ -261,6 +263,7 @@ export class BusinessHoursPageComponent {
     for (const i of items) {
       this.hoursArray.push(this.buildRow(i));
     }
+    this.hoursRevision.update((n) => n + 1);
   }
 
   private buildRow(input?: HourRow): FormGroup {
@@ -283,10 +286,12 @@ export class BusinessHoursPageComponent {
 
   addRow(day: number): void {
     this.hoursArray.push(this.buildRow({ dayOfWeek: day, startTime: '09:00', endTime: '18:00' }));
+    this.hoursRevision.update((n) => n + 1);
   }
 
   removeRow(index: number): void {
     this.hoursArray.removeAt(index);
+    this.hoursRevision.update((n) => n + 1);
   }
 
   onSubmit(): void {

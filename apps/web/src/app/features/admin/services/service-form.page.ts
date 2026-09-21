@@ -245,7 +245,7 @@ export class ServiceFormPageComponent {
   }
 
   back(): void {
-    void this.router.navigate(['/admin/servicos']);
+    void this.router.navigate(['/dashboard/servicos']);
   }
 
   onSubmit(): void {
@@ -269,7 +269,7 @@ export class ServiceFormPageComponent {
     op$.subscribe({
       next: () => {
         this.submitting.set(false);
-        void this.router.navigate(['/admin/servicos']);
+        void this.router.navigate(['/dashboard/servicos']);
       },
       error: (err: ApiError) => {
         this.submitting.set(false);

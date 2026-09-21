@@ -15,8 +15,8 @@ export const createAppointmentRequestSchema = z.object({
   startsAt: z.string().datetime({ offset: true }),
   customer: z.object({
     name: z.string().trim().min(2, 'Informe um nome').max(120),
-    email: emailSchema.optional(),
-    phone: phoneSchema.optional(),
+    email: emailSchema,
+    phone: phoneSchema,
     notes: z.string().trim().max(500).optional().nullable(),
   }),
   verificationToken: z.string().optional(),

@@ -1,5 +1,11 @@
-import { Route } from '@angular/router';
+import { inject } from '@angular/core';
+import { CanActivateFn, Route, Router } from '@angular/router';
 import { authGuard, guestGuard, requireRoleGuard } from './core/auth/auth.guard';
+
+const redirectLegacyAdmin: CanActivateFn = (_route, state) => {
+  const router = inject(Router);
+  return router.parseUrl(state.url.replace(/^\/admin(?=\/|$)/, '/dashboard'));
+};
 
 export const appRoutes: Route[] = [
   {
@@ -42,7 +48,7 @@ export const appRoutes: Route[] = [
       ),
   },
   {
-    path: 'admin',
+    path: 'dashboard',
     canActivate: [authGuard, requireRoleGuard(['OWNER', 'STAFF'])],
     loadComponent: () =>
       import('./features/admin/admin-layout.page').then((m) => m.AdminLayoutPageComponent),
@@ -96,6 +102,11 @@ export const appRoutes: Route[] = [
           ),
       },
     ],
+  },
+  {
+    path: 'admin',
+    canActivate: [redirectLegacyAdmin],
+    children: [{ path: '**', children: [] }],
   },
   {
     path: 'p/:slug',

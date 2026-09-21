@@ -9,6 +9,7 @@ import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import type {
+  GoogleLoginRequest,
   LoginRequest,
   MeResponse,
   RegisterCompanyRequest,
@@ -40,10 +41,56 @@ export class AuthService {
 
   async login(input: LoginRequest): Promise<{ session: SessionResult; me: MeResponse }> {
     const { idToken } = await this.identity.signInWithPassword(input.email, input.password);
-    const session = await this.createSession(idToken);
+    const session = await this.createSession(idToken, input.rememberMe !== false);
     const decoded = await this.firebase.auth.verifyIdToken(idToken);
     const user = await this.users.findOne({ where: { firebaseUid: decoded.uid } });
     if (!user) throw new UnauthorizedException('Usuário não encontrado');
+    return { session, me: toMeResponse(user) };
+  }
+
+  async loginWithGoogle(
+    input: GoogleLoginRequest,
+  ): Promise<{ session: SessionResult; me: MeResponse }> {
+    let decoded;
+    try {
+      decoded = await this.firebase.auth.verifyIdToken(input.idToken);
+    } catch {
+      throw new UnauthorizedException('Não foi possível validar o login com Google');
+    }
+
+    const provider = decoded.firebase?.sign_in_provider;
+    if (provider !== 'google.com') {
+      throw new UnauthorizedException('Provedor de login inválido');
+    }
+
+    let user = await this.users.findOne({ where: { firebaseUid: decoded.uid } });
+    const email = decoded.email?.trim().toLowerCase();
+    if (!user && email && decoded.email_verified) {
+      user = await this.users.findOne({ where: { email } });
+      if (user && user.firebaseUid !== decoded.uid) {
+        user.firebaseUid = decoded.uid;
+        user.emailVerified = true;
+        user = await this.users.save(user);
+      }
+    }
+
+    if (!user) {
+      throw new UnauthorizedException(
+        'Não encontramos uma conta com este Google. Cadastre sua empresa primeiro.',
+      );
+    }
+
+    if (decoded.email_verified && !user.emailVerified) {
+      user.emailVerified = true;
+      user = await this.users.save(user);
+    }
+
+    await this.firebase.auth.setCustomUserClaims(decoded.uid, {
+      role: user.role,
+      companyId: user.companyId,
+    });
+
+    const session = await this.createSession(input.idToken, input.rememberMe !== false);
     return { session, me: toMeResponse(user) };
   }
 
@@ -179,9 +226,9 @@ export class AuthService {
     };
   }
 
-  private async createSession(idToken: string): Promise<SessionResult> {
-    const expiresInMs =
-      this.config.get<number>('SESSION_COOKIE_MAX_AGE_DAYS', 5) * 24 * 60 * 60 * 1000;
+  private async createSession(idToken: string, rememberMe = true): Promise<SessionResult> {
+    const days = rememberMe ? this.config.get<number>('SESSION_COOKIE_MAX_AGE_DAYS', 5) : 1;
+    const expiresInMs = days * 24 * 60 * 60 * 1000;
     if (!Number.isFinite(expiresInMs) || expiresInMs <= 0) {
       throw new BadRequestException('Configuração de sessão inválida');
     }

@@ -15,8 +15,6 @@ export interface ComputeSlotsInput {
   timezone: string;
   /** ISO date (YYYY-MM-DD) for the day being computed */
   date: string;
-  /** Default 15 minutes — controls slot granularity */
-  stepMinutes?: number;
   /** Reference "now" for filtering past slots; defaults to DateTime.now() */
   now?: DateTime;
   /** Minimum minutes of advance notice (default 0). */
@@ -30,17 +28,10 @@ export interface ComputedSlot {
 
 /** Pure slot computation — no side effects. Safe to test directly. */
 export const computeSlotsForDate = (input: ComputeSlotsInput): ComputedSlot[] => {
-  const {
-    service,
-    hours,
-    exceptions,
-    appointments,
-    timezone,
-    date,
-    stepMinutes = 15,
-    minAdvanceMinutes = 0,
-  } = input;
+  const { service, hours, exceptions, appointments, timezone, date, minAdvanceMinutes = 0 } = input;
   const now = input.now ?? DateTime.now().setZone(timezone);
+  const duration = service.durationMinutes;
+  const bufferMinutes = service.bufferMinutes ?? 0;
 
   const dayStart = DateTime.fromISO(date, { zone: timezone });
   if (!dayStart.isValid) {
@@ -56,8 +47,6 @@ export const computeSlotsForDate = (input: ComputeSlotsInput): ComputedSlot[] =>
   if (dayHours.length === 0) return [];
 
   const cutoff = now.plus({ minutes: minAdvanceMinutes });
-  const bufferMinutes = service.bufferMinutes ?? 0;
-  const duration = service.durationMinutes;
 
   const partialBlocks = exceptionsForDay
     .filter((e) => !e.fullDay && e.startTime && e.endTime)
@@ -70,39 +59,61 @@ export const computeSlotsForDate = (input: ComputeSlotsInput): ComputedSlot[] =>
     const start = DateTime.fromJSDate(a.startsAt).setZone(timezone);
     const end = DateTime.fromJSDate(a.endsAt).setZone(timezone);
     return {
-      start: start.minus({ minutes: bufferMinutes }),
+      start,
+      // Buffer is "intervalo após": occupy until the appointment ends, then the gap.
       end: end.plus({ minutes: bufferMinutes }),
     };
   });
 
+  const busyBlocks = [...partialBlocks, ...apptBlocks];
   const result: ComputedSlot[] = [];
+
   for (const window of dayHours) {
     const winStart = timeToDateTime(date, window.startTime, timezone);
     const winEnd = timeToDateTime(date, window.endTime, timezone);
 
     let cursor = winStart;
-    while (cursor.plus({ minutes: duration }).toMillis() <= winEnd.toMillis()) {
-      const slotStart = cursor;
+    let guard = 0;
+    while (
+      cursor.plus({ minutes: duration }).toMillis() <= winEnd.toMillis() &&
+      guard++ < 24 * 60
+    ) {
       const slotEnd = cursor.plus({ minutes: duration });
-
-      if (slotStart >= cutoff) {
-        const blockedByException = partialBlocks.some((b) =>
-          overlaps(slotStart, slotEnd, b.start, b.end),
-        );
-        if (!blockedByException) {
-          const blockedByAppointment = apptBlocks.some((b) =>
-            overlaps(slotStart, slotEnd, b.start, b.end),
-          );
-          if (!blockedByAppointment) {
-            result.push({ start: slotStart.toISO()!, end: slotEnd.toISO()! });
-          }
-        }
+      if (cursor < cutoff) {
+        cursor = cursor.plus({ minutes: duration });
+        continue;
       }
-      cursor = cursor.plus({ minutes: stepMinutes });
+
+      const blocking = busyBlocks.filter((b) => overlaps(cursor, slotEnd, b.start, b.end));
+      if (blocking.length > 0) {
+        const jump = blocking.reduce(
+          (latest, b) => (b.end > latest ? b.end : latest),
+          blocking[0]!.end,
+        );
+        cursor = jump > cursor ? jump : cursor.plus({ minutes: 1 });
+        continue;
+      }
+
+      result.push({ start: cursor.toISO()!, end: slotEnd.toISO()! });
+      cursor = slotEnd;
     }
   }
 
   return result;
+};
+
+/** True when two appointments' occupied ranges overlap, including after-buffer. */
+export const occupiedRangesOverlap = (
+  a: { startsAt: Date; endsAt: Date },
+  bStart: DateTime,
+  bEnd: DateTime,
+  bufferMinutes: number,
+  timezone: string,
+): boolean => {
+  const aStart = DateTime.fromJSDate(a.startsAt).setZone(timezone);
+  const aOccEnd = DateTime.fromJSDate(a.endsAt).setZone(timezone).plus({ minutes: bufferMinutes });
+  const bOccEnd = bEnd.plus({ minutes: bufferMinutes });
+  return aStart < bOccEnd && bStart < aOccEnd;
 };
 
 const timeToDateTime = (date: string, hhmm: string, zone: string): DateTime => {

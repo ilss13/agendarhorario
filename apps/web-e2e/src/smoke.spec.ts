@@ -9,9 +9,10 @@ test.describe('smoke — public routes', () => {
 
   test('login page loads with form', async ({ page }) => {
     await page.goto('/login');
-    await expect(page.getByLabel('Email')).toBeVisible();
+    await expect(page.getByLabel(/E-?mail/i)).toBeVisible();
     await expect(page.getByLabel('Senha')).toBeVisible();
-    await expect(page.getByRole('button', { name: /Entrar/i })).toBeVisible();
+    await expect(page.getByRole('button', { name: /^Entrar$/i })).toBeVisible();
+    await expect(page.getByRole('button', { name: /Google/i })).toBeVisible();
   });
 
   test('register-empresa page loads with form', async ({ page }) => {

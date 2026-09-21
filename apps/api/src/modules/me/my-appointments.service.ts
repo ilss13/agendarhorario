@@ -7,9 +7,9 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DateTime } from 'luxon';
-import { Brackets, DataSource, IsNull, Not, Repository } from 'typeorm';
+import { Between, Brackets, DataSource, IsNull, Not, Repository } from 'typeorm';
 import type { MyAppointmentDto, MyAppointmentsQuery } from '@agendarhorario/contracts';
-import { computeSlotsForDate } from '../availability/availability.service';
+import { computeSlotsForDate, occupiedRangesOverlap } from '../availability/availability.service';
 import { BusinessException } from '../business-hours/business-exception.entity';
 import { BusinessHour } from '../business-hours/business-hour.entity';
 import { Company } from '../companies/company.entity';
@@ -143,16 +143,28 @@ export class MyAppointmentsService {
     const newEndsAt = newStartsAt.plus({ minutes: service.durationMinutes });
     const date = newStartsAt.toISODate()!;
 
-    const [hours, exceptions] = await Promise.all([
+    const dayStart = newStartsAt.startOf('day').toJSDate();
+    const dayEnd = newStartsAt.endOf('day').toJSDate();
+    const [hours, exceptions, dayAppointments] = await Promise.all([
       this.hours.find({ where: { companyId: company.id } }),
       this.exceptions.find({ where: { companyId: company.id, date } }),
+      this.appointments.find({
+        where: {
+          companyId: company.id,
+          serviceId: service.id,
+          startsAt: Between(dayStart, dayEnd),
+          status: Not('CANCELLED'),
+          deletedAt: IsNull(),
+        },
+      }),
     ]);
 
+    const others = dayAppointments.filter((a) => a.id !== appointment.id);
     const slots = computeSlotsForDate({
       service,
       hours,
       exceptions,
-      appointments: [],
+      appointments: others,
       timezone: company.timezone,
       date,
     });
@@ -163,19 +175,24 @@ export class MyAppointmentsService {
       throw new BadRequestException('Horário não disponível');
     }
 
+    const bufferMinutes = service.bufferMinutes ?? 0;
     const created = await this.dataSource.transaction(async (manager) => {
       const apptRepo = manager.getRepository(Appointment);
-      const conflicts = await apptRepo
+      const locked = await apptRepo
         .createQueryBuilder('a')
         .setLock('pessimistic_write')
         .where('a.companyId = :companyId', { companyId: company.id })
         .andWhere('a.serviceId = :serviceId', { serviceId: service.id })
-        .andWhere('a.startsAt = :startsAt', { startsAt: newStartsAt.toJSDate() })
+        .andWhere('a.startsAt < :dayEnd', { dayEnd })
+        .andWhere('a.endsAt > :dayStart', { dayStart })
         .andWhere('a.status <> :cancelled', { cancelled: 'CANCELLED' })
         .andWhere('a.deletedAt IS NULL')
         .andWhere('a.id <> :id', { id: appointment.id })
-        .getCount();
-      if (conflicts > 0) throw new ConflictException('Horário já reservado');
+        .getMany();
+      const conflicts = locked.some((a) =>
+        occupiedRangesOverlap(a, newStartsAt, newEndsAt, bufferMinutes, company.timezone),
+      );
+      if (conflicts) throw new ConflictException('Horário já reservado');
 
       appointment.status = 'CANCELLED';
       appointment.cancelReason = 'Remarcado pelo cliente';

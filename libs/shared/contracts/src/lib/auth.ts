@@ -7,8 +7,15 @@ export type UserRole = z.infer<typeof userRoleSchema>;
 export const loginRequestSchema = z.object({
   email: emailSchema,
   password: z.string().min(1, 'Senha é obrigatória'),
+  rememberMe: z.boolean().optional(),
 });
 export type LoginRequest = z.infer<typeof loginRequestSchema>;
+
+export const googleLoginRequestSchema = z.object({
+  idToken: z.string().min(20, 'Token inválido'),
+  rememberMe: z.boolean().optional(),
+});
+export type GoogleLoginRequest = z.infer<typeof googleLoginRequestSchema>;
 
 export const registerCompanyRequestSchema = z.object({
   company: z.object({

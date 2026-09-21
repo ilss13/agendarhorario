@@ -1,20 +1,28 @@
-import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  NotFoundException,
+  OnModuleInit,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, IsNull, Not, Repository } from 'typeorm';
 import type Stripe from 'stripe';
-import type {
-  InvoiceDto,
-  PlanCode,
-  PlanDto,
-  SubscriptionSummaryDto,
-  UsageState,
+import {
+  SUBSCRIPTION_TRIAL_DAYS,
+  type InvoiceDto,
+  type PlanCode,
+  type PlanDto,
+  type SubscriptionSummaryDto,
+  type UsageState,
 } from '@agendarhorario/contracts';
 import { Appointment } from '../appointments/appointment.entity';
 import { Company } from '../companies/company.entity';
 import { TenantContextService } from '../../shared/tenant/tenant-context.service';
 import { BillingEvent } from './billing-event.entity';
 import { Invoice } from './invoice.entity';
+import { PLAN_CATALOG } from './plan-catalog';
 import { Plan } from './plan.entity';
 import { StripeClient } from './stripe.client';
 import { Subscription, SubscriptionStatus } from './subscription.entity';
@@ -34,7 +42,7 @@ const BLOCKING_STATUSES: SubscriptionStatus[] = [
 ];
 
 @Injectable()
-export class BillingService {
+export class BillingService implements OnModuleInit {
   private readonly logger = new Logger(BillingService.name);
 
   constructor(
@@ -49,16 +57,35 @@ export class BillingService {
     private readonly config: ConfigService,
   ) {}
 
+  async onModuleInit(): Promise<void> {
+    try {
+      await this.ensureCatalogPlans();
+    } catch (err) {
+      this.logger.error(
+        `Falha ao sincronizar catálogo de planos: ${(err as Error).message}`,
+        (err as Error).stack,
+      );
+    }
+  }
+
   async listPlans(): Promise<PlanDto[]> {
-    const rows = await this.plans.find({
+    let rows = await this.plans.find({
       where: { active: true },
       order: { sortOrder: 'ASC' },
     });
-    return rows.map(toPlanDto);
+    if (rows.length === 0) {
+      await this.ensureCatalogPlans();
+      rows = await this.plans.find({
+        where: { active: true },
+        order: { sortOrder: 'ASC' },
+      });
+    }
+    return rows.map((row) => this.toPlanDto(row));
   }
 
   async getSubscriptionSummary(): Promise<SubscriptionSummaryDto> {
     const companyId = this.tenant.requireCompanyId();
+    const trialDays = this.trialDays();
     const subscription = await this.findActiveSubscription(companyId);
     if (!subscription) {
       return {
@@ -69,19 +96,26 @@ export class BillingService {
         cancelAtPeriodEnd: false,
         currentPeriodStart: null,
         currentPeriodEnd: null,
+        trialEligible: await this.isEligibleForTrial(companyId),
+        trialEndsAt: null,
+        trialDays,
         usage: { used: 0, limit: 0, resetAt: null },
       };
     }
     const plan = subscription.plan!;
     const usage = await this.computeUsage(companyId, subscription);
+    const trialing = subscription.status === 'trialing';
     return {
       hasSubscription: true,
-      plan: toPlanDto(plan),
+      plan: this.toPlanDto(plan),
       status: subscription.status,
       state: usage.state,
       cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
       currentPeriodStart: subscription.currentPeriodStart.toISOString(),
       currentPeriodEnd: subscription.currentPeriodEnd.toISOString(),
+      trialEligible: false,
+      trialEndsAt: trialing ? subscription.currentPeriodEnd.toISOString() : null,
+      trialDays,
       usage: {
         used: usage.used,
         limit: usage.limit,
@@ -123,20 +157,89 @@ export class BillingService {
     const companyId = this.tenant.requireCompanyId();
     const company = await this.companies.findOneOrFail({ where: { id: companyId } });
     const plan = await this.requirePlan(planCode);
+    if (!plan.stripePriceId) {
+      throw new BadRequestException(
+        'Este plano ainda não está configurado no Stripe (STRIPE_PRICE_*).',
+      );
+    }
     const stripe = this.stripeClient.stripe;
 
     const customerId = await this.ensureStripeCustomer(company);
+    const trialDays = (await this.isEligibleForTrial(companyId)) ? this.trialDays() : 0;
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
       customer: customerId,
       line_items: [{ price: plan.stripePriceId, quantity: 1 }],
-      success_url: this.config.getOrThrow<string>('STRIPE_SUCCESS_URL'),
-      cancel_url: this.config.getOrThrow<string>('STRIPE_CANCEL_URL'),
+      success_url: this.checkoutSuccessUrl(),
+      cancel_url:
+        this.config.get<string>('stripe.cancelUrl') ??
+        this.config.getOrThrow<string>('STRIPE_CANCEL_URL'),
+      payment_method_collection: 'always',
       metadata: { companyId, planCode },
-      subscription_data: { metadata: { companyId, planCode } },
+      subscription_data: {
+        metadata: { companyId, planCode },
+        ...(trialDays > 0 ? { trial_period_days: trialDays } : {}),
+      },
     });
     if (!session.url) throw new BadRequestException('Stripe não retornou URL');
     return { url: session.url };
+  }
+
+  /**
+   * Sincroniza a assinatura a partir do Checkout (retorno ?status=ok) sem depender do webhook,
+   * que em localhost quase nunca chega.
+   */
+  async confirmCheckout(sessionId?: string): Promise<SubscriptionSummaryDto> {
+    const companyId = this.tenant.requireCompanyId();
+    const company = await this.companies.findOneOrFail({ where: { id: companyId } });
+    const stripe = this.stripeClient.stripe;
+
+    if (sessionId) {
+      const session = await stripe.checkout.sessions.retrieve(sessionId, {
+        expand: ['subscription'],
+      });
+      const sessionCompany =
+        session.metadata?.['companyId'] ??
+        (typeof session.subscription === 'object' && session.subscription
+          ? session.subscription.metadata?.['companyId']
+          : undefined);
+      if (sessionCompany && sessionCompany !== companyId) {
+        throw new BadRequestException('Sessão de checkout não pertence a esta empresa');
+      }
+      const sessionCustomer =
+        typeof session.customer === 'string' ? session.customer : session.customer?.id;
+      if (
+        sessionCustomer &&
+        company.stripeCustomerId &&
+        sessionCustomer !== company.stripeCustomerId
+      ) {
+        throw new BadRequestException('Sessão de checkout não pertence a esta empresa');
+      }
+      await this.upsertFromCheckoutSession(session);
+    } else if (company.stripeCustomerId) {
+      await this.syncSubscriptionsForCustomer(company.stripeCustomerId, companyId);
+    } else {
+      this.logger.warn(`confirmCheckout sem sessionId nem stripeCustomerId (company ${companyId})`);
+    }
+
+    return this.getSubscriptionSummary();
+  }
+
+  async upsertFromCheckoutSession(session: Stripe.Checkout.Session): Promise<void> {
+    if (session.mode && session.mode !== 'subscription') return;
+    const subRef = session.subscription;
+    if (!subRef) {
+      this.logger.warn(`checkout ${session.id} sem subscription`);
+      return;
+    }
+    const stripeSub =
+      typeof subRef === 'string'
+        ? await this.stripeClient.stripe.subscriptions.retrieve(subRef)
+        : subRef;
+    if (!stripeSub.metadata?.['companyId'] && session.metadata?.['companyId']) {
+      stripeSub.metadata = { ...stripeSub.metadata, ...session.metadata };
+    }
+    await this.upsertSubscriptionFromStripe(stripeSub);
   }
 
   async createPortalSession(): Promise<{ url: string }> {
@@ -147,7 +250,9 @@ export class BillingService {
     }
     const session = await this.stripeClient.stripe.billingPortal.sessions.create({
       customer: company.stripeCustomerId,
-      return_url: this.config.getOrThrow<string>('STRIPE_SUCCESS_URL'),
+      return_url:
+        this.config.get<string>('stripe.successUrl') ??
+        this.config.getOrThrow<string>('STRIPE_SUCCESS_URL'),
     });
     return { url: session.url };
   }
@@ -159,6 +264,11 @@ export class BillingService {
       throw new BadRequestException('Sem assinatura ativa — use o checkout para começar');
     }
     const plan = await this.requirePlan(planCode);
+    if (!plan.stripePriceId) {
+      throw new BadRequestException(
+        'Este plano ainda não está configurado no Stripe (STRIPE_PRICE_*).',
+      );
+    }
     const stripe = this.stripeClient.stripe;
     const sub = await stripe.subscriptions.retrieve(subscription.stripeSubscriptionId);
     const item = sub.items.data[0];
@@ -233,13 +343,14 @@ export class BillingService {
     const existing = await this.subscriptions.findOne({
       where: { stripeSubscriptionId: stripeSub.id },
     });
+    const period = this.subscriptionPeriod(stripeSub);
     const data = {
       companyId,
       planId: plan.id,
       stripeSubscriptionId: stripeSub.id,
       status: stripeSub.status as SubscriptionStatus,
-      currentPeriodStart: new Date(stripeSub.current_period_start * 1000),
-      currentPeriodEnd: new Date(stripeSub.current_period_end * 1000),
+      currentPeriodStart: period.start,
+      currentPeriodEnd: period.end,
       cancelAtPeriodEnd: stripeSub.cancel_at_period_end,
       canceledAt: stripeSub.canceled_at ? new Date(stripeSub.canceled_at * 1000) : null,
     };
@@ -273,14 +384,10 @@ export class BillingService {
       this.logger.warn(`invoice ${stripeInvoice.id} sem company correspondente`);
       return;
     }
-    const subscription = stripeInvoice.subscription
+    const stripeSubscriptionId = this.invoiceSubscriptionId(stripeInvoice);
+    const subscription = stripeSubscriptionId
       ? await this.subscriptions.findOne({
-          where: {
-            stripeSubscriptionId:
-              typeof stripeInvoice.subscription === 'string'
-                ? stripeInvoice.subscription
-                : stripeInvoice.subscription.id,
-          },
+          where: { stripeSubscriptionId },
         })
       : null;
     const existing = await this.invoices.findOne({
@@ -310,6 +417,104 @@ export class BillingService {
     }
   }
 
+  private async ensureCatalogPlans(): Promise<void> {
+    const prices = this.config.get<Record<PlanCode, string>>('stripe.prices', {
+      basico: '',
+      medio: '',
+      grande: '',
+      super: '',
+    });
+    for (const def of PLAN_CATALOG) {
+      const envPrice =
+        prices[def.code]?.trim() ||
+        this.config.get<string>(`STRIPE_PRICE_${def.code.toUpperCase()}`)?.trim() ||
+        '';
+      const existing = await this.plans.findOne({ where: { code: def.code } });
+      if (existing) {
+        existing.name = def.name;
+        existing.priceBrl = def.priceBrl;
+        existing.monthlyAppointmentLimit = def.monthlyAppointmentLimit;
+        existing.sortOrder = def.sortOrder;
+        existing.active = true;
+        if (envPrice) existing.stripePriceId = envPrice;
+        await this.plans.save(existing);
+      } else {
+        await this.plans.save(
+          this.plans.create({
+            code: def.code,
+            name: def.name,
+            priceBrl: def.priceBrl,
+            monthlyAppointmentLimit: def.monthlyAppointmentLimit,
+            stripePriceId: envPrice,
+            sortOrder: def.sortOrder,
+            active: true,
+          }),
+        );
+      }
+    }
+  }
+
+  private checkoutSuccessUrl(): string {
+    const base =
+      this.config.get<string>('stripe.successUrl') ??
+      'http://localhost:4200/dashboard/assinatura?status=ok';
+    if (base.includes('{CHECKOUT_SESSION_ID}')) return base;
+    const sep = base.includes('?') ? '&' : '?';
+    return `${base}${sep}session_id={CHECKOUT_SESSION_ID}`;
+  }
+
+  private async syncSubscriptionsForCustomer(
+    customerId: string,
+    companyId?: string,
+  ): Promise<void> {
+    const list = await this.stripeClient.stripe.subscriptions.list({
+      customer: customerId,
+      status: 'all',
+      limit: 10,
+    });
+    for (const sub of list.data) {
+      if (!sub.metadata?.['companyId'] && companyId) {
+        sub.metadata = { ...sub.metadata, companyId };
+      }
+      await this.upsertSubscriptionFromStripe(sub);
+    }
+    if (list.data.length === 0) {
+      this.logger.warn(`nenhuma assinatura Stripe para customer ${customerId}`);
+    }
+  }
+
+  private subscriptionPeriod(stripeSub: Stripe.Subscription): { start: Date; end: Date } {
+    const item = stripeSub.items.data[0] as
+      | (Stripe.SubscriptionItem & {
+          current_period_start?: number;
+          current_period_end?: number;
+        })
+      | undefined;
+    const raw = stripeSub as Stripe.Subscription & {
+      current_period_start?: number;
+      current_period_end?: number;
+    };
+    const startUnix =
+      raw.current_period_start ?? item?.current_period_start ?? stripeSub.start_date;
+    const endUnix =
+      raw.current_period_end ?? item?.current_period_end ?? startUnix + 30 * 24 * 60 * 60;
+    return { start: new Date(startUnix * 1000), end: new Date(endUnix * 1000) };
+  }
+
+  private invoiceSubscriptionId(invoice: Stripe.Invoice): string | null {
+    const raw = invoice as Stripe.Invoice & {
+      subscription?: string | Stripe.Subscription | null;
+      parent?: { subscription_details?: { subscription?: string | Stripe.Subscription | null } };
+    };
+    const direct = raw.subscription;
+    if (typeof direct === 'string') return direct;
+    if (direct && typeof direct === 'object' && 'id' in direct) return direct.id;
+    const nested = raw.parent?.subscription_details?.subscription;
+    if (typeof nested === 'string') return nested;
+    if (nested && typeof nested === 'object' && 'id' in nested) return nested.id;
+    return null;
+  }
+
   private async ensureStripeCustomer(company: Company): Promise<string> {
     if (company.stripeCustomerId) return company.stripeCustomerId;
     const customer = await this.stripeClient.stripe.customers.create({
@@ -320,6 +525,30 @@ export class BillingService {
     company.stripeCustomerId = customer.id;
     await this.companies.save(company);
     return customer.id;
+  }
+
+  private trialDays(): number {
+    const fromConfig = this.config.get<number>('stripe.trialDays');
+    if (typeof fromConfig === 'number' && fromConfig >= 0) return fromConfig;
+    return SUBSCRIPTION_TRIAL_DAYS;
+  }
+
+  private async isEligibleForTrial(companyId: string): Promise<boolean> {
+    const previous = await this.subscriptions.count({ where: { companyId } });
+    return previous === 0 && this.trialDays() > 0;
+  }
+
+  private toPlanDto(plan: Plan): PlanDto {
+    return {
+      id: plan.id,
+      code: plan.code,
+      name: plan.name,
+      priceBrl: Number(plan.priceBrl),
+      monthlyAppointmentLimit: plan.monthlyAppointmentLimit,
+      stripePriceId: plan.stripePriceId,
+      sortOrder: plan.sortOrder,
+      trialDays: this.trialDays(),
+    };
   }
 
   private async findActiveSubscription(companyId: string): Promise<Subscription | null> {
@@ -382,13 +611,3 @@ export class BillingService {
     };
   }
 }
-
-const toPlanDto = (plan: Plan): PlanDto => ({
-  id: plan.id,
-  code: plan.code,
-  name: plan.name,
-  priceBrl: Number(plan.priceBrl),
-  monthlyAppointmentLimit: plan.monthlyAppointmentLimit,
-  stripePriceId: plan.stripePriceId,
-  sortOrder: plan.sortOrder,
-});

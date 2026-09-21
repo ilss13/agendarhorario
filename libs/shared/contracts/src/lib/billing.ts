@@ -4,6 +4,9 @@ import { uuidSchema } from './common';
 export const planCodeSchema = z.enum(['basico', 'medio', 'grande', 'super']);
 export type PlanCode = z.infer<typeof planCodeSchema>;
 
+/** Trial na primeira contratação de qualquer plano. */
+export const SUBSCRIPTION_TRIAL_DAYS = 14;
+
 export const planSchema = z.object({
   id: uuidSchema,
   code: planCodeSchema,
@@ -12,6 +15,7 @@ export const planSchema = z.object({
   monthlyAppointmentLimit: z.number().int(),
   stripePriceId: z.string(),
   sortOrder: z.number().int(),
+  trialDays: z.number().int().nonnegative(),
 });
 export type PlanDto = z.infer<typeof planSchema>;
 
@@ -38,6 +42,9 @@ export const subscriptionSummarySchema = z.object({
   cancelAtPeriodEnd: z.boolean(),
   currentPeriodStart: z.string().nullable(),
   currentPeriodEnd: z.string().nullable(),
+  trialEligible: z.boolean(),
+  trialEndsAt: z.string().nullable(),
+  trialDays: z.number().int().nonnegative(),
   usage: z.object({
     used: z.number().int(),
     limit: z.number().int(),
@@ -70,6 +77,11 @@ export const checkoutSessionResponseSchema = z.object({
   url: z.string().url(),
 });
 export type CheckoutSessionResponse = z.infer<typeof checkoutSessionResponseSchema>;
+
+export const confirmCheckoutRequestSchema = z.object({
+  sessionId: z.string().min(1).optional(),
+});
+export type ConfirmCheckoutRequest = z.infer<typeof confirmCheckoutRequestSchema>;
 
 export const portalSessionResponseSchema = z.object({
   url: z.string().url(),

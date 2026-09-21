@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { Observable, catchError, of, switchMap, tap, throwError } from 'rxjs';
 import type {
+  GoogleLoginRequest,
   LoginRequest,
   MeResponse,
   RegisterCompanyRequest,
@@ -30,6 +31,14 @@ export class AuthService {
   login(input: LoginRequest): Observable<MeResponse> {
     this.loadingSignal.set(true);
     return this.http.post<MeResponse>(`${this.env.apiBaseUrl}/auth/login`, input).pipe(
+      tap((me) => this.userSignal.set(me)),
+      tap({ finalize: () => this.loadingSignal.set(false) }),
+    );
+  }
+
+  loginWithGoogle(input: GoogleLoginRequest): Observable<MeResponse> {
+    this.loadingSignal.set(true);
+    return this.http.post<MeResponse>(`${this.env.apiBaseUrl}/auth/login/google`, input).pipe(
       tap((me) => this.userSignal.set(me)),
       tap({ finalize: () => this.loadingSignal.set(false) }),
     );

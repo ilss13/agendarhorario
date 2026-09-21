@@ -107,10 +107,12 @@ import { LANDING_COPY } from './landing.copy';
                 }
                 <strong class="plan-name">{{ p.name }}</strong>
                 <div class="plan-price">R$ {{ p.priceBrl.toFixed(2) }}<small>/mês</small></div>
+                <small class="plan-trial">{{ copy.pricing.trialNote }}</small>
                 <small class="plan-limit">
                   até {{ p.monthlyAppointmentLimit }} agendamentos/mês
                 </small>
                 <ul class="plan-features">
+                  <li>✓ {{ p.trialDays }} dias grátis inclusos</li>
                   @for (f of copyOf(p)?.features ?? []; track f) {
                     <li>✓ {{ f }}</li>
                   }
@@ -120,7 +122,7 @@ import { LANDING_COPY } from './landing.copy';
                   [routerLink]="signupLink(p.code)"
                   (click)="startSignup(p.code)"
                 >
-                  Começar com {{ p.name }}
+                  Começar teste grátis
                 </a>
               </li>
             }
@@ -186,7 +188,7 @@ import { LANDING_COPY } from './landing.copy';
     </footer>
 
     <a class="sticky-cta" [routerLink]="signupLink('basico')" (click)="startSignup('basico')">
-      Comece agora
+      {{ copy.hero.primaryCta }}
     </a>
   `,
   styles: [
@@ -479,6 +481,10 @@ import { LANDING_COPY } from './landing.copy';
         color: #6b7280;
         font-weight: 500;
       }
+      .plan-trial {
+        color: #047857;
+        font-weight: 600;
+      }
       .plan-limit {
         color: #6b7280;
       }
@@ -725,6 +731,10 @@ export class LandingPageComponent {
   }
 
   signupLink(code: string): string[] | string {
+    const user = this.auth.user();
+    if (user?.role === 'OWNER' || user?.role === 'STAFF') {
+      return ['/dashboard/assinatura'];
+    }
     if (this.auth.isAuthenticated()) {
       return this.userHome();
     }
@@ -732,6 +742,11 @@ export class LandingPageComponent {
   }
 
   startSignup(code: string): void {
+    const user = this.auth.user();
+    if (user?.role === 'OWNER' || user?.role === 'STAFF') {
+      void this.router.navigate(['/dashboard/assinatura'], { queryParams: { plan: code } });
+      return;
+    }
     if (this.auth.isAuthenticated()) {
       void this.router.navigate([this.userHome()]);
       return;

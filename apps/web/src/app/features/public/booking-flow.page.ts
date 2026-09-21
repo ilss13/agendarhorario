@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  DestroyRef,
+  inject,
+  signal,
+} from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import {
@@ -13,12 +20,37 @@ import {
   PublicCompanyDto,
   PublicServiceDto,
   SlotDto,
+  VerificationChannel,
 } from '@agendarhorario/contracts';
 import { formatBrDateTime } from '@agendarhorario/utils';
 import { firstError } from '../../core/forms/form-error';
 import type { ApiError } from '../../core/http/error.interceptor';
 
 type Step = 'slot' | 'data' | 'otp' | 'done';
+
+const RESEND_COOLDOWN_SECONDS = 60;
+const BR_MOBILE_MASK = /^\(\d{2}\) \d{5}-\d{4}$/;
+
+const brMobileDigits = (value: string): string => {
+  let digits = value.replace(/\D/g, '');
+  if (digits.startsWith('55') && digits.length > 11) {
+    digits = digits.slice(2);
+  }
+  return digits.slice(0, 11);
+};
+
+const maskBrMobile = (value: string): string => {
+  const digits = brMobileDigits(value);
+  const ddd = digits.slice(0, 2);
+  const prefix = digits.slice(2, 7);
+  const suffix = digits.slice(7, 11);
+  if (digits.length === 0) return '';
+  if (digits.length <= 2) return `(${ddd}`;
+  if (digits.length <= 7) return `(${ddd}) ${prefix}`;
+  return `(${ddd}) ${prefix}-${suffix}`;
+};
+
+const toE164Br = (value: string): string => `+55${brMobileDigits(value)}`;
 
 @Component({
   selector: 'app-booking-flow-page',
@@ -121,26 +153,21 @@ type Step = 'slot' | 'data' | 'otp' | 'done';
               <input type="text" formControlName="name" maxlength="120" />
             </app-form-field>
 
-            <app-form-field label="Como prefere receber o código?" [required]="true">
-              <select formControlName="channel">
-                <option value="EMAIL">E-mail</option>
-                <option value="SMS">SMS</option>
-              </select>
+            <app-form-field label="E-mail" [required]="true" [errorMessage]="cf('email')">
+              <input type="email" formControlName="email" autocomplete="email" />
             </app-form-field>
 
-            @if (contactForm.controls.channel.value === 'EMAIL') {
-              <app-form-field label="E-mail" [required]="true" [errorMessage]="cf('email')">
-                <input type="email" formControlName="email" autocomplete="email" />
-              </app-form-field>
-            } @else {
-              <app-form-field
-                label="Telefone (com DDI, ex.: +5511999999999)"
-                [required]="true"
-                [errorMessage]="cf('phone')"
-              >
-                <input type="tel" formControlName="phone" />
-              </app-form-field>
-            }
+            <app-form-field label="Telefone" [required]="true" [errorMessage]="cf('phone')">
+              <input
+                type="tel"
+                inputmode="numeric"
+                formControlName="phone"
+                autocomplete="tel"
+                placeholder="(11) 99999-9999"
+                maxlength="15"
+                (input)="onPhoneInput($event)"
+              />
+            </app-form-field>
 
             <app-form-field label="Observações (opcional)" [errorMessage]="cf('notes')">
               <textarea formControlName="notes" rows="3" maxlength="500"></textarea>
@@ -155,7 +182,7 @@ type Step = 'slot' | 'data' | 'otp' | 'done';
               <button
                 type="submit"
                 class="btn-primary"
-                [disabled]="contactForm.invalid || sending()"
+                [disabled]="contactForm.invalid || sending() || resendCooldownSeconds() > 0"
               >
                 {{ sending() ? 'Enviando...' : 'Enviar código' }}
               </button>
@@ -183,12 +210,23 @@ type Step = 'slot' | 'data' | 'otp' | 'done';
               <p class="error" role="alert">{{ otpError() }}</p>
             }
 
+            <p class="resend-row">
+              <button
+                type="button"
+                class="link-btn"
+                (click)="onResendOtp()"
+                [disabled]="sending() || confirming() || resendCooldownSeconds() > 0"
+              >
+                {{ resendLabel() }}
+              </button>
+            </p>
+
             <div class="actions">
               <button type="button" class="btn-secondary" (click)="step.set('data')">Voltar</button>
               <button
                 type="submit"
                 class="btn-primary"
-                [disabled]="otpForm.invalid || confirming()"
+                [disabled]="otpForm.invalid || confirming() || sending()"
               >
                 {{ confirming() ? 'Confirmando...' : 'Confirmar agendamento' }}
               </button>
@@ -285,17 +323,11 @@ type Step = 'slot' | 'data' | 'otp' | 'done';
         font-size: 0.95rem;
         resize: vertical;
       }
-      select {
-        padding: 0.55rem 0.75rem;
-        border: 1px solid #d1d5db;
-        border-radius: 0.5rem;
-        font-size: 0.95rem;
-        background: #fff;
-      }
       .actions {
         display: flex;
         gap: 0.5rem;
         justify-content: flex-end;
+        flex-wrap: wrap;
       }
       .btn-primary {
         padding: 0.65rem 1.25rem;
@@ -322,6 +354,22 @@ type Step = 'slot' | 'data' | 'otp' | 'done';
       .error {
         color: #dc2626;
       }
+      .resend-row {
+        margin: 0;
+      }
+      .link-btn {
+        border: 0;
+        background: none;
+        padding: 0;
+        color: #2563eb;
+        font-weight: 600;
+        cursor: pointer;
+        font-size: 0.95rem;
+      }
+      .link-btn:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+      }
       .muted {
         color: #6b7280;
       }
@@ -342,6 +390,8 @@ export class BookingFlowPageComponent {
   private readonly verificationApi = inject(PublicVerificationApi);
   private readonly route = inject(ActivatedRoute);
   private readonly fb = inject(FormBuilder);
+  private readonly destroyRef = inject(DestroyRef);
+  private resendTimer: ReturnType<typeof setInterval> | null = null;
 
   readonly slug = signal<string>(this.route.snapshot.paramMap.get('slug') ?? '');
   readonly serviceId = signal<string>(this.route.snapshot.paramMap.get('serviceId') ?? '');
@@ -350,6 +400,7 @@ export class BookingFlowPageComponent {
   readonly selectedSlot = signal<SlotDto | null>(null);
   readonly verificationToken = signal<string | null>(null);
   readonly verificationTarget = signal<string | null>(null);
+  readonly verificationChannel = signal<VerificationChannel>('EMAIL');
 
   readonly loading = signal(false);
   readonly loadError = signal<string | null>(null);
@@ -357,6 +408,14 @@ export class BookingFlowPageComponent {
   readonly confirming = signal(false);
   readonly otpError = signal<string | null>(null);
   readonly step = signal<Step>('slot');
+  readonly resendCooldownSeconds = signal(0);
+  readonly resendLabel = computed(() => {
+    if (this.sending()) {
+      return 'Reenviando...';
+    }
+    const seconds = this.resendCooldownSeconds();
+    return seconds > 0 ? `Reenviar código (${seconds}s)` : 'Reenviar código';
+  });
 
   readonly service = computed<PublicServiceDto | null>(() => {
     const c = this.company();
@@ -384,9 +443,8 @@ export class BookingFlowPageComponent {
 
   readonly contactForm = this.fb.nonNullable.group({
     name: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(120)]],
-    channel: ['EMAIL' as 'EMAIL' | 'SMS'],
-    email: ['', [Validators.email]],
-    phone: [''],
+    email: ['', [Validators.required, Validators.email]],
+    phone: ['', [Validators.required, Validators.pattern(BR_MOBILE_MASK)]],
     notes: this.fb.control<string | null>(null, [Validators.maxLength(500)]),
   });
 
@@ -395,27 +453,8 @@ export class BookingFlowPageComponent {
   });
 
   constructor() {
-    this.contactForm.controls.channel.valueChanges.subscribe(() => {
-      this.adjustValidators();
-    });
-    this.adjustValidators();
     this.load();
-  }
-
-  private adjustValidators(): void {
-    const channel = this.contactForm.controls.channel.value;
-    if (channel === 'EMAIL') {
-      this.contactForm.controls.email.setValidators([Validators.required, Validators.email]);
-      this.contactForm.controls.phone.clearValidators();
-    } else {
-      this.contactForm.controls.phone.setValidators([
-        Validators.required,
-        Validators.pattern(/^\+?\d{10,15}$/),
-      ]);
-      this.contactForm.controls.email.clearValidators();
-    }
-    this.contactForm.controls.email.updateValueAndValidity({ emitEvent: false });
-    this.contactForm.controls.phone.updateValueAndValidity({ emitEvent: false });
+    this.destroyRef.onDestroy(() => this.clearResendTimer());
   }
 
   load(): void {
@@ -472,6 +511,12 @@ export class BookingFlowPageComponent {
   }
 
   cf(name: 'name' | 'email' | 'phone' | 'notes'): string | null {
+    if (name === 'phone') {
+      const control = this.contactForm.controls.phone;
+      if (control.errors?.['pattern'] && (control.touched || control.dirty)) {
+        return 'Use o formato (11) 99999-9999';
+      }
+    }
     return firstError(this.contactForm.controls[name]);
   }
 
@@ -479,31 +524,25 @@ export class BookingFlowPageComponent {
     return firstError(this.otpForm.controls.code);
   }
 
+  onPhoneInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const masked = maskBrMobile(input.value);
+    this.contactForm.controls.phone.setValue(masked);
+    input.value = masked;
+  }
+
   onRequestOtp(): void {
-    this.otpError.set(null);
-    if (this.contactForm.invalid) {
-      this.contactForm.markAllAsTouched();
+    if (this.resendCooldownSeconds() > 0 || this.sending()) {
       return;
     }
-    const value = this.contactForm.getRawValue();
-    this.sending.set(true);
-    this.verificationApi
-      .request({
-        channel: value.channel,
-        email: value.channel === 'EMAIL' ? value.email : undefined,
-        phone: value.channel === 'SMS' ? value.phone : undefined,
-      })
-      .subscribe({
-        next: () => {
-          this.sending.set(false);
-          this.verificationTarget.set(value.channel === 'EMAIL' ? value.email : value.phone);
-          this.step.set('otp');
-        },
-        error: (err: ApiError) => {
-          this.sending.set(false);
-          this.otpError.set(err.message ?? 'Erro ao enviar código');
-        },
-      });
+    this.requestOtp({ stayOnOtp: false });
+  }
+
+  onResendOtp(): void {
+    if (this.resendCooldownSeconds() > 0 || this.sending() || this.confirming()) {
+      return;
+    }
+    this.requestOtp({ stayOnOtp: true });
   }
 
   onConfirmOtp(): void {
@@ -513,17 +552,24 @@ export class BookingFlowPageComponent {
       return;
     }
     const slot = this.selectedSlot();
-    const channel = this.contactForm.controls.channel.value;
-    const target =
-      channel === 'EMAIL'
-        ? this.contactForm.controls.email.value
-        : this.contactForm.controls.phone.value;
-    if (!slot || !target) return;
+    const existingToken = this.verificationToken();
+    if (!slot) return;
 
     this.confirming.set(true);
+    if (existingToken) {
+      this.submitAppointment(existingToken);
+      return;
+    }
+
+    const channel = this.verificationChannel();
+    const target = this.verificationTarget();
+    if (!target) {
+      this.confirming.set(false);
+      return;
+    }
+
     this.verificationApi
       .confirm({ channel, target, code: this.otpForm.controls.code.value })
-      .pipe()
       .subscribe({
         next: (response) => {
           this.verificationToken.set(response.verificationToken);
@@ -531,7 +577,41 @@ export class BookingFlowPageComponent {
         },
         error: (err: ApiError) => {
           this.confirming.set(false);
-          this.otpError.set(err.message ?? 'Código inválido');
+          this.otpError.set(this.describeError(err, 'Código inválido'));
+        },
+      });
+  }
+
+  private requestOtp(options: { stayOnOtp: boolean }): void {
+    this.otpError.set(null);
+    if (this.contactForm.invalid) {
+      this.contactForm.markAllAsTouched();
+      this.step.set('data');
+      return;
+    }
+    const value = this.contactForm.getRawValue();
+    this.sending.set(true);
+    this.verificationApi
+      .request({
+        email: value.email,
+        phone: toE164Br(value.phone),
+      })
+      .subscribe({
+        next: (response) => {
+          this.sending.set(false);
+          this.verificationToken.set(null);
+          this.verificationChannel.set(response.channel);
+          this.verificationTarget.set(response.target);
+          this.otpForm.reset({ code: '' });
+          this.step.set('otp');
+          this.startResendCooldown();
+          if (options.stayOnOtp) {
+            this.otpError.set(null);
+          }
+        },
+        error: (err: ApiError) => {
+          this.sending.set(false);
+          this.otpError.set(this.describeError(err, 'Erro ao enviar código'));
         },
       });
   }
@@ -546,8 +626,8 @@ export class BookingFlowPageComponent {
         startsAt: slot.start,
         customer: {
           name: value.name,
-          email: value.channel === 'EMAIL' ? value.email : undefined,
-          phone: value.channel === 'SMS' ? value.phone : undefined,
+          email: value.email,
+          phone: toE164Br(value.phone),
           notes: value.notes ?? null,
         },
         verificationToken: token,
@@ -559,8 +639,37 @@ export class BookingFlowPageComponent {
         },
         error: (err: ApiError) => {
           this.confirming.set(false);
-          this.otpError.set(err.message ?? 'Erro ao concluir agendamento');
+          this.otpError.set(this.describeError(err, 'Erro ao concluir agendamento'));
         },
       });
+  }
+
+  private startResendCooldown(): void {
+    this.clearResendTimer();
+    this.resendCooldownSeconds.set(RESEND_COOLDOWN_SECONDS);
+    this.resendTimer = setInterval(() => {
+      const remaining = this.resendCooldownSeconds() - 1;
+      if (remaining <= 0) {
+        this.resendCooldownSeconds.set(0);
+        this.clearResendTimer();
+        return;
+      }
+      this.resendCooldownSeconds.set(remaining);
+    }, 1000);
+  }
+
+  private clearResendTimer(): void {
+    if (this.resendTimer) {
+      clearInterval(this.resendTimer);
+      this.resendTimer = null;
+    }
+  }
+
+  private describeError(err: ApiError, fallback: string): string {
+    const message = err.message ?? '';
+    if (err.status >= 500 || /internal server error/i.test(message)) {
+      return 'Não foi possível concluir. Tente novamente ou reenvie o código.';
+    }
+    return message || fallback;
   }
 }

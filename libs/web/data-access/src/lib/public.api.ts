@@ -8,6 +8,7 @@ import type {
   CreateAppointmentRequest,
   PublicCompanyDto,
   RequestVerificationRequest,
+  RequestVerificationResponse,
   VerificationTokenResponse,
 } from '@agendarhorario/contracts';
 import { WEB_ENV } from './web-env.token';
@@ -48,8 +49,11 @@ export class PublicVerificationApi {
   private readonly http = inject(HttpClient);
   private readonly env = inject(WEB_ENV);
 
-  request(input: RequestVerificationRequest): Observable<void> {
-    return this.http.post<void>(`${this.env.apiBaseUrl}/public/verification/request`, input);
+  request(input: RequestVerificationRequest): Observable<RequestVerificationResponse> {
+    return this.http.post<RequestVerificationResponse>(
+      `${this.env.apiBaseUrl}/public/verification/request`,
+      input,
+    );
   }
 
   confirm(input: ConfirmVerificationRequest): Observable<VerificationTokenResponse> {

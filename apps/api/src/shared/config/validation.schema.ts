@@ -54,6 +54,7 @@ export const envValidationSchema = Joi.object({
   STRIPE_PRICE_MEDIO: Joi.string().allow('').optional(),
   STRIPE_PRICE_GRANDE: Joi.string().allow('').optional(),
   STRIPE_PRICE_SUPER: Joi.string().allow('').optional(),
+  STRIPE_TRIAL_DAYS: Joi.number().integer().min(0).max(90).default(14),
   STRIPE_SUCCESS_URL: Joi.string().uri().optional(),
   STRIPE_CANCEL_URL: Joi.string().uri().optional(),
 }).custom((value, helpers) => {

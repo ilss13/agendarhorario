@@ -204,7 +204,7 @@ export class ServicesListPageComponent {
   }
 
   goNew(): void {
-    void this.router.navigate(['/admin/servicos/novo']);
+    void this.router.navigate(['/dashboard/servicos/novo']);
   }
 
   askRemove(item: ServiceDto): void {

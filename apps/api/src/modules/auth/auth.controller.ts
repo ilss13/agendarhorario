@@ -14,6 +14,8 @@ import { ConfigService } from '@nestjs/config';
 import { Throttle } from '@nestjs/throttler';
 import { Request, Response } from 'express';
 import {
+  GoogleLoginRequest,
+  googleLoginRequestSchema,
   LoginRequest,
   loginRequestSchema,
   MeResponse,
@@ -74,6 +76,20 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ): Promise<MeResponse> {
     const { session, me } = await this.authService.login(input);
+    this.setSessionCookie(res, session);
+    return me;
+  }
+
+  @Public()
+  @Post('login/google')
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  @HttpCode(HttpStatus.OK)
+  @UsePipes(new ZodValidationPipe(googleLoginRequestSchema))
+  async loginGoogle(
+    @Body() input: GoogleLoginRequest,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<MeResponse> {
+    const { session, me } = await this.authService.loginWithGoogle(input);
     this.setSessionCookie(res, session);
     return me;
   }

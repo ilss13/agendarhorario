@@ -1,0 +1,13 @@
+---
+description: Checklist obrigatório em qualquer alteração de código (docs de API, Swagger, práticas, testes).
+alwaysApply: true
+---
+
+Sempre que criar, editar ou refatorar código neste repositório, leia e siga a skill `alterar-codigo` em `.cursor/skills/alterar-codigo/SKILL.md` e as skills que ela aponta:
+
+- `.cursor/skills/praticas-do-projeto/SKILL.md`
+- `.cursor/skills/testes-unitarios-logica/SKILL.md`
+- `.cursor/skills/atualizar-swagger/SKILL.md` — se o contrato ou as rotas da API mudaram
+- `.cursor/skills/mapear-docs-api/SKILL.md` — se a lógica ou a estrutura da API mudaram
+
+Não declare a tarefa concluída sem o checklist dessas skills.

@@ -51,6 +51,11 @@ export class StripeWebhookController {
 
     try {
       switch (event.type) {
+        case 'checkout.session.completed':
+          await this.billing.upsertFromCheckoutSession(
+            event.data.object as Stripe.Checkout.Session,
+          );
+          break;
         case 'customer.subscription.created':
         case 'customer.subscription.updated':
         case 'customer.subscription.deleted':

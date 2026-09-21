@@ -211,7 +211,7 @@ export class RegisterCompanyPageComponent {
       .subscribe({
         next: () => {
           this.submitting.set(false);
-          const target = this.preselectedPlan ? ['/admin/assinatura'] : ['/admin'];
+          const target = this.preselectedPlan ? ['/dashboard/assinatura'] : ['/dashboard'];
           void this.router.navigate(target, {
             queryParams: this.preselectedPlan ? { plan: this.preselectedPlan } : undefined,
           });

@@ -2,11 +2,13 @@ import { Body, Controller, Get, HttpCode, HttpStatus, Post } from '@nestjs/commo
 import {
   ChangePlanRequest,
   CheckoutSessionRequest,
+  ConfirmCheckoutRequest,
   InvoiceDto,
   PlanDto,
   SubscriptionSummaryDto,
   changePlanRequestSchema,
   checkoutSessionRequestSchema,
+  confirmCheckoutRequestSchema,
 } from '@agendarhorario/contracts';
 import { Public } from '../auth/auth.guard';
 import { CompanyScoped } from '../../shared/auth/company-scoped.decorator';
@@ -45,6 +47,14 @@ export class CompanyBillingController {
     @Body(new ZodValidationPipe(checkoutSessionRequestSchema)) input: CheckoutSessionRequest,
   ): Promise<{ url: string }> {
     return this.billing.createCheckoutSession(input.planCode);
+  }
+
+  @Post('confirm-checkout')
+  @HttpCode(HttpStatus.OK)
+  confirmCheckout(
+    @Body(new ZodValidationPipe(confirmCheckoutRequestSchema)) input: ConfirmCheckoutRequest,
+  ): Promise<SubscriptionSummaryDto> {
+    return this.billing.confirmCheckout(input.sessionId);
   }
 
   @Post('portal-session')

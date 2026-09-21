@@ -50,6 +50,13 @@ export class BillingApi {
     );
   }
 
+  confirmCheckout(input: { sessionId?: string } = {}): Observable<SubscriptionSummaryDto> {
+    return this.http.post<SubscriptionSummaryDto>(
+      `${this.env.apiBaseUrl}/company/billing/confirm-checkout`,
+      input,
+    );
+  }
+
   cancel(): Observable<SubscriptionSummaryDto> {
     return this.http.post<SubscriptionSummaryDto>(
       `${this.env.apiBaseUrl}/company/billing/cancel`,

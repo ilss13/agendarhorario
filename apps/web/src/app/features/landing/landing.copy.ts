@@ -1,3 +1,5 @@
+import { SUBSCRIPTION_TRIAL_DAYS } from '@agendarhorario/contracts';
+
 export interface PlanCopy {
   /** Identificador legível para o destaque visual; deve casar com PlanCode do backend. */
   code: 'basico' | 'medio' | 'grande' | 'super';
@@ -12,9 +14,13 @@ export const LANDING_COPY = {
     headline: 'Sua agenda lotada sem WhatsApp travado.',
     subheadline:
       'Receba agendamentos online com lembretes automáticos por e-mail, SMS ou WhatsApp.',
-    primaryCta: 'Começar — R$ 39,90/mês',
+    primaryCta: `Começar grátis por ${SUBSCRIPTION_TRIAL_DAYS} dias`,
     secondaryCta: 'Ver planos',
-    trustBadges: ['Sem fidelidade', 'Cancele quando quiser', 'Suporte em português'],
+    trustBadges: [
+      `${SUBSCRIPTION_TRIAL_DAYS} dias grátis`,
+      'Sem fidelidade',
+      'Cancele quando quiser',
+    ],
   },
   socialProof: {
     headline: 'Salões, clínicas, estúdios e prestadores autônomos já agendam por aqui.',
@@ -41,7 +47,9 @@ export const LANDING_COPY = {
   },
   pricing: {
     headline: 'Planos simples por volume de agendamentos.',
-    sub: 'Comece pelo básico e troque a qualquer momento — sem multa.',
+    sub: `${SUBSCRIPTION_TRIAL_DAYS} dias grátis em todos os planos. Cancele antes do fim do teste e não cobramos nada.`,
+    trialNote: `${SUBSCRIPTION_TRIAL_DAYS} dias grátis, depois o valor mensal`,
+    cta: 'Começar teste grátis',
     plans: [
       {
         code: 'basico' as const,
@@ -148,7 +156,7 @@ export const LANDING_COPY = {
       },
       {
         q: 'Vocês oferecem teste grátis?',
-        a: 'Hoje não, mas garantimos reembolso nos 7 primeiros dias.',
+        a: `Sim. Todos os planos incluem ${SUBSCRIPTION_TRIAL_DAYS} dias grátis na primeira contratação. Pedimos o cartão ao ativar o plano, mas a cobrança só começa depois do teste se você não cancelar.`,
       },
       { q: 'Aceitam PIX/boleto?', a: 'Sim, via Stripe — cartão, PIX e boleto.' },
       {
@@ -159,8 +167,8 @@ export const LANDING_COPY = {
   },
   ctaFinal: {
     headline: 'Comece em 5 minutos.',
-    sub: 'Sem cartão para criar conta. Você só paga quando ativar o plano.',
-    primaryCta: 'Comece agora',
+    sub: `Crie a conta sem cartão. Ao escolher um plano, você ganha ${SUBSCRIPTION_TRIAL_DAYS} dias grátis — a cobrança só começa depois.`,
+    primaryCta: 'Começar teste grátis',
   },
   footer: {
     legal: '© 2026 Agendar Horário · ',
