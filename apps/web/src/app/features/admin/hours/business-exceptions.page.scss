@@ -1,0 +1,55 @@
+@use '../../../../styles/ui' as ui;
+
+.form-card {
+  @include ui.panel;
+  margin-bottom: 1.5rem;
+}
+.grid {
+  @include ui.two-col;
+}
+.checkbox {
+  @include ui.checkbox-row;
+}
+.actions {
+  @include ui.actions-end;
+}
+.actions button {
+  @include ui.primary-action;
+}
+.section {
+  margin: 0 0 0.75rem;
+  font-size: 1.05rem;
+}
+ul.list {
+  @include ui.card-list;
+}
+ul.list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.85rem 1rem;
+  border-top: 1px solid #f3f4f6;
+  gap: 1rem;
+}
+ul.list li:first-child {
+  border-top: 0;
+}
+ul.list small {
+  color: #6b7280;
+  display: block;
+}
+.delete {
+  border: 0;
+  background: transparent;
+  color: #dc2626;
+  cursor: pointer;
+}
+.loading {
+  @include ui.loading-center;
+}
+.error {
+  @include ui.error-plain;
+}
+.success {
+  @include ui.success-text;
+}

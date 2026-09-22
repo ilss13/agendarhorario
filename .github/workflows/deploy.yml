@@ -75,8 +75,8 @@ jobs:
             --memory=512Mi \
             --concurrency=80 \
             --port=3000 \
-            --set-env-vars=NODE_ENV=production,API_GLOBAL_PREFIX=api \
-            --set-secrets=DB_PASSWORD=DB_PASSWORD:latest,FIREBASE_SERVICE_ACCOUNT_JSON=FIREBASE_SERVICE_ACCOUNT:latest,STRIPE_SECRET_KEY=STRIPE_SECRET_KEY:latest,STRIPE_WEBHOOK_SECRET=STRIPE_WEBHOOK_SECRET:latest,VERIFICATION_JWT_SECRET=VERIFICATION_JWT_SECRET:latest,SENDGRID_API_KEY=SENDGRID_API_KEY:latest,TWILIO_AUTH_TOKEN=TWILIO_AUTH_TOKEN:latest
+            --set-env-vars=NODE_ENV=production,API_GLOBAL_PREFIX=api,SENTRY_ENVIRONMENT=production,SENTRY_RELEASE=${{ github.sha }} \
+            --set-secrets=DB_PASSWORD=DB_PASSWORD:latest,FIREBASE_SERVICE_ACCOUNT_JSON=FIREBASE_SERVICE_ACCOUNT:latest,STRIPE_SECRET_KEY=STRIPE_SECRET_KEY:latest,STRIPE_WEBHOOK_SECRET=STRIPE_WEBHOOK_SECRET:latest,VERIFICATION_JWT_SECRET=VERIFICATION_JWT_SECRET:latest,SENDGRID_API_KEY=SENDGRID_API_KEY:latest,TWILIO_AUTH_TOKEN=TWILIO_AUTH_TOKEN:latest,SENTRY_DSN=SENTRY_DSN:latest
 
       - name: Smoke test
         run: |
@@ -100,6 +100,22 @@ jobs:
 
       - name: Install
         run: npm ci --no-audit --no-fund
+
+      - name: Write Sentry DSN
+        env:
+          SENTRY_DSN_WEB: ${{ secrets.SENTRY_DSN_WEB }}
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const src = [
+            'export const environment = {',
+            '  production: true,',
+            '  sentryDsn: ' + JSON.stringify(process.env.SENTRY_DSN_WEB || '') + ',',
+            '};',
+            '',
+          ].join('\n');
+          fs.writeFileSync('apps/web/src/environments/environment.prod.ts', src);
+          NODE
 
       - name: Build web (production)
         run: npx nx build web --configuration=production

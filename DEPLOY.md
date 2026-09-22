@@ -8,9 +8,10 @@ Guia operacional para colocar a plataforma em produção no GCP (Cloud Run + Clo
 
 ### 1.1 Projeto GCP
 
+O projeto GCP já existe. O ID é `agenda-controlador`.
+
 ```bash
-gcloud projects create agendarhorario-prod --name="Agendar Horário"
-gcloud config set project agendarhorario-prod
+gcloud config set project agenda-controlador
 gcloud services enable \
   run.googleapis.com \
   artifactregistry.googleapis.com \
@@ -58,13 +59,14 @@ gcloud secrets create STRIPE_WEBHOOK_SECRET --data-file=- <<< "whsec_..."
 gcloud secrets create VERIFICATION_JWT_SECRET --data-file=- <<< "$(openssl rand -hex 32)"
 gcloud secrets create SENDGRID_API_KEY --data-file=- <<< "SG...."
 gcloud secrets create TWILIO_AUTH_TOKEN --data-file=- <<< "..."
+gcloud secrets create SENTRY_DSN --data-file=- <<< "https://<key>@o<org>.ingest.sentry.io/<project>"
 ```
 
 ### 1.6 Firebase Hosting
 
 ```bash
 firebase login
-firebase use agendarhorario-prod
+firebase use agenda-controlador
 # Garanta que o site default está habilitado
 ```
 
@@ -80,11 +82,12 @@ Crie um pool + provider OIDC para o GitHub e um service account `agendarhorario-
 
 Coloque os secrets no repositório GitHub:
 
-- `GCP_PROJECT_ID`
+- `GCP_PROJECT_ID` (`agenda-controlador`)
 - `GCP_WIP` (recurso `projects/.../workloadIdentityPools/.../providers/...`)
 - `GCP_DEPLOYER_SA`
 - `FIREBASE_SERVICE_ACCOUNT_DEPLOY` (JSON do service account com role `firebasehosting.admin`)
 - `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_NAME` (do Cloud SQL)
+- `SENTRY_DSN_WEB` (DSN público do projeto Sentry do frontend; o DSN da API fica só no Secret Manager `SENTRY_DSN`)
 
 ### 1.8 Stripe
 
@@ -94,6 +97,18 @@ Coloque os secrets no repositório GitHub:
    - `customer.subscription.created|updated|deleted`
    - `invoice.created|finalized|paid|payment_failed|voided|marked_uncollectible`
 4. Salve o `whsec_...` em `STRIPE_WEBHOOK_SECRET`
+
+### 1.9 Sentry
+
+Crie **dois projetos** na mesma organização (a cota é compartilhada): `agendarhorario-api` (Node/Nest) e `agendarhorario-web` (Angular).
+
+1. Copie o DSN da API para o secret GCP `SENTRY_DSN`.
+2. Copie o DSN do front para o secret GitHub `SENTRY_DSN_WEB`.
+3. Em ambos os projetos, deixe **Send Default PII** desligado.
+4. Alertas: Issues novos em `environment:production` nos dois projetos. Não alerte em logs de 409 (horário ocupado) — isso é sinal de produto, não crash.
+5. O cron monitor (1 vaga) fica livre: não há cron, os lembretes são fila BullMQ.
+
+Sem `SENTRY_DSN` / `SENTRY_DSN_WEB` o SDK não inicia.
 
 ---
 
@@ -155,12 +170,13 @@ Migrations: se for necessário reverter o schema, use `npm run migration:revert`
 - [ ] Smoke tests Playwright passando contra staging
 - [ ] DNS apontando: `agendarhorario.com` → Firebase Hosting; `api.agendarhorario.com` → Cloud Run
 - [ ] Backups Cloud SQL ativos (automático, 7 dias mínimo)
-- [ ] Monitoring: Cloud Logging com retention adequado; alarmes em error rate e latência p95
+- [ ] Monitoring: Sentry recebendo 5xx da API e erros do Angular; Cloud Logging continua com o stdout
 
 ---
 
 ## 6. Observações
 
+- **Sentry**: erros (5xx), traces dos fluxos de agendamento/dashboard e replay só quando há erro. 4xx recorrentes (400/409/422/429) vão para Logs. Sem DSN o SDK fica desligado. O deploy da API exige o secret `SENTRY_DSN` no Secret Manager (pode ser string vazia até a conta estar pronta).
 - **Cloud Run** roda a API atrás do proxy do Google, então `trust proxy` está habilitado para que o `@nestjs/throttler` use o IP real.
 - **CSP** em produção é estrita (`script-src 'self'`). Stripe Checkout e Customer Portal são páginas externas — não precisam de inline scripts no nosso domínio.
 - **Webhook Stripe** está isento de CSRF (configurado em `app.module.ts:91`).

@@ -1,0 +1,10 @@
+<label class="field" [attr.data-invalid]="invalid()">
+  <span class="label">{{ label }}{{ required ? ' *' : '' }}</span>
+  <ng-content></ng-content>
+  @if (hint && !invalid()) {
+    <small class="hint">{{ hint }}</small>
+  }
+  @if (invalid() && errorMessage) {
+    <small class="error" role="alert">{{ errorMessage }}</small>
+  }
+</label>

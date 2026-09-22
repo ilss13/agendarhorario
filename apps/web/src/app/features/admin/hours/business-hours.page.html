@@ -1,0 +1,67 @@
+<app-page-header
+  title="Horários de atendimento"
+  subtitle="Defina os intervalos de funcionamento por dia da semana."
+/>
+
+@if (loading() && !loadedOnce()) {
+<div class="loading"><app-spinner /></div>
+} @else if (loadError()) {
+<app-empty-state
+  title="Não foi possível carregar"
+  [description]="loadError()"
+  actionLabel="Tentar novamente"
+  (action)="reload()"
+/>
+} @else {
+<form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+  <div class="days">
+    @for (day of DAY_KEYS; track day) {
+    <section class="day">
+      <header>
+        <h3>{{ dayLabels[day] }}</h3>
+        <button type="button" class="link" (click)="addRow(day)">+ Adicionar intervalo</button>
+      </header>
+
+      @if (rowsForDay(day).length === 0) {
+      <p class="muted">Fechado neste dia.</p>
+      } @else {
+      <ul>
+        @for (row of rowsForDay(day); track row.index) {
+        <li [formGroup]="row.group">
+          <app-form-field label="Início" [errorMessage]="rowError(row.group, 'startTime')">
+            <input type="time" formControlName="startTime" step="900" />
+          </app-form-field>
+          <app-form-field label="Fim" [errorMessage]="rowError(row.group, 'endTime')">
+            <input type="time" formControlName="endTime" step="900" />
+          </app-form-field>
+          <button
+            type="button"
+            class="remove"
+            (click)="removeRow(row.index)"
+            aria-label="Remover intervalo"
+          >
+            Remover
+          </button>
+        </li>
+        }
+      </ul>
+      }
+    </section>
+    }
+  </div>
+
+  @if (overlapError()) {
+  <p class="error" role="alert">{{ overlapError() }}</p>
+  } @if (serverError()) {
+  <p class="error" role="alert">{{ serverError() }}</p>
+  } @if (success()) {
+  <p class="success" role="status">Horários atualizados.</p>
+  }
+
+  <div class="actions">
+    <button type="submit" [disabled]="form.invalid || submitting()">
+      {{ submitting() ? 'Salvando...' : 'Salvar horários' }}
+    </button>
+  </div>
+</form>
+}

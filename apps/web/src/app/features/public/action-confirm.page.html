@@ -1,0 +1,60 @@
+<main class="wrap">
+  @if (loading()) {
+  <div class="loading"><app-spinner /></div>
+  } @else if (loadError()) {
+  <app-empty-state title="Link inválido ou expirado" [description]="loadError()" />
+  } @else if (preview()) {
+  <section class="card">
+    <header>
+      <h1>
+        @if (preview()!.kind === 'CONFIRM') { Confirmar presença } @else { Cancelar agendamento }
+      </h1>
+      <p class="muted">{{ preview()!.appointment.companyName }}</p>
+    </header>
+
+    <dl>
+      <div>
+        <dt>Serviço</dt>
+        <dd>{{ preview()!.appointment.serviceName }}</dd>
+      </div>
+      <div>
+        <dt>Quando</dt>
+        <dd>{{ formatDate(preview()!.appointment.startsAt) }}</dd>
+      </div>
+      <div>
+        <dt>Cliente</dt>
+        <dd>{{ preview()!.appointment.customerName }}</dd>
+      </div>
+      <div>
+        <dt>Status atual</dt>
+        <dd>{{ statusLabel(preview()!.appointment.status) }}</dd>
+      </div>
+    </dl>
+
+    @if (result()) {
+    <p class="success" role="status">
+      @if (result()!.status === 'CONFIRMED') { Presença confirmada. Obrigado! } @else if
+      (result()!.status === 'CANCELLED') { Agendamento cancelado. } @else { Status atualizado para
+      {{ statusLabel(result()!.status) }}. }
+    </p>
+    } @else if (preview()!.alreadyConsumed) {
+    <p class="muted" role="status">Este link já foi utilizado anteriormente.</p>
+    } @else if (submitError()) {
+    <p class="error" role="alert">{{ submitError() }}</p>
+    } @else {
+    <div class="actions">
+      <button
+        type="button"
+        [class.primary]="preview()!.kind === 'CONFIRM'"
+        [class.danger]="preview()!.kind === 'CANCEL'"
+        (click)="submit()"
+        [disabled]="submitting()"
+      >
+        @if (submitting()) { Enviando... } @else if (preview()!.kind === 'CONFIRM') { Confirmar
+        presença } @else { Cancelar agendamento }
+      </button>
+    </div>
+    }
+  </section>
+  }
+</main>

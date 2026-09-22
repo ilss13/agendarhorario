@@ -1,0 +1,35 @@
+.empty {
+  display: grid;
+  gap: 0.5rem;
+  justify-items: center;
+  text-align: center;
+  padding: 3rem 1rem;
+  background: #fff;
+  border: 1px dashed #e5e7eb;
+  border-radius: 0.75rem;
+}
+.illustration {
+  display: grid;
+  place-items: center;
+  padding: 0.5rem;
+}
+h2 {
+  margin: 0.25rem 0 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+.muted {
+  color: #6b7280;
+  margin: 0;
+  max-width: 32rem;
+}
+button {
+  margin-top: 0.75rem;
+  padding: 0.55rem 1rem;
+  border: 0;
+  background: #2563eb;
+  color: #fff;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-weight: 600;
+}

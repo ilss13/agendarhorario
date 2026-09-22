@@ -57,6 +57,10 @@ export const envValidationSchema = Joi.object({
   STRIPE_TRIAL_DAYS: Joi.number().integer().min(0).max(90).default(14),
   STRIPE_SUCCESS_URL: Joi.string().uri().optional(),
   STRIPE_CANCEL_URL: Joi.string().uri().optional(),
+
+  SENTRY_DSN: Joi.string().allow('').optional(),
+  SENTRY_ENVIRONMENT: Joi.string().optional(),
+  SENTRY_RELEASE: Joi.string().optional(),
 }).custom((value, helpers) => {
   if (!value.FIREBASE_SERVICE_ACCOUNT_PATH && !value.FIREBASE_SERVICE_ACCOUNT_JSON) {
     return helpers.error('any.custom', {

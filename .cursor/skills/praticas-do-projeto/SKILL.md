@@ -44,6 +44,9 @@ Imports: respeite fronteiras Nx. Front e API compartilham tipos só via `@agenda
 ## Web (Angular)
 
 - Componentes standalone, `inject()`, signals para estado local/serviços de auth.
+- Separe cada componente em três arquivos: lógica no `.ts`, template em `.html` (`templateUrl`) e estilos em `.scss` (`styleUrl`). Não use `template` nem `styles` inline.
+- Estilo repetido vira mixin em `apps/web/src/styles/_ui.scss` e entra no SCSS do componente com `@use`. Não copie o mesmo bloco entre telas e não jogue estilo de componente em `styles.scss`.
+- Componente sem estilo não ganha arquivo `.scss` vazio.
 - Chamadas HTTP em `libs/web/data-access` (ou `core/` só se o padrão do arquivo vizinho já for esse).
 - `withCredentials` / CSRF: siga o `HttpClient` e interceptors já configurados.
 - Copy da UI em pt-BR.

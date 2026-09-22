@@ -12,59 +12,8 @@ import { NgControl } from '@angular/forms';
   selector: 'app-form-field',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <label class="field" [attr.data-invalid]="invalid()">
-      <span class="label">{{ label }}{{ required ? ' *' : '' }}</span>
-      <ng-content></ng-content>
-      @if (hint && !invalid()) {
-        <small class="hint">{{ hint }}</small>
-      }
-      @if (invalid() && errorMessage) {
-        <small class="error" role="alert">{{ errorMessage }}</small>
-      }
-    </label>
-  `,
-  styles: [
-    `
-      .field {
-        display: grid;
-        gap: 0.35rem;
-      }
-      .label {
-        font-size: 0.875rem;
-        font-weight: 500;
-      }
-      .hint {
-        color: #6b7280;
-        font-size: 0.8rem;
-      }
-      .error {
-        color: #dc2626;
-        font-size: 0.85rem;
-      }
-      :host ::ng-deep input,
-      :host ::ng-deep select,
-      :host ::ng-deep textarea {
-        padding: 0.55rem 0.75rem;
-        border: 1px solid #d1d5db;
-        border-radius: 0.5rem;
-        font-size: 0.95rem;
-        width: 100%;
-        background: #fff;
-      }
-      :host ::ng-deep input:focus,
-      :host ::ng-deep select:focus,
-      :host ::ng-deep textarea:focus {
-        outline: 2px solid #2563eb;
-        outline-offset: 1px;
-      }
-      .field[data-invalid='true'] ::ng-deep input,
-      .field[data-invalid='true'] ::ng-deep select,
-      .field[data-invalid='true'] ::ng-deep textarea {
-        border-color: #dc2626;
-      }
-    `,
-  ],
+  templateUrl: './form-field.component.html',
+  styleUrl: './form-field.component.scss',
 })
 export class FormFieldComponent {
   @Input({ required: true }) label!: string;

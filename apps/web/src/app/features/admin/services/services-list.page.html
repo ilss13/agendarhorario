@@ -1,0 +1,74 @@
+<app-page-header title="Serviços" subtitle="Tipos de atendimento oferecidos pela sua empresa.">
+  <a slot="actions" routerLink="novo" class="btn-primary">+ Novo serviço</a>
+</app-page-header>
+
+<div class="toolbar">
+  <app-search-input
+    placeholder="Buscar por nome..."
+    label="Buscar serviços"
+    (valueChange)="onSearch($event)"
+  />
+</div>
+
+@if (loading() && items().length === 0) {
+<div class="loading"><app-spinner /></div>
+} @else if (loadError()) {
+<app-empty-state
+  title="Não foi possível carregar"
+  [description]="loadError()"
+  actionLabel="Tentar novamente"
+  (action)="reload()"
+/>
+} @else if (items().length === 0 && query()) {
+<app-empty-state
+  title="Nenhum resultado"
+  [description]="'Nenhum serviço para “' + query() + '”.'"
+  actionLabel="Limpar busca"
+  (action)="clearSearch()"
+/>
+} @else if (items().length === 0) {
+<app-empty-state
+  title="Você ainda não tem serviços"
+  description="Cadastre seu primeiro serviço para começar a receber agendamentos."
+  actionLabel="Cadastrar serviço"
+  (action)="goNew()"
+/>
+} @else {
+<ul class="list">
+  @for (item of items(); track item.id) {
+  <li>
+    <a [routerLink]="[item.id]" class="row">
+      <div>
+        <strong>{{ item.name }}</strong>
+        <small>
+          {{ item.durationMinutes }} min · R$ {{ item.price.toFixed(2) }} · {{ item.active ? 'Ativo'
+          : 'Inativo' }}
+        </small>
+      </div>
+      <span class="arrow" aria-hidden="true">›</span>
+    </a>
+    <button
+      type="button"
+      class="delete"
+      (click)="askRemove(item)"
+      [attr.aria-label]="'Remover ' + item.name"
+    >
+      Remover
+    </button>
+  </li>
+  }
+</ul>
+}
+
+<app-confirm-dialog
+  [open]="!!toRemove()"
+  title="Remover serviço"
+  [message]="
+    'Deseja remover “' +
+    (toRemove()?.name ?? '') +
+    '”? Esta ação pode ser desfeita por um administrador.'
+  "
+  confirmLabel="Remover"
+  (confirmed)="confirmRemove()"
+  (cancelled)="toRemove.set(null)"
+/>

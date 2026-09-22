@@ -1,0 +1,40 @@
+@use '../../../../styles/ui' as ui;
+
+form {
+  @include ui.panel;
+}
+.grid {
+  @include ui.two-col;
+}
+textarea {
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  font-size: 0.95rem;
+  font-family: inherit;
+  resize: vertical;
+}
+.checkbox {
+  @include ui.checkbox-row;
+}
+.loading {
+  @include ui.loading-center;
+}
+.btn-secondary {
+  padding: 0.55rem 1rem;
+  background: #f3f4f6;
+  color: #111827;
+  text-decoration: none;
+  border-radius: 0.5rem;
+  font-weight: 600;
+}
+.actions {
+  @include ui.actions-end;
+}
+.actions button {
+  @include ui.primary-action;
+}
+.error {
+  @include ui.error-plain;
+}

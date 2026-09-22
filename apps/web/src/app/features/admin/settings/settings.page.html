@@ -1,0 +1,77 @@
+<app-page-header
+  title="Empresa"
+  subtitle="Atualize os dados da sua empresa e as preferências de notificação."
+/>
+
+@if (loading() && !loadedOnce()) {
+<div class="loading"><app-spinner /></div>
+} @else if (loadError()) {
+<app-empty-state
+  title="Não foi possível carregar"
+  [description]="loadError()"
+  actionLabel="Tentar novamente"
+  (action)="load()"
+/>
+} @else {
+<form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+  <div class="grid">
+    <app-form-field label="Nome da empresa" [required]="true" [errorMessage]="error('name')">
+      <input type="text" formControlName="name" maxlength="120" />
+    </app-form-field>
+
+    <app-form-field
+      label="Slug público"
+      hint="Usado em /p/SEU-SLUG"
+      [required]="true"
+      [errorMessage]="error('slug')"
+    >
+      <input type="text" formControlName="slug" />
+    </app-form-field>
+
+    <app-form-field label="Telefone" [errorMessage]="error('phone')">
+      <input type="tel" formControlName="phone" placeholder="+5511999999999" />
+    </app-form-field>
+
+    <app-form-field label="Fuso horário" [errorMessage]="error('timezone')">
+      <input type="text" formControlName="timezone" />
+    </app-form-field>
+  </div>
+
+  <fieldset class="toggles" formGroupName="notificationPrefs">
+    <legend>Notificações</legend>
+    <label>
+      <input type="checkbox" formControlName="email" />
+      <span>Enviar por e-mail</span>
+      <small>Sempre disponível em todos os planos.</small>
+    </label>
+    <div class="channel-group" role="radiogroup" aria-label="Canal secundário">
+      <strong>Canal secundário (escolha um)</strong>
+      <label>
+        <input type="radio" formControlName="secondaryChannel" value="NONE" />
+        <span>Apenas e-mail</span>
+      </label>
+      <label>
+        <input type="radio" formControlName="secondaryChannel" value="SMS" />
+        <span>SMS</span>
+      </label>
+      <label>
+        <input type="radio" formControlName="secondaryChannel" value="WHATSAPP" />
+        <span>WhatsApp</span>
+      </label>
+      <small class="hint">SMS e WhatsApp são exclusivos: só um pode ficar ativo.</small>
+    </div>
+  </fieldset>
+
+  @if (success()) {
+  <p class="success" role="status">Alterações salvas.</p>
+  } @if (serverError()) {
+  <p class="error" role="alert">{{ serverError() }}</p>
+  }
+
+  <div class="actions">
+    <button type="submit" [disabled]="form.invalid || submitting()">
+      {{ submitting() ? 'Salvando...' : 'Salvar alterações' }}
+    </button>
+  </div>
+</form>
+}

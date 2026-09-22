@@ -1,0 +1,61 @@
+<main class="auth-wrap">
+  <section class="auth-card">
+    <h1>Criar conta de cliente</h1>
+    <p class="muted">Acompanhe seus agendamentos em todas as empresas.</p>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+      <label class="field">
+        <span>Nome</span>
+        <input type="text" formControlName="name" maxlength="120" />
+        @if (error('name')) {
+        <small class="error">{{ error('name') }}</small>
+        }
+      </label>
+
+      <label class="field">
+        <span>Email</span>
+        <input type="email" formControlName="email" autocomplete="email" />
+        @if (error('email')) {
+        <small class="error">{{ error('email') }}</small>
+        }
+      </label>
+
+      <label class="field">
+        <span>Telefone (com DDI)</span>
+        <input type="tel" formControlName="phone" placeholder="+5511999999999" />
+        @if (error('phone')) {
+        <small class="error">{{ error('phone') }}</small>
+        }
+        <small class="hint">
+          Importante para encontrar agendamentos feitos antes da conta existir.
+        </small>
+      </label>
+
+      <label class="field">
+        <span>Senha</span>
+        <input type="password" formControlName="password" autocomplete="new-password" />
+        @if (error('password')) {
+        <small class="error">{{ error('password') }}</small>
+        }
+        <small class="hint"> Mínimo 8 caracteres, com 1 maiúscula, 1 minúscula e 1 número. </small>
+      </label>
+
+      @if (serverError()) {
+      <p class="error" role="alert">{{ serverError() }}</p>
+      }
+
+      <button type="submit" [disabled]="form.invalid || submitting()">
+        {{ submitting() ? 'Criando conta...' : 'Criar conta' }}
+      </button>
+    </form>
+
+    <p class="muted footer">
+      Já tem conta?
+      <a routerLink="/login">Entrar</a>
+    </p>
+    <p class="muted footer">
+      É uma empresa?
+      <a routerLink="/registrar-empresa">Cadastrar empresa</a>
+    </p>
+  </section>
+</main>

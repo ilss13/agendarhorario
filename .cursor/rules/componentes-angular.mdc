@@ -1,0 +1,12 @@
+---
+description: Componentes Angular com HTML, SCSS e lógica em arquivos separados
+globs: apps/web/**/*.{ts,html,scss},libs/web/**/*.{ts,html,scss}
+alwaysApply: false
+---
+
+Em componentes Angular (`apps/web` e `libs/web`):
+
+- Lógica no `.ts`. Template em `.html` (`templateUrl`). Estilos em `.scss` (`styleUrl`).
+- Não use `template` nem `styles` inline.
+- Estilo repetido fica em mixin de `apps/web/src/styles/_ui.scss`, incluído com `@use` no SCSS do componente. Não duplique regra que o mixin já cobre e não crie estilo global para um componente.
+- Sem estilo próprio, não crie `.scss` vazio.

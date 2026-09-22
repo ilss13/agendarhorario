@@ -1,0 +1,77 @@
+<app-page-header
+  [title]="isEdit() ? 'Editar serviço' : 'Novo serviço'"
+  subtitle="Defina nome, duração e preço."
+>
+  <a slot="actions" routerLink=".." routerLinkActive class="btn-secondary">← Voltar</a>
+</app-page-header>
+
+@if (loading()) {
+<div class="loading"><app-spinner /></div>
+} @else if (loadError()) {
+<app-empty-state
+  title="Serviço não encontrado"
+  [description]="loadError()"
+  actionLabel="Voltar para lista"
+  (action)="back()"
+/>
+} @else {
+<form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+  <app-form-field label="Nome" [required]="true" [errorMessage]="error('name')">
+    <input type="text" formControlName="name" maxlength="120" />
+  </app-form-field>
+
+  <app-form-field label="Descrição" [errorMessage]="error('description')">
+    <textarea
+      formControlName="description"
+      rows="3"
+      maxlength="500"
+      placeholder="Detalhes para seus clientes (opcional)"
+    ></textarea>
+  </app-form-field>
+
+  <div class="grid">
+    <app-form-field
+      label="Duração (minutos)"
+      [required]="true"
+      [errorMessage]="error('durationMinutes')"
+    >
+      <input
+        type="number"
+        inputmode="numeric"
+        min="5"
+        max="480"
+        formControlName="durationMinutes"
+      />
+    </app-form-field>
+
+    <app-form-field
+      label="Intervalo após (minutos)"
+      hint="Tempo de buffer entre atendimentos"
+      [errorMessage]="error('bufferMinutes')"
+    >
+      <input type="number" inputmode="numeric" min="0" max="240" formControlName="bufferMinutes" />
+    </app-form-field>
+
+    <app-form-field label="Preço (R$)" [errorMessage]="error('price')">
+      <input type="number" min="0" step="0.01" formControlName="price" />
+    </app-form-field>
+
+    <app-form-field label="Ativo">
+      <label class="checkbox">
+        <input type="checkbox" formControlName="active" />
+        <span>Disponível para agendamento</span>
+      </label>
+    </app-form-field>
+  </div>
+
+  @if (serverError()) {
+  <p class="error" role="alert">{{ serverError() }}</p>
+  }
+
+  <div class="actions">
+    <button type="submit" [disabled]="form.invalid || submitting()">
+      {{ submitting() ? 'Salvando...' : isEdit() ? 'Salvar alterações' : 'Cadastrar serviço' }}
+    </button>
+  </div>
+</form>
+}

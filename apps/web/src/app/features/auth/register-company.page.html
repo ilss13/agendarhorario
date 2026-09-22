@@ -1,0 +1,77 @@
+<main class="auth-wrap">
+  <section class="auth-card">
+    <h1>Cadastrar empresa</h1>
+    <p class="muted">Crie a conta da empresa e o usuário administrador.</p>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+      <fieldset>
+        <legend>Empresa</legend>
+
+        <label class="field">
+          <span>Nome</span>
+          <input type="text" formControlName="companyName" maxlength="120" />
+          @if (error('companyName')) {
+          <small class="error">{{ error('companyName') }}</small>
+          }
+        </label>
+
+        <label class="field">
+          <span>Slug (URL pública: /p/SEU-SLUG)</span>
+          <input
+            type="text"
+            formControlName="slug"
+            autocomplete="off"
+            placeholder="minha-empresa"
+          />
+          @if (error('slug')) {
+          <small class="error">{{ error('slug') }}</small>
+          }
+        </label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Administrador</legend>
+
+        <label class="field">
+          <span>Seu nome</span>
+          <input type="text" formControlName="ownerName" maxlength="120" />
+          @if (error('ownerName')) {
+          <small class="error">{{ error('ownerName') }}</small>
+          }
+        </label>
+
+        <label class="field">
+          <span>Email</span>
+          <input type="email" formControlName="email" autocomplete="email" />
+          @if (error('email')) {
+          <small class="error">{{ error('email') }}</small>
+          }
+        </label>
+
+        <label class="field">
+          <span>Senha</span>
+          <input type="password" formControlName="password" autocomplete="new-password" />
+          @if (error('password')) {
+          <small class="error">{{ error('password') }}</small>
+          }
+          <small class="hint">
+            Mínimo 8 caracteres, com 1 maiúscula, 1 minúscula e 1 número.
+          </small>
+        </label>
+      </fieldset>
+
+      @if (serverError()) {
+      <p class="error" role="alert">{{ serverError() }}</p>
+      }
+
+      <button type="submit" [disabled]="form.invalid || submitting()">
+        {{ submitting() ? 'Cadastrando...' : 'Cadastrar empresa' }}
+      </button>
+    </form>
+
+    <p class="muted footer">
+      Já tem conta?
+      <a routerLink="/login">Entrar</a>
+    </p>
+  </section>
+</main>

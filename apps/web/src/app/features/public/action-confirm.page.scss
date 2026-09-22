@@ -1,0 +1,62 @@
+@use '../../../styles/ui' as ui;
+
+:host {
+  @include ui.canvas-host;
+}
+.wrap {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 2.5rem 1rem;
+}
+.loading {
+  @include ui.loading-center(4rem 0);
+}
+.card {
+  background: #fff;
+  padding: 1.75rem;
+  border-radius: 0.75rem;
+  border: 1px solid #e5e7eb;
+  display: grid;
+  gap: 1.25rem;
+}
+header h1 {
+  margin: 0 0 0.25rem;
+  font-size: 1.25rem;
+}
+.muted {
+  color: #6b7280;
+  margin: 0;
+}
+dl {
+  @include ui.definition-list;
+}
+dt {
+  color: #6b7280;
+}
+.actions {
+  @include ui.actions-end;
+}
+button {
+  padding: 0.7rem 1.25rem;
+  border: 0;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-weight: 600;
+  color: #fff;
+  background: #111827;
+}
+button.primary {
+  background: #16a34a;
+}
+button.danger {
+  background: #dc2626;
+}
+button:disabled {
+  @include ui.disabled-control;
+}
+.success {
+  @include ui.success-text;
+}
+.error {
+  @include ui.error-plain;
+}

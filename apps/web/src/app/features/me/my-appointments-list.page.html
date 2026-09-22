@@ -1,0 +1,71 @@
+<main class="wrap">
+  <header class="topbar">
+    <strong>Agendar Horário</strong>
+    <span class="user">Olá, {{ auth.user()?.name }}</span>
+    <button type="button" (click)="onLogout()">Sair</button>
+  </header>
+
+  <app-page-header
+    title="Meus agendamentos"
+    subtitle="Acompanhe e gerencie agendamentos em todas as empresas."
+  />
+
+  <div class="tabs" role="tablist">
+    <button
+      type="button"
+      role="tab"
+      [attr.aria-selected]="range() === 'upcoming'"
+      [class.active]="range() === 'upcoming'"
+      (click)="setRange('upcoming')"
+    >
+      Próximos
+    </button>
+    <button
+      type="button"
+      role="tab"
+      [attr.aria-selected]="range() === 'past'"
+      [class.active]="range() === 'past'"
+      (click)="setRange('past')"
+    >
+      Histórico
+    </button>
+  </div>
+
+  @if (loading() && items().length === 0) {
+  <div class="loading"><app-spinner /></div>
+  } @else if (loadError()) {
+  <app-empty-state
+    title="Não foi possível carregar"
+    [description]="loadError()"
+    actionLabel="Tentar novamente"
+    (action)="reload()"
+  />
+  } @else if (items().length === 0) {
+  <app-empty-state
+    [title]="range() === 'upcoming' ? 'Sem agendamentos futuros' : 'Sem histórico ainda'"
+    [description]="
+        range() === 'upcoming'
+          ? 'Quando você agendar em alguma empresa, ele aparecerá aqui.'
+          : 'Você não tem agendamentos passados.'
+      "
+  />
+  } @else {
+  <ul class="list">
+    @for (a of items(); track a.id) {
+    <li>
+      <a [routerLink]="[a.id]" class="row">
+        <div>
+          <strong>{{ a.serviceName }}</strong>
+          <small>{{ a.companyName }}</small>
+          <small class="meta">
+            {{ formatDate(a.startsAt) }} ·
+            <span class="status status-{{ a.status }}">{{ statusLabel(a.status) }}</span>
+          </small>
+        </div>
+        <span class="arrow" aria-hidden="true">›</span>
+      </a>
+    </li>
+    }
+  </ul>
+  }
+</main>

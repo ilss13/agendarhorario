@@ -1,0 +1,116 @@
+@use '../../../styles/ui' as ui;
+
+:host {
+  @include ui.canvas-host;
+}
+.wrap {
+  @include ui.content-wrap;
+}
+.back {
+  @include ui.back-link;
+}
+.card {
+  background: #fff;
+  padding: 1.5rem;
+  border-radius: 0.75rem;
+  border: 1px solid #e5e7eb;
+  display: grid;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+dl {
+  @include ui.definition-list;
+}
+dt {
+  color: #6b7280;
+}
+.actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+button {
+  padding: 0.65rem 1.25rem;
+  border: 0;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-weight: 600;
+  color: #fff;
+}
+button.primary {
+  background: #2563eb;
+}
+button.danger {
+  background: #dc2626;
+}
+button.secondary {
+  background: #f3f4f6;
+  color: #111827;
+  border: 1px solid #d1d5db;
+}
+button:disabled {
+  @include ui.disabled-control;
+}
+.status {
+  font-weight: 600;
+}
+.status-PENDING {
+  color: #b45309;
+}
+.status-CONFIRMED {
+  color: #047857;
+}
+.status-CANCELLED {
+  color: #dc2626;
+}
+.status-COMPLETED {
+  color: #1d4ed8;
+}
+.status-NO_SHOW {
+  color: #6b7280;
+}
+.muted {
+  color: #6b7280;
+}
+.error {
+  @include ui.error-plain;
+}
+.days {
+  display: grid;
+  gap: 0.75rem;
+}
+.day {
+  background: #f9fafb;
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+}
+.day header {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+.slot-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 0.5rem;
+}
+.slot-grid button {
+  padding: 0.45rem 0.5rem;
+  border: 1px solid #d1d5db;
+  background: #fff;
+  border-radius: 0.5rem;
+  color: #111827;
+}
+.slot-grid button.selected {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #fff;
+}
+h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.05rem;
+}
+.loading {
+  display: grid;
+  place-items: center;
+  padding: 2rem;
+}

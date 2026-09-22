@@ -1,0 +1,39 @@
+<div class="shell">
+  <button
+    type="button"
+    class="menu-toggle"
+    (click)="toggleDrawer()"
+    [attr.aria-expanded]="drawerOpen()"
+    aria-controls="admin-nav"
+  >
+    ☰
+  </button>
+
+  <aside id="admin-nav" class="sidebar" [attr.data-open]="drawerOpen()" (click)="closeDrawer()">
+    <div class="brand">
+      <strong>{{ company()?.name ?? 'Agendar Horário' }}</strong>
+      @if (company()?.slug) {
+      <small>/p/{{ company()!.slug }}</small>
+      }
+    </div>
+    <nav>
+      <a routerLink="empresa" routerLinkActive="active">Empresa</a>
+      <a routerLink="servicos" routerLinkActive="active">Serviços</a>
+      <a routerLink="horarios" routerLinkActive="active">Horários</a>
+      <a routerLink="excecoes" routerLinkActive="active">Exceções / Feriados</a>
+      <a routerLink="assinatura" routerLinkActive="active">Assinatura</a>
+    </nav>
+    <div class="user">
+      <span>{{ auth.user()?.name }}</span>
+      <button type="button" (click)="onLogout()">Sair</button>
+    </div>
+  </aside>
+
+  @if (drawerOpen()) {
+  <div class="backdrop" (click)="closeDrawer()" aria-hidden="true"></div>
+  }
+
+  <main class="content">
+    <router-outlet />
+  </main>
+</div>

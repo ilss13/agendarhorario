@@ -1,0 +1,18 @@
+@if (open) {
+  <div class="backdrop" (click)="onCancel()" role="presentation">
+    <div
+      class="dialog"
+      role="dialog"
+      aria-modal="true"
+      [attr.aria-labelledby]="'dialog-title'"
+      (click)="$event.stopPropagation()"
+    >
+      <h2 id="dialog-title">{{ title }}</h2>
+      <p class="muted">{{ message }}</p>
+      <div class="actions">
+        <button type="button" class="secondary" (click)="onCancel()">{{ cancelLabel }}</button>
+        <button type="button" class="danger" (click)="onConfirm()">{{ confirmLabel }}</button>
+      </div>
+    </div>
+  </div>
+}

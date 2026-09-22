@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/nestjs';
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Logger } from '@nestjs/common';
 import { Job } from 'bullmq';
@@ -13,7 +14,9 @@ export class NotificationsProcessor extends WorkerHost {
   }
 
   async process(job: Job<NotificationJobData>): Promise<void> {
-    this.logger.log(`Processing ${job.name} for ${job.data.appointmentId}`);
-    await this.service.process(job.data);
+    await Sentry.withIsolationScope(async () => {
+      this.logger.log(`Processing ${job.name} for ${job.data.appointmentId}`);
+      await this.service.process(job.data);
+    });
   }
 }

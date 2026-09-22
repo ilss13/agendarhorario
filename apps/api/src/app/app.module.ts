@@ -2,7 +2,8 @@ import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { SentryModule } from '@sentry/nestjs/setup';
 import { LoggerModule } from 'nestjs-pino';
 import { loadConfig } from '../shared/config/configuration';
 import { envValidationSchema } from '../shared/config/validation.schema';
@@ -24,10 +25,12 @@ import { NotificationsModule } from '../modules/notifications/notifications.modu
 import { PublicModule } from '../modules/public/public.module';
 import { ServicesModule } from '../modules/services/services.module';
 import { VerificationModule } from '../modules/verification/verification.module';
+import { SentryReportingFilter } from '../shared/observability/sentry-exception.filter';
 import { AppController } from './app.controller';
 
 @Module({
   imports: [
+    SentryModule.forRoot(),
     ConfigModule.forRoot({
       isGlobal: true,
       load: [loadConfig],
@@ -81,6 +84,7 @@ import { AppController } from './app.controller';
   ],
   controllers: [AppController],
   providers: [
+    { provide: APP_FILTER, useClass: SentryReportingFilter },
     { provide: APP_GUARD, useClass: ThrottlerGuard },
     { provide: APP_INTERCEPTOR, useClass: TenantInterceptor },
   ],

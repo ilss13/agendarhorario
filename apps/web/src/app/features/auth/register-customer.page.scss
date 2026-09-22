@@ -1,0 +1,42 @@
+@use '../../../styles/ui' as ui;
+
+.auth-wrap {
+  @include ui.auth-screen;
+}
+.auth-card {
+  @include ui.auth-card(460px);
+}
+h1 {
+  @include ui.heading-tight;
+}
+.muted {
+  @include ui.muted-lead;
+}
+form {
+  @include ui.form-stack;
+}
+.field {
+  @include ui.field;
+}
+.field span {
+  @include ui.field-label;
+}
+input {
+  @include ui.control;
+}
+.error {
+  @include ui.error-text;
+}
+.hint {
+  @include ui.hint;
+}
+button[type='submit'] {
+  @include ui.submit-button;
+}
+.footer {
+  margin-top: 0.5rem;
+  text-align: center;
+}
+a {
+  @include ui.link;
+}

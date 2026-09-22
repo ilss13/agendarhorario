@@ -5,7 +5,7 @@ alwaysApply: true
 
 Sempre que criar, editar ou refatorar código neste repositório, leia e siga a skill `alterar-codigo` em `.cursor/skills/alterar-codigo/SKILL.md` e as skills que ela aponta:
 
-- `.cursor/skills/praticas-do-projeto/SKILL.md`
+- `.cursor/skills/praticas-do-projeto/SKILL.md` — no front, HTML, SCSS e lógica em arquivos separados
 - `.cursor/skills/testes-unitarios-logica/SKILL.md`
 - `.cursor/skills/atualizar-swagger/SKILL.md` — se o contrato ou as rotas da API mudaram
 - `.cursor/skills/mapear-docs-api/SKILL.md` — se a lógica ou a estrutura da API mudaram

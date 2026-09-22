@@ -1,0 +1,99 @@
+<main class="wrap">
+  @if (loading()) {
+  <div class="loading"><app-spinner /></div>
+  } @else if (loadError()) {
+  <app-empty-state
+    title="Empresa não encontrada"
+    [description]="loadError()"
+    actionLabel="Tentar novamente"
+    (action)="load()"
+  />
+  } @else if (company()) {
+  <header class="hero">
+    @if (company()!.logoUrl) {
+    <img [src]="company()!.logoUrl" [alt]="company()!.name" />
+    }
+    <div>
+      <h1>{{ company()!.name }}</h1>
+      @if (company()!.phone) {
+      <p class="muted">{{ company()!.phone }}</p>
+      }
+    </div>
+  </header>
+
+  @if (company()!.status === 'SUSPENDED') {
+  <section class="status-banner danger">
+    <strong>Página de agendamentos indisponível</strong>
+    <p>
+      {{ company()!.statusReason ?? 'Esta empresa está com a página de agendamentos temporariamente
+      indisponível.' }}
+    </p>
+  </section>
+  } @else if (company()!.status === 'OVER_LIMIT') {
+  <section class="status-banner warn">
+    <strong>Limite de agendamentos atingido</strong>
+    <p>
+      Esta empresa atingiu o limite mensal de agendamentos. Tente novamente após a renovação do
+      ciclo.
+    </p>
+  </section>
+  }
+
+  <section>
+    <h2>Serviços</h2>
+    @if (company()!.services.length === 0) {
+    <app-empty-state
+      title="Nenhum serviço disponível"
+      description="Esta empresa ainda não cadastrou serviços para agendamento."
+    />
+    } @else if (company()!.status !== 'AVAILABLE') {
+    <ul class="services disabled">
+      @for (s of company()!.services; track s.id) {
+      <li>
+        <div class="service-card disabled">
+          <div>
+            <strong>{{ s.name }}</strong>
+            <small>{{ s.durationMinutes }} min · R$ {{ s.price.toFixed(2) }}</small>
+          </div>
+          <span class="cta muted">Indisponível</span>
+        </div>
+      </li>
+      }
+    </ul>
+    } @else {
+    <ul class="services">
+      @for (s of company()!.services; track s.id) {
+      <li>
+        <a [routerLink]="['agendar', s.id]" class="service-card">
+          <div>
+            <strong>{{ s.name }}</strong>
+            @if (s.description) {
+            <small>{{ s.description }}</small>
+            }
+            <small class="meta"> {{ s.durationMinutes }} min · R$ {{ s.price.toFixed(2) }} </small>
+          </div>
+          <span class="cta">Agendar →</span>
+        </a>
+      </li>
+      }
+    </ul>
+    }
+  </section>
+
+  <section class="hours">
+    <h2>Horário de atendimento</h2>
+    @if (company()!.businessHours.length === 0) {
+    <p class="muted">Horários ainda não cadastrados.</p>
+    } @else {
+    <dl>
+      @for (day of orderedDays; track day) {
+      <div class="day-row">
+        <dt>{{ dayLabels[day] }}</dt>
+        <dd>{{ hoursForDay(company()!, day) }}</dd>
+      </div>
+      }
+    </dl>
+    }
+  </section>
+  }
+</main>

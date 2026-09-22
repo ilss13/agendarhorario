@@ -1,0 +1,122 @@
+@use '../../../styles/ui' as ui;
+
+:host {
+  @include ui.canvas-host;
+}
+.wrap {
+  @include ui.content-wrap;
+}
+.hero {
+  background: #fff;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+.hero img {
+  width: 64px;
+  height: 64px;
+  border-radius: 0.75rem;
+  object-fit: cover;
+}
+h1 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+.muted {
+  color: #6b7280;
+  margin: 0.25rem 0 0;
+}
+h2 {
+  font-size: 1.05rem;
+  margin: 1.5rem 0 0.75rem;
+}
+ul.services {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+.service-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  background: #fff;
+  padding: 1rem 1.25rem;
+  border-radius: 0.75rem;
+  text-decoration: none;
+  color: inherit;
+  border: 1px solid #e5e7eb;
+  transition: border-color 0.15s ease;
+}
+.service-card:hover {
+  border-color: #2563eb;
+}
+.service-card.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+ul.services.disabled li {
+  pointer-events: none;
+}
+.status-banner {
+  padding: 1rem 1.25rem;
+  border-radius: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+.status-banner strong {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: 1.05rem;
+}
+.status-banner p {
+  margin: 0;
+  color: inherit;
+}
+.status-banner.warn {
+  background: #fef3c7;
+  color: #92400e;
+}
+.status-banner.danger {
+  background: #fee2e2;
+  color: #991b1b;
+}
+.service-card small {
+  display: block;
+  color: #6b7280;
+  font-size: 0.85rem;
+}
+.service-card .meta {
+  margin-top: 0.25rem;
+  color: #111827;
+}
+.cta {
+  color: #2563eb;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.hours dl {
+  background: #fff;
+  border-radius: 0.75rem;
+  padding: 1rem 1.25rem;
+  margin: 0;
+}
+.day-row {
+  display: flex;
+  justify-content: space-between;
+  border-top: 1px solid #f3f4f6;
+  padding: 0.4rem 0;
+}
+.day-row:first-child {
+  border-top: 0;
+}
+dt {
+  font-weight: 600;
+}
+.loading {
+  @include ui.loading-center(4rem 0);
+}

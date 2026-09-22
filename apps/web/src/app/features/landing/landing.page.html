@@ -1,0 +1,172 @@
+<header class="topbar">
+  <a class="brand" routerLink="/">{{ copy.brand }}</a>
+  <nav>
+    <a href="#planos">Planos</a>
+    <a href="#como-funciona">Como funciona</a>
+    <a href="#faq">FAQ</a>
+    @if (auth.isAuthenticated()) {
+    <a class="btn-link" [routerLink]="userHome()">Ir para o painel</a>
+    } @else {
+    <a class="btn-link" routerLink="/login">Entrar</a>
+    }
+  </nav>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="hero-text">
+      <span class="eyebrow">{{ copy.hero.eyebrow }}</span>
+      <h1>{{ copy.hero.headline }}</h1>
+      <p class="lead">{{ copy.hero.subheadline }}</p>
+      <div class="hero-ctas">
+        <a class="btn-primary" (click)="startSignup('basico')" [routerLink]="signupLink('basico')">
+          {{ copy.hero.primaryCta }}
+        </a>
+        <a class="btn-ghost" href="#planos">{{ copy.hero.secondaryCta }}</a>
+      </div>
+      <ul class="trust">
+        @for (b of copy.hero.trustBadges; track b) {
+        <li>✓ {{ b }}</li>
+        }
+      </ul>
+    </div>
+    <div class="hero-art" aria-hidden="true">
+      <div class="card-mock card-mock-1">
+        <strong>Agenda de hoje</strong>
+        <ul>
+          <li><span>09:00</span> Maria Silva</li>
+          <li><span>10:30</span> João Pereira</li>
+          <li><span>14:00</span> Ana Souza</li>
+        </ul>
+      </div>
+      <div class="card-mock card-mock-2">
+        <strong>Página pública</strong>
+        <small>/p/sua-empresa</small>
+        <div class="slot-row">
+          <span class="slot">09:00</span>
+          <span class="slot selected">10:30</span>
+          <span class="slot">14:00</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="social-proof" aria-label="prova-social">
+    <p>{{ copy.socialProof.headline }}</p>
+  </section>
+
+  <section class="problems" id="problemas">
+    <h2>{{ copy.problems.headline }}</h2>
+    <ul class="problem-grid">
+      @for (p of copy.problems.items; track p.title) {
+      <li>
+        <div class="icon" aria-hidden="true">✓</div>
+        <strong>{{ p.title }}</strong>
+        <p>{{ p.description }}</p>
+      </li>
+      }
+    </ul>
+  </section>
+
+  <section class="pricing" id="planos">
+    <header>
+      <h2>{{ copy.pricing.headline }}</h2>
+      <p class="muted">{{ copy.pricing.sub }}</p>
+    </header>
+
+    @if (loadingPlans()) {
+    <p class="muted center">Carregando planos...</p>
+    } @else if (plans().length === 0) {
+    <p class="muted center">
+      Estamos atualizando o catálogo de planos. Tente novamente em instantes.
+    </p>
+    } @else {
+    <ul class="plan-grid">
+      @for (p of plans(); track p.id) {
+      <li [class.highlight]="copyOf(p)?.highlight">
+        @if (copyOf(p)?.highlight) {
+        <span class="badge">Mais escolhido</span>
+        }
+        <strong class="plan-name">{{ p.name }}</strong>
+        <div class="plan-price">R$ {{ p.priceBrl.toFixed(2) }}<small>/mês</small></div>
+        <small class="plan-trial">{{ copy.pricing.trialNote }}</small>
+        <small class="plan-limit"> até {{ p.monthlyAppointmentLimit }} agendamentos/mês </small>
+        <ul class="plan-features">
+          <li>✓ {{ p.trialDays }} dias grátis inclusos</li>
+          @for (f of copyOf(p)?.features ?? []; track f) {
+          <li>✓ {{ f }}</li>
+          }
+        </ul>
+        <a
+          class="btn-primary block"
+          [routerLink]="signupLink(p.code)"
+          (click)="startSignup(p.code)"
+        >
+          Começar teste grátis
+        </a>
+      </li>
+      }
+    </ul>
+    }
+  </section>
+
+  <section class="how" id="como-funciona">
+    <h2>{{ copy.howItWorks.headline }}</h2>
+    <ol class="how-steps">
+      @for (s of copy.howItWorks.steps; track s.n) {
+      <li>
+        <span class="step-num">{{ s.n }}</span>
+        <strong>{{ s.title }}</strong>
+        <p>{{ s.description }}</p>
+      </li>
+      }
+    </ol>
+  </section>
+
+  <section class="features">
+    <h2>{{ copy.features.headline }}</h2>
+    <ul class="feature-grid">
+      @for (f of copy.features.items; track f.title) {
+      <li>
+        <strong>{{ f.title }}</strong>
+        <p>{{ f.description }}</p>
+      </li>
+      }
+    </ul>
+  </section>
+
+  <section class="faq" id="faq">
+    <h2>{{ copy.faq.headline }}</h2>
+    <ul>
+      @for (item of copy.faq.items; track item.q) {
+      <li>
+        <details>
+          <summary>{{ item.q }}</summary>
+          <p>{{ item.a }}</p>
+        </details>
+      </li>
+      }
+    </ul>
+  </section>
+
+  <section class="cta-final">
+    <h2>{{ copy.ctaFinal.headline }}</h2>
+    <p>{{ copy.ctaFinal.sub }}</p>
+    <a class="btn-primary" [routerLink]="signupLink('basico')" (click)="startSignup('basico')">
+      {{ copy.ctaFinal.primaryCta }}
+    </a>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <span>{{ copy.footer.legal }}</span>
+  <nav>
+    @for (l of copy.footer.links; track l.label) {
+    <a [href]="l.href">{{ l.label }}</a>
+    }
+  </nav>
+</footer>
+
+<a class="sticky-cta" [routerLink]="signupLink('basico')" (click)="startSignup('basico')">
+  {{ copy.hero.primaryCta }}
+</a>

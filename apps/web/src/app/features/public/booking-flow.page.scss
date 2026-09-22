@@ -1,0 +1,137 @@
+@use '../../../styles/ui' as ui;
+
+:host {
+  @include ui.canvas-host;
+}
+.wrap {
+  @include ui.content-wrap;
+}
+.back {
+  @include ui.back-link;
+}
+.loading {
+  @include ui.loading-center(4rem 0);
+}
+.steps {
+  display: flex;
+  gap: 0.5rem;
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1.5rem;
+  font-size: 0.9rem;
+  color: #6b7280;
+  flex-wrap: wrap;
+}
+.steps li[data-active='true'] {
+  color: #2563eb;
+  font-weight: 600;
+}
+.days {
+  display: grid;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+.day {
+  background: #fff;
+  border-radius: 0.75rem;
+  padding: 1rem 1.25rem;
+  border: 1px solid #e5e7eb;
+}
+.day header {
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+}
+.slot-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 0.5rem;
+}
+.slot-grid button {
+  padding: 0.55rem 0.5rem;
+  border: 1px solid #d1d5db;
+  background: #fff;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-weight: 600;
+}
+.slot-grid button.selected {
+  background: #2563eb;
+  color: #fff;
+  border-color: #2563eb;
+}
+form {
+  display: grid;
+  gap: 1rem;
+  background: #fff;
+  padding: 1.5rem;
+  border-radius: 0.75rem;
+  border: 1px solid #e5e7eb;
+}
+textarea {
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  font-family: inherit;
+  font-size: 0.95rem;
+  resize: vertical;
+}
+.actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+.btn-primary {
+  padding: 0.65rem 1.25rem;
+  border: 0;
+  border-radius: 0.5rem;
+  background: #2563eb;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+}
+.btn-primary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.btn-secondary {
+  padding: 0.65rem 1.25rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  background: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+.error {
+  @include ui.error-plain;
+}
+.resend-row {
+  margin: 0;
+}
+.link-btn {
+  border: 0;
+  background: none;
+  padding: 0;
+  color: #2563eb;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+.link-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.muted {
+  color: #6b7280;
+}
+.done {
+  background: #fff;
+  padding: 2rem;
+  border-radius: 0.75rem;
+  text-align: center;
+}
+.done h1 {
+  margin: 0 0 0.75rem;
+}

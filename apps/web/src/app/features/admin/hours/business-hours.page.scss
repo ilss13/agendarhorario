@@ -1,0 +1,73 @@
+@use '../../../../styles/ui' as ui;
+
+form {
+  display: grid;
+  gap: 1.25rem;
+}
+.days {
+  display: grid;
+  gap: 0.75rem;
+}
+.day {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  padding: 1rem;
+}
+.day header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.day h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+.link {
+  background: transparent;
+  border: 0;
+  color: #2563eb;
+  cursor: pointer;
+  font-weight: 600;
+}
+ul {
+  list-style: none;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+li {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  align-items: end;
+  gap: 0.75rem;
+}
+@media (max-width: 540px) {
+  li {
+    grid-template-columns: 1fr;
+  }
+}
+.remove {
+  border: 0;
+  background: transparent;
+  color: #dc2626;
+  cursor: pointer;
+  padding: 0.5rem 0;
+}
+.muted {
+  color: #6b7280;
+  margin: 0.75rem 0 0;
+}
+.error {
+  @include ui.error-plain;
+}
+.success {
+  @include ui.success-text;
+}
+.actions {
+  @include ui.actions-end;
+}
+.actions button {
+  @include ui.primary-action;
+}

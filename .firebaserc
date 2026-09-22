@@ -1,6 +1,6 @@
 {
   "projects": {
-    "default": "agendarhorario-prod",
+    "default": "agenda-controlador",
     "staging": "agendarhorario-staging"
   }
 }

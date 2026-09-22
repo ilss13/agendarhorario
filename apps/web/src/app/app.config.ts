@@ -1,7 +1,14 @@
 import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
-import { APP_INITIALIZER, ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
-import { provideRouter, withComponentInputBinding } from '@angular/router';
-import { firstValueFrom } from 'rxjs';
+import {
+  APP_INITIALIZER,
+  ApplicationConfig,
+  ErrorHandler,
+  provideZoneChangeDetection,
+} from '@angular/core';
+import { provideRouter, withComponentInputBinding, Router, NavigationEnd } from '@angular/router';
+import { filter, firstValueFrom } from 'rxjs';
+import * as Sentry from '@sentry/angular';
+import { flowFromPath } from '@agendarhorario/utils';
 import { appRoutes } from './app.routes';
 import { WEB_ENV } from '@agendarhorario/web-data-access';
 import { AuthService } from './core/auth/auth.service';
@@ -27,6 +34,24 @@ export const appConfig: ApplicationConfig = {
           authDomain: 'agenda-controlador.firebaseapp.com',
           projectId: 'agenda-controlador',
         },
+      },
+    },
+    {
+      provide: ErrorHandler,
+      useValue: Sentry.createErrorHandler({ logErrors: true }),
+    },
+    {
+      provide: Sentry.TraceService,
+      deps: [Router],
+    },
+    {
+      provide: APP_INITIALIZER,
+      multi: true,
+      deps: [Sentry.TraceService, Router],
+      useFactory: (_trace: Sentry.TraceService, router: Router) => () => {
+        router.events.pipe(filter((event) => event instanceof NavigationEnd)).subscribe((event) => {
+          Sentry.setTag('flow', flowFromPath(event.urlAfterRedirects));
+        });
       },
     },
     {

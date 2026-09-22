@@ -1,0 +1,105 @@
+<main class="wrap">
+  <a class="back" routerLink="/me/agendamentos">← Voltar</a>
+
+  @if (loading() && !appointment()) {
+  <div class="loading"><app-spinner /></div>
+  } @else if (loadError()) {
+  <app-empty-state
+    title="Não foi possível carregar"
+    [description]="loadError()"
+    actionLabel="Tentar novamente"
+    (action)="load()"
+  />
+  } @else if (appointment()) {
+  <app-page-header [title]="appointment()!.serviceName" [subtitle]="appointment()!.companyName" />
+
+  <section class="card">
+    <dl>
+      <div>
+        <dt>Quando</dt>
+        <dd>{{ formatDate(appointment()!.startsAt) }}</dd>
+      </div>
+      <div>
+        <dt>Status</dt>
+        <dd>
+          <span class="status status-{{ appointment()!.status }}">
+            {{ statusLabel(appointment()!.status) }}
+          </span>
+        </dd>
+      </div>
+      <div>
+        <dt>Empresa</dt>
+        <dd>
+          <a [href]="'/p/' + appointment()!.companySlug" target="_blank">
+            {{ appointment()!.companyName }}
+          </a>
+        </dd>
+      </div>
+    </dl>
+
+    @if (canAct(appointment()!)) { @if (!rescheduling()) {
+    <div class="actions">
+      <button type="button" class="danger" (click)="askCancel()">Cancelar</button>
+      <button type="button" class="primary" (click)="startReschedule()">Remarcar</button>
+    </div>
+    } } @else {
+    <p class="muted">Este agendamento já não pode ser alterado.</p>
+    }
+  </section>
+
+  @if (rescheduling()) {
+  <section class="card">
+    <h2>Escolha um novo horário</h2>
+    @if (availability()) {
+    <div class="days">
+      @for (day of availability()!.days; track day.date) {
+      <article class="day">
+        <header>{{ formatShortDate(day.date) }}</header>
+        @if (day.slots.length === 0) {
+        <p class="muted">Sem horários</p>
+        } @else {
+        <div class="slot-grid">
+          @for (slot of day.slots; track slot.start) {
+          <button
+            type="button"
+            (click)="selectSlot(slot)"
+            [class.selected]="selectedSlot()?.start === slot.start"
+          >
+            {{ slot.start.slice(11, 16) }}
+          </button>
+          }
+        </div>
+        }
+      </article>
+      }
+    </div>
+    } @else {
+    <div class="loading"><app-spinner /></div>
+    } @if (actionError()) {
+    <p class="error" role="alert">{{ actionError() }}</p>
+    }
+
+    <div class="actions">
+      <button type="button" class="secondary" (click)="cancelReschedule()">Voltar</button>
+      <button
+        type="button"
+        class="primary"
+        [disabled]="!selectedSlot() || submitting()"
+        (click)="confirmReschedule()"
+      >
+        {{ submitting() ? 'Salvando...' : 'Confirmar nova data' }}
+      </button>
+    </div>
+  </section>
+  } }
+
+  <app-confirm-dialog
+    [open]="confirmingCancel()"
+    title="Cancelar agendamento"
+    message="Deseja cancelar este agendamento? A empresa será notificada."
+    confirmLabel="Cancelar agendamento"
+    cancelLabel="Voltar"
+    (confirmed)="doCancel()"
+    (cancelled)="confirmingCancel.set(false)"
+  />
+</main>

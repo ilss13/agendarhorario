@@ -90,7 +90,8 @@ Cada _feature module_ contém:
 | Auth             | `firebase-admin` (verifyIdToken) + Guards Nest                                |
 | Validation       | `class-validator` + `class-transformer` (também `zod` em DTOs compartilhados) |
 | Configuração     | `@nestjs/config` + `joi`                                                      |
-| Logs             | `nestjs-pino` (JSON estruturado, request-id)                                  |
+| Logs             | `nestjs-pino` (JSON local) + Sentry Logs só em 4xx recorrentes                |
+| Observabilidade  | `@sentry/nestjs` + `@sentry/angular` (erros, traces, replay só em erro)       |
 | Rate limit       | `@nestjs/throttler`                                                           |
 | Security headers | `helmet`, `compression`                                                       |
 | Filas/Jobs       | `bullmq` + Redis (Memorystore em prod)                                        |
@@ -237,19 +238,20 @@ apps/web/src/app/
 
 ### 3.2 Stack do frontend
 
-| Concern     | Escolha                                                                               |
-| ----------- | ------------------------------------------------------------------------------------- |
-| Angular     | 17+ standalone components, signals, control flow `@if/@for`                           |
-| State       | Angular Signals + `@ngrx/signals` (SignalStore) para stores complexas                 |
-| UI          | Angular Material + Tailwind CSS (utility para layouts responsivos)                    |
-| Forms       | Reactive Forms tipadas + `ngx-mask` para telefone/data                                |
-| Calendário  | `FullCalendar` Angular plugin para visão dia/semana/mês                               |
-| Datas       | `luxon` + `@jsverse/transloco-locale`                                                 |
-| HTTP        | `HttpClient` + interceptors (CSRF, withCredentials, retry idempotente, error toaster) |
-| i18n        | preparar com `@angular/localize` ainda que só pt-BR no MVP                            |
-| A11y        | foco em ARIA, navegação por teclado, contraste AA                                     |
-| Testes      | Vitest (unit) + Playwright (e2e)                                                      |
-| Lint/format | ESLint + Prettier + `lint-staged` + husky                                             |
+| Concern     | Escolha                                                                                            |
+| ----------- | -------------------------------------------------------------------------------------------------- |
+| Angular     | 17+ standalone components, signals, control flow `@if/@for`                                        |
+| Arquivos    | lógica no `.ts`, template em `.html`, estilos em `.scss`; mixins em `apps/web/src/styles/_ui.scss` |
+| State       | Angular Signals + `@ngrx/signals` (SignalStore) para stores complexas                              |
+| UI          | Angular Material + Tailwind CSS (utility para layouts responsivos)                                 |
+| Forms       | Reactive Forms tipadas + `ngx-mask` para telefone/data                                             |
+| Calendário  | `FullCalendar` Angular plugin para visão dia/semana/mês                                            |
+| Datas       | `luxon` + `@jsverse/transloco-locale`                                                              |
+| HTTP        | `HttpClient` + interceptors (CSRF, withCredentials, retry idempotente, error toaster)              |
+| i18n        | preparar com `@angular/localize` ainda que só pt-BR no MVP                                         |
+| A11y        | foco em ARIA, navegação por teclado, contraste AA                                                  |
+| Testes      | Vitest (unit) + Playwright (e2e)                                                                   |
+| Lint/format | ESLint + Prettier + `lint-staged` + husky                                                          |
 
 ### 3.3 Responsividade
 
@@ -406,7 +408,7 @@ Toda lista com **> 10 itens potenciais** deve ter busca; toda lista paginada dev
 - Rate limit por IP + por usuário em endpoints sensíveis (auth, OTP request)
 - OTP: hash SHA-256 com salt; máx 5 tentativas; expira em 10min
 - Tokens de ação (confirm/cancel): JWT assinado HS256 com secret rotacionável; armazenamos só hash
-- Logs estruturados com `request-id`; nunca logar PII em produção
+- Logs estruturados no Cloud Logging; Sentry recebe erro (5xx), log de 4xx recorrente e trace. Nunca enviar PII (e-mail, telefone, OTP, cookie)
 - Auditoria: tabela `audit_log` (changes em Appointment/Company por usuário)
 - LGPD: endpoint de exportação e deleção de dados de cliente (soft delete + redação de PII após retenção)
 - Secrets em **Secret Manager** (GCP); nada em `.env` versionado
@@ -426,8 +428,10 @@ Toda lista com **> 10 itens potenciais** deve ter busca; toda lista paginada dev
 | Storage          | Firebase Storage (logos da empresa, futuros uploads)                                        |
 | CDN              | Firebase Hosting global por padrão                                                          |
 | CI/CD            | GitHub Actions: lint → test → build → push imagem (Artifact Registry) → `gcloud run deploy` |
-| Observabilidade  | Cloud Logging + Cloud Monitoring + Sentry (front e back)                                    |
+| Observabilidade  | Sentry (erros, traces, logs, replay em erro) + Cloud Logging                                |
 | Migrações        | Job Cloud Run separado executando `typeorm migration:run` antes do deploy                   |
+
+O plano gratuito do Sentry (1 ano) cabe no diagnóstico dos fluxos prioritários: **50 mil erros**, **5 milhões de spans**, **5 GB de logs**, **500 replays**. No código: erro só em 5xx e falha de rede; 400/409/422/429 vão para Logs (não para Issues); traces em 100% de agendamento, dashboard, auth, cobrança e link de ação, 20% no resto, 0 em `/health`; replay em 0% das sessões e 100% quando há erro (teto de 500/mês — baixar `replaysOnErrorSampleRate` se chegar perto). Profiling e o cron monitor (1 vaga) ficam desligados. `GET /api/debug-sentry` é público e sempre responde 500, só para validar o envio ao Sentry. Corpos HTTP, cookies e query string não são enviados.
 
 Ambiente local: `docker-compose` com MySQL 8, Redis, MailHog (SMTP de teste), e `firebase emulators` (Auth + Functions se vier a usar).
 

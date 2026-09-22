@@ -1,0 +1,97 @@
+@use '../../../styles/ui' as ui;
+
+:host {
+  @include ui.canvas-host;
+}
+.wrap {
+  @include ui.content-wrap(760px);
+}
+.topbar {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  background: #fff;
+  padding: 0.85rem 1rem;
+  border-radius: 0.75rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid #e5e7eb;
+}
+.user {
+  margin-left: auto;
+  color: #6b7280;
+}
+.topbar button {
+  border: 1px solid #d1d5db;
+  background: #fff;
+  padding: 0.4rem 0.85rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+}
+.tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+.tabs button {
+  background: transparent;
+  border: 0;
+  padding: 0.55rem 1rem;
+  color: #6b7280;
+  cursor: pointer;
+  font-weight: 600;
+  border-bottom: 2px solid transparent;
+}
+.tabs button.active {
+  color: #2563eb;
+  border-bottom-color: #2563eb;
+}
+.loading {
+  @include ui.loading-center(3rem 0);
+}
+ul.list {
+  @include ui.card-list;
+}
+ul.list li {
+  border-top: 1px solid #f3f4f6;
+}
+ul.list li:first-child {
+  border-top: 0;
+}
+a.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  color: inherit;
+  text-decoration: none;
+}
+a.row small {
+  display: block;
+  color: #6b7280;
+  font-size: 0.85rem;
+}
+.meta {
+  margin-top: 0.25rem;
+}
+.arrow {
+  color: #9ca3af;
+  font-size: 1.4rem;
+}
+.status {
+  font-weight: 600;
+}
+.status-PENDING {
+  color: #b45309;
+}
+.status-CONFIRMED {
+  color: #047857;
+}
+.status-CANCELLED {
+  color: #dc2626;
+}
+.status-COMPLETED {
+  color: #1d4ed8;
+}
+.status-NO_SHOW {
+  color: #6b7280;
+}

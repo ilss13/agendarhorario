@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "hooks": {
+    "stop": [
+      {
+        "command": ".cursor/hooks/require-web-unit-tests.sh",
+        "timeout": 180,
+        "loop_limit": 4
+      },
+      {
+        "command": ".cursor/hooks/require-api-unit-tests.sh",
+        "timeout": 300,
+        "loop_limit": 4
+      }
+    ]
+  }
+}

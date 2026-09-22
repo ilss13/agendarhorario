@@ -13,7 +13,7 @@ Antes de declarar a tarefa concluída, execute este checklist. Leia e siga cada 
 
 ## Checklist
 
-1. **Práticas do projeto** — siga [praticas-do-projeto](../praticas-do-projeto/SKILL.md).
+1. **Práticas do projeto** — siga [praticas-do-projeto](../praticas-do-projeto/SKILL.md). No front, HTML, SCSS e lógica ficam em arquivos separados.
 2. **Testes** — se houve lógica nova ou alterada, siga [testes-unitarios-logica](../testes-unitarios-logica/SKILL.md).
 3. **Contrato da API** — se rotas, status HTTP, body, query, params ou tipos em `libs/shared/contracts` mudaram, siga [atualizar-swagger](../atualizar-swagger/SKILL.md).
 4. **Lógica ou estrutura da API** — se módulos, endpoints, fluxos, tenancy, billing ou invariantes mudaram, siga [mapear-docs-api](../mapear-docs-api/SKILL.md).

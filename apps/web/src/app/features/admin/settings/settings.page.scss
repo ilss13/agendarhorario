@@ -1,0 +1,35 @@
+@use '../../../../styles/ui' as ui;
+
+.loading {
+  @include ui.loading-center;
+}
+form {
+  @include ui.panel(1.25rem);
+}
+.grid {
+  @include ui.two-col;
+}
+fieldset.toggles {
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  display: grid;
+  gap: 0.5rem;
+}
+fieldset.toggles label {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+.actions {
+  @include ui.actions-end;
+}
+.actions button {
+  @include ui.primary-action;
+}
+.success {
+  @include ui.success-text;
+}
+.error {
+  @include ui.error-plain;
+}

@@ -1,3 +1,4 @@
+import './instrument';
 import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
@@ -61,7 +62,7 @@ async function bootstrap(): Promise<void> {
     origin: webOrigin,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'X-CSRF-Token', 'X-Requested-With'],
+    allowedHeaders: ['Content-Type', 'X-CSRF-Token', 'X-Requested-With', 'sentry-trace', 'baggage'],
     exposedHeaders: ['Content-Length'],
   });
 

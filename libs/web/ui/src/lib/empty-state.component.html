@@ -1,0 +1,24 @@
+<div class="empty" [attr.role]="'status'" [attr.aria-live]="'polite'">
+  <div class="illustration" aria-hidden="true">
+    <!-- minimal inline SVG -->
+    <svg viewBox="0 0 64 64" width="56" height="56">
+      <circle cx="32" cy="32" r="28" fill="#e0e7ff" />
+      <path
+        d="M20 36c0-6.6 5.4-12 12-12s12 5.4 12 12"
+        stroke="#4f46e5"
+        stroke-width="2.5"
+        fill="none"
+        stroke-linecap="round"
+      />
+      <circle cx="26" cy="28" r="2" fill="#4f46e5" />
+      <circle cx="38" cy="28" r="2" fill="#4f46e5" />
+    </svg>
+  </div>
+  <h2>{{ title }}</h2>
+  @if (description) {
+    <p class="muted">{{ description }}</p>
+  }
+  @if (actionLabel) {
+    <button type="button" (click)="action.emit()">{{ actionLabel }}</button>
+  }
+</div>

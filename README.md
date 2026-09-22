@@ -3,7 +3,7 @@
 Plataforma SaaS multi-tenant de agendamento de horários.
 
 - **Backend**: NestJS + TypeORM + MySQL + Firebase Admin
-- **Frontend**: Angular standalone + Tailwind + Angular Material
+- **Frontend**: Angular standalone (`.ts` + `.html` + `.scss`) + Tailwind + Angular Material
 - **Monorepo**: Nx
 - **Deploy**: GCP (Cloud Run + Cloud SQL + Firebase Hosting)
 
@@ -32,6 +32,10 @@ npm run start             # sobe api e web em paralelo
 3. Em **Project settings → Service accounts**, gere uma chave (JSON) e salve em `secrets/firebase-service-account.json` (já está no `.gitignore`).
 4. Em **Project settings → General**, pegue o **Web API key** e copie para `.env` como `FIREBASE_WEB_API_KEY` e `FIREBASE_PROJECT_ID`.
 
+### Sentry (opcional em local)
+
+Deixe `SENTRY_DSN` vazio no `.env` para não enviar eventos. Para testar, use o DSN do projeto da API. O frontend só envia se `sentryDsn` estiver preenchido em `apps/web/src/environments/environment.ts`.
+
 ### URLs
 
 - API: http://localhost:3000/api
@@ -39,6 +43,7 @@ npm run start             # sobe api e web em paralelo
 - Frontend: http://localhost:4200
 - MailHog UI: http://localhost:8025
 - Health check: http://localhost:3000/api/health
+- Teste Sentry: http://localhost:3000/api/debug-sentry (sempre 500)
 
 ### Scripts úteis
 
@@ -66,7 +71,7 @@ npx typeorm migration:generate apps/api/src/shared/infra/typeorm/migrations/<Nom
 ```
 apps/
   api/          # NestJS
-  web/          # Angular
+  web/          # Angular — componente = .ts + .html + .scss
 libs/
   shared/
     contracts/  # zod + DTOs compartilhados front/back
@@ -75,3 +80,5 @@ libs/
     ui/         # design system Angular
     data-access/# serviços HTTP/state
 ```
+
+No frontend, a lógica fica no `.ts`, o template no `.html` e os estilos no `.scss`. O que se repete entre telas vai para os mixins de `apps/web/src/styles/_ui.scss`.
