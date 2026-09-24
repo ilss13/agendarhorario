@@ -1,0 +1,44 @@
+<div class="block">
+  <p class="label">Dia</p>
+  <div class="days">
+    @for (day of days(); track day.date) {
+      @if (dayParts(day.date); as parts) {
+        <button
+          type="button"
+          class="day"
+          [class.selected]="day.date === activeDate()"
+          [attr.aria-pressed]="day.date === activeDate()"
+          (click)="datePicked.emit(day.date)"
+        >
+          <span class="weekday">{{ parts.weekday }}</span>
+          <span class="num">{{ parts.day }}</span>
+        </button>
+      }
+    }
+  </div>
+</div>
+
+<div class="block">
+  <p class="label">Horário</p>
+  @if (activeSlots().length === 0) {
+    <p class="empty">Sem horários neste dia.</p>
+  } @else {
+    <div class="times">
+      @for (slot of activeSlots(); track slot.start) {
+        <button
+          type="button"
+          class="time"
+          [class.selected]="slot.start === selectedStart()"
+          [attr.aria-pressed]="slot.start === selectedStart()"
+          (click)="slotPicked.emit(slot)"
+        >
+          {{ clock(slot.start) }}
+        </button>
+      }
+    </div>
+  }
+</div>
+
+<button type="button" class="confirm" [disabled]="!selectedStart()" (click)="confirmed.emit()">
+  Confirmar horário
+</button>

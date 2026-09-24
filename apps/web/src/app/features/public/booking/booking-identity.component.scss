@@ -1,0 +1,174 @@
+@use '../../../../styles/ui' as ui;
+
+:host {
+  display: block;
+}
+
+.panel {
+  position: sticky;
+  top: 0;
+  box-sizing: border-box;
+  height: 100dvh;
+  padding: 56px 48px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+  background: ui.$bk-brand;
+  color: ui.$color-surface;
+}
+
+.panel::after {
+  content: '';
+  position: absolute;
+  right: -70px;
+  bottom: -50px;
+  width: 280px;
+  height: 280px;
+  border-radius: 36px;
+  background: rgb(255 255 255 / 10%);
+}
+
+.brand,
+.footer {
+  position: relative;
+  z-index: 1;
+}
+
+.mark {
+  width: 64px;
+  height: 64px;
+  border-radius: 999px;
+  background: ui.$bk-primary;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.mark img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+h1 {
+  margin: 24px 0 0;
+  font-size: 28px;
+  line-height: 36px;
+  font-weight: 600;
+}
+
+.subtitle,
+.step {
+  display: none;
+}
+
+.extras {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 32px;
+}
+
+.extras p,
+.footer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+}
+
+.extras span,
+.footer {
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.extras svg,
+.footer svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  fill: none;
+  stroke: ui.$bk-accent;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.footer {
+  gap: 6px;
+  font-size: 12px;
+  line-height: 16px;
+  color: ui.$bk-soft;
+}
+
+.footer svg {
+  width: 16px;
+  height: 16px;
+  fill: ui.$bk-accent;
+  stroke: ui.$bk-brand;
+  stroke-width: 2.4;
+}
+
+.footer rect {
+  fill: ui.$bk-accent;
+  stroke: none;
+}
+
+@media (max-width: 900px) {
+  .panel {
+    position: static;
+    height: auto;
+    padding: 32px 24px 20px;
+    align-items: center;
+    text-align: center;
+    background: ui.$color-surface;
+    color: ui.$bk-ink;
+    border-bottom: 1px solid ui.$bk-border;
+  }
+
+  .panel::after,
+  .extras,
+  .footer {
+    display: none;
+  }
+
+  .brand {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .mark {
+    width: 56px;
+    height: 56px;
+    background: ui.$bk-brand;
+    font-size: 20px;
+    color: ui.$color-surface;
+  }
+
+  h1 {
+    margin: 0;
+    font-size: 20px;
+    line-height: 28px;
+  }
+
+  .subtitle {
+    display: block;
+    margin: 2px 0 0;
+    font-size: 14px;
+    line-height: 20px;
+    color: ui.$bk-muted;
+  }
+
+  .step {
+    display: block;
+    @include ui.booking-eyebrow;
+    margin: 6px 0 0;
+  }
+}

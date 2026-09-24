@@ -1,0 +1,27 @@
+<section class="step">
+  <button
+    type="button"
+    class="head"
+    (click)="toggled.emit()"
+    [attr.aria-expanded]="open()"
+    [disabled]="locked()"
+  >
+    @if (done() && !open()) {
+      <span class="badge done" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><polyline points="4 12 9 17 20 6"></polyline></svg>
+      </span>
+    } @else {
+      <span class="badge" [class.active]="open()">{{ index() }}</span>
+    }
+    <span class="copy">
+      <span class="kicker">Etapa {{ index() }} · {{ kicker() }}</span>
+      <span class="summary" [class.idle]="!open() && !done()">{{ summary() }}</span>
+    </span>
+    <span class="chevron" [class.up]="open()" aria-hidden="true"></span>
+  </button>
+  @if (open()) {
+    <div class="body">
+      <ng-content />
+    </div>
+  }
+</section>

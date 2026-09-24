@@ -1,0 +1,1318 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <title>Clientes</title>
+    <script src="./vendor/react.js"></script>
+    <script src="./vendor/react-dom.js"></script>
+    <script src="./support.js"></script>
+  </head>
+  <body>
+    <x-dc>
+      <helmet>
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap"
+        />
+        <style>
+          body {
+            margin: 0;
+            font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+            background: #f2f7f8;
+            --surface-100: #ffffff;
+            --surface-200: #f2f7f8;
+            --ink: #0b2530;
+            --ink-muted: #4c6672;
+            --border: #8fb0b7;
+            --brand-navy: #185280;
+            --brand-teal: #0f9e9e;
+            --brand-teal-dark: #09424b;
+            --danger: #a3332b;
+            --danger-bg: #fbecea;
+            --font-display: 'Outfit', 'Plus Jakarta Sans', system-ui, sans-serif;
+            --font-sans: 'Plus Jakarta Sans', system-ui, sans-serif;
+            --radius-sm: 8px;
+            --radius-md: 14px;
+            --radius-full: 999px;
+          }
+          * {
+            box-sizing: border-box;
+          }
+          a {
+            color: var(--brand-teal-dark);
+          }
+          a:hover {
+            color: var(--brand-navy);
+          }
+          button {
+            font-family: inherit;
+            cursor: pointer;
+          }
+          input,
+          select,
+          textarea {
+            font-family: inherit;
+          }
+          ::placeholder {
+            color: var(--ink-muted);
+            opacity: 0.7;
+          }
+          .client-card {
+            background: none;
+            border: none;
+            padding: 0;
+            margin: 0;
+            font: inherit;
+            text-align: left;
+            width: 100%;
+            display: block;
+          }
+          .client-card:hover .client-card-inner {
+            border-color: var(--brand-navy);
+          }
+        </style>
+      </helmet>
+      <div style="display: flex; width: 100%; min-height: 100%; background: var(--surface-200)">
+        <!-- Sidebar -->
+        <nav
+          aria-label="Navegação principal"
+          style="
+            width: 250px;
+            flex-shrink: 0;
+            background: var(--surface-100);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 28px 18px;
+          "
+        >
+          <div>
+            <div style="display: flex; align-items: center; gap: 10px; padding: 2px 8px 26px">
+              <div
+                style="
+                  width: 36px;
+                  height: 36px;
+                  border-radius: 10px;
+                  background: var(--brand-navy);
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  flex-shrink: 0;
+                  overflow: hidden;
+                "
+              >
+                <span
+                  style="
+                    font-family: var(--font-display);
+                    font-weight: 700;
+                    font-size: 16px;
+                    color: #ffffff;
+                  "
+                  >D</span
+                >
+              </div>
+              <div>
+                <div
+                  style="
+                    font-family: var(--font-display);
+                    font-weight: 700;
+                    font-size: 16px;
+                    color: var(--ink);
+                    line-height: 1.2;
+                  "
+                >
+                  Diva Studio
+                </div>
+                <div
+                  style="font-family: var(--font-sans); font-size: 12px; color: var(--ink-muted)"
+                >
+                  /p/diva-studio
+                </div>
+              </div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 3px">
+              <a
+                href="Main.dc.html"
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: 11px;
+                  padding: 10px 12px;
+                  border-radius: 10px;
+                  text-decoration: none;
+                  font-family: var(--font-sans);
+                  font-size: 14px;
+                  font-weight: 600;
+                  color: var(--ink);
+                "
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                  <rect
+                    x="3.5"
+                    y="5"
+                    width="17"
+                    height="15.5"
+                    rx="3"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                  ></rect>
+                  <path d="M3.5 9.8h17" stroke="currentColor" stroke-width="1.8"></path>
+                  <path
+                    d="M8 3v4M16 3v4"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                  ></path>
+                </svg>
+                Agenda
+              </a>
+              <a
+                href="Clientes.dc.html"
+                aria-current="page"
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: 11px;
+                  padding: 10px 12px;
+                  border-radius: 10px;
+                  text-decoration: none;
+                  font-family: var(--font-sans);
+                  font-size: 14px;
+                  font-weight: 600;
+                  color: #ffffff;
+                  background: var(--brand-navy);
+                "
+              >
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <circle cx="12" cy="8" r="3.5"></circle>
+                  <path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6"></path>
+                </svg>
+                Clientes
+              </a>
+              <a
+                href="Empresa.dc.html"
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: 11px;
+                  padding: 10px 12px;
+                  border-radius: 10px;
+                  text-decoration: none;
+                  font-family: var(--font-sans);
+                  font-size: 14px;
+                  font-weight: 600;
+                  color: var(--ink);
+                "
+              >
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                >
+                  <rect x="4" y="3.5" width="16" height="17" rx="2"></rect>
+                  <path d="M9 21v-4.5h6V21M8 8h1M8 11.5h1M8 15h1M15 8h1M15 11.5h1"></path>
+                </svg>
+                Empresa
+              </a>
+              <a
+                href="Servicos.dc.html"
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: 11px;
+                  padding: 10px 12px;
+                  border-radius: 10px;
+                  text-decoration: none;
+                  font-family: var(--font-sans);
+                  font-size: 14px;
+                  font-weight: 600;
+                  color: var(--ink);
+                "
+              >
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <circle cx="7" cy="7" r="2.6"></circle>
+                  <circle cx="7" cy="17" r="2.6"></circle>
+                  <path d="M20 5.5L8.8 15M9.6 8.6L20 18.5"></path>
+                </svg>
+                Serviços
+              </a>
+              <a
+                href="Horarios.dc.html"
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: 11px;
+                  padding: 10px 12px;
+                  border-radius: 10px;
+                  text-decoration: none;
+                  font-family: var(--font-sans);
+                  font-size: 14px;
+                  font-weight: 600;
+                  color: var(--ink);
+                "
+              >
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                >
+                  <circle cx="12" cy="12" r="8.5"></circle>
+                  <path d="M12 7.5V12l3 2"></path>
+                </svg>
+                Horários
+              </a>
+              <a
+                href="Excecoes.dc.html"
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: 11px;
+                  padding: 10px 12px;
+                  border-radius: 10px;
+                  text-decoration: none;
+                  font-family: var(--font-sans);
+                  font-size: 14px;
+                  font-weight: 600;
+                  color: var(--ink);
+                "
+              >
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                >
+                  <rect x="3.5" y="5" width="17" height="15.5" rx="3"></rect>
+                  <path d="M3.5 9.8h17M9 14.3h6"></path>
+                </svg>
+                Exceções / Feriados
+              </a>
+              <a
+                href="Assinatura.dc.html"
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: 11px;
+                  padding: 10px 12px;
+                  border-radius: 10px;
+                  text-decoration: none;
+                  font-family: var(--font-sans);
+                  font-size: 14px;
+                  font-weight: 600;
+                  color: var(--ink);
+                "
+              >
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <rect x="3" y="5.5" width="18" height="13" rx="2.5"></rect>
+                  <path d="M3 9.8h18"></path>
+                </svg>
+                Assinatura
+              </a>
+            </div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 12px">
+            <div style="display: flex; align-items: center; gap: 10px; padding: 0 8px">
+              <div
+                style="
+                  width: 30px;
+                  height: 30px;
+                  border-radius: var(--radius-full);
+                  background: var(--surface-200);
+                  border: 1px solid var(--border);
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  font-family: var(--font-sans);
+                  font-size: 13px;
+                  font-weight: 700;
+                  color: var(--brand-navy);
+                "
+              >
+                I
+              </div>
+              <div
+                style="
+                  font-family: var(--font-sans);
+                  font-size: 14px;
+                  font-weight: 600;
+                  color: var(--ink);
+                "
+              >
+                Igor
+              </div>
+            </div>
+            <button
+              type="button"
+              style="
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                background: transparent;
+                border: 1px solid var(--border);
+                border-radius: 10px;
+                padding: 9px 12px;
+                font-family: var(--font-sans);
+                font-size: 13px;
+                font-weight: 600;
+                color: var(--ink-muted);
+              "
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"></path>
+                <path d="M16 17l5-5-5-5M21 12H9"></path>
+              </svg>
+              Sair
+            </button>
+            <div
+              style="
+                display: flex;
+                align-items: center;
+                gap: 7px;
+                padding: 10px 8px 0;
+                border-top: 1px solid var(--surface-200);
+                margin-top: 2px;
+              "
+            >
+              <div
+                style="
+                  width: 18px;
+                  height: 18px;
+                  border-radius: 5px;
+                  background: var(--brand-navy);
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  flex-shrink: 0;
+                "
+              >
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none">
+                  <rect
+                    x="3.5"
+                    y="5"
+                    width="17"
+                    height="15.5"
+                    rx="3"
+                    stroke="#ffffff"
+                    stroke-width="2.4"
+                  ></rect>
+                  <path
+                    d="M8.3 14.6l2 2 4.2-4.4"
+                    stroke="#3fd6c6"
+                    stroke-width="2.8"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  ></path>
+                </svg>
+              </div>
+              <span style="font-family: var(--font-sans); font-size: 11px; color: var(--ink-muted)"
+                >Powered by
+                <span style="color: var(--ink); font-weight: 600">agendarhorario.com</span></span
+              >
+            </div>
+          </div>
+        </nav>
+
+        <!-- Main content -->
+        <div
+          style="
+            flex: 1;
+            padding: 40px 48px 64px;
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+            max-width: 900px;
+          "
+        >
+          <div>
+            <h1
+              style="
+                margin: 0 0 6px;
+                font-family: var(--font-display);
+                font-size: 28px;
+                line-height: 36px;
+                font-weight: 600;
+                color: var(--ink);
+              "
+            >
+              Clientes
+            </h1>
+            <p
+              style="
+                margin: 0;
+                font-family: var(--font-sans);
+                font-size: 16px;
+                line-height: 24px;
+                color: var(--ink-muted);
+              "
+            >
+              {{totalClients}} clientes cadastrados. Clique em um cliente para ver os detalhes e
+              agendar um atendimento.
+            </p>
+          </div>
+
+          <!-- Search -->
+          <div style="position: relative; max-width: 380px">
+            <svg
+              width="17"
+              height="17"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              style="
+                position: absolute;
+                left: 14px;
+                top: 50%;
+                transform: translateY(-50%);
+                color: var(--ink-muted);
+              "
+            >
+              <circle cx="11" cy="11" r="7"></circle>
+              <path d="M21 21l-4.3-4.3"></path>
+            </svg>
+            <label
+              for="client-search"
+              style="
+                position: absolute;
+                width: 1px;
+                height: 1px;
+                overflow: hidden;
+                clip: rect(0, 0, 0, 0);
+              "
+              >Buscar cliente por nome</label
+            >
+            <input
+              id="client-search"
+              type="text"
+              value="{{query}}"
+              onChange="{{setQuery}}"
+              placeholder="Buscar por nome..."
+              style="
+                width: 100%;
+                padding: 11px 14px 11px 40px;
+                border: 1px solid var(--border);
+                border-radius: var(--radius-sm);
+                font-size: 14px;
+                color: var(--ink);
+                background: var(--surface-100);
+              "
+            />
+          </div>
+
+          <!-- Client list -->
+          <sc-if value="{{hasResults}}" hint-placeholder-val="{{true}}">
+            <div style="display: flex; flex-direction: column; gap: 10px">
+              <sc-for list="{{clients}}" as="c" hint-placeholder-count="6">
+                <button
+                  type="button"
+                  class="client-card"
+                  onClick="{{c.openDetail}}"
+                  aria-label="{{c.ariaLabel}}"
+                >
+                  <div
+                    class="client-card-inner"
+                    style="
+                      background: var(--surface-100);
+                      border: 1px solid var(--border);
+                      border-radius: var(--radius-md);
+                      padding: 16px 18px;
+                      display: flex;
+                      align-items: center;
+                      gap: 16px;
+                      flex-wrap: wrap;
+                    "
+                  >
+                    <div
+                      style="
+                        width: 44px;
+                        height: 44px;
+                        border-radius: var(--radius-full);
+                        background: var(--surface-200);
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-family: var(--font-display);
+                        font-weight: 700;
+                        font-size: 16px;
+                        color: var(--brand-navy);
+                        flex-shrink: 0;
+                      "
+                    >
+                      {{c.initial}}
+                    </div>
+                    <div style="flex: 1; min-width: 200px">
+                      <div
+                        style="
+                          font-family: var(--font-sans);
+                          font-size: 15px;
+                          font-weight: 600;
+                          color: var(--ink);
+                        "
+                      >
+                        {{c.name}}
+                      </div>
+                      <div
+                        style="
+                          font-family: var(--font-sans);
+                          font-size: 13px;
+                          color: var(--ink-muted);
+                        "
+                      >
+                        {{c.phone}} · {{c.visitsLabel}}
+                      </div>
+                    </div>
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      style="color: var(--ink-muted); flex-shrink: 0"
+                    >
+                      <path d="M9 18l6-6-6-6"></path>
+                    </svg>
+                  </div>
+                </button>
+              </sc-for>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{hasResults}}" hint-placeholder-val="{{false}}" hint-invert="true">
+            <div
+              style="
+                background: var(--surface-100);
+                border: 1px solid var(--border);
+                border-radius: var(--radius-md);
+                padding: 48px 20px;
+                text-align: center;
+              "
+            >
+              <div
+                style="
+                  font-family: var(--font-sans);
+                  font-size: 15px;
+                  font-weight: 600;
+                  color: var(--ink);
+                  margin-bottom: 4px;
+                "
+              >
+                Nenhum cliente encontrado
+              </div>
+              <div style="font-family: var(--font-sans); font-size: 13px; color: var(--ink-muted)">
+                Tente buscar por outro nome.
+              </div>
+            </div>
+          </sc-if>
+        </div>
+
+        <!-- Client detail modal -->
+        <sc-if value="{{hasSelected}}" hint-placeholder-val="{{false}}">
+          <div
+            style="
+              position: fixed;
+              inset: 0;
+              background: rgba(11, 37, 48, 0.5);
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              padding: 24px;
+              z-index: 20;
+            "
+          >
+            <div
+              style="
+                background: var(--surface-100);
+                border-radius: var(--radius-md);
+                width: 440px;
+                max-width: 100%;
+                padding: 30px;
+              "
+            >
+              <!-- Info view -->
+              <sc-if value="{{isInfoView}}" hint-placeholder-val="{{true}}">
+                <div
+                  style="
+                    display: flex;
+                    align-items: flex-start;
+                    justify-content: space-between;
+                    gap: 12px;
+                    margin-bottom: 6px;
+                  "
+                >
+                  <div style="display: flex; align-items: center; gap: 14px">
+                    <div
+                      style="
+                        width: 48px;
+                        height: 48px;
+                        border-radius: var(--radius-full);
+                        background: var(--surface-200);
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-family: var(--font-display);
+                        font-weight: 700;
+                        font-size: 18px;
+                        color: var(--brand-navy);
+                        flex-shrink: 0;
+                      "
+                    >
+                      {{selected.initial}}
+                    </div>
+                    <div>
+                      <h2
+                        style="
+                          margin: 0 0 2px;
+                          font-family: var(--font-display);
+                          font-size: 19px;
+                          line-height: 26px;
+                          font-weight: 600;
+                          color: var(--ink);
+                        "
+                      >
+                        {{selected.name}}
+                      </h2>
+                      <div
+                        style="
+                          font-family: var(--font-sans);
+                          font-size: 13px;
+                          color: var(--ink-muted);
+                        "
+                      >
+                        {{selected.phone}}
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    aria-label="Fechar"
+                    onClick="{{closeModal}}"
+                    style="
+                      background: transparent;
+                      border: none;
+                      color: var(--ink-muted);
+                      padding: 4px;
+                    "
+                  >
+                    <svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                    >
+                      <path d="M6 6l12 12M18 6L6 18"></path>
+                    </svg>
+                  </button>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 14px; margin-top: 20px">
+                  <div
+                    style="
+                      display: flex;
+                      justify-content: space-between;
+                      gap: 12px;
+                      padding-bottom: 14px;
+                      border-bottom: 1px solid var(--surface-200);
+                    "
+                  >
+                    <span
+                      style="
+                        font-family: var(--font-sans);
+                        font-size: 13px;
+                        color: var(--ink-muted);
+                      "
+                      >Cliente desde</span
+                    >
+                    <span
+                      style="
+                        font-family: var(--font-sans);
+                        font-size: 14px;
+                        font-weight: 600;
+                        color: var(--ink);
+                      "
+                      >{{selected.clientSince}}</span
+                    >
+                  </div>
+                  <div
+                    style="
+                      display: flex;
+                      justify-content: space-between;
+                      gap: 12px;
+                      padding-bottom: 14px;
+                      border-bottom: 1px solid var(--surface-200);
+                    "
+                  >
+                    <span
+                      style="
+                        font-family: var(--font-sans);
+                        font-size: 13px;
+                        color: var(--ink-muted);
+                      "
+                      >Total de atendimentos</span
+                    >
+                    <span
+                      style="
+                        font-family: var(--font-sans);
+                        font-size: 14px;
+                        font-weight: 600;
+                        color: var(--ink);
+                      "
+                      >{{selected.totalVisits}}</span
+                    >
+                  </div>
+                  <div
+                    style="
+                      display: flex;
+                      justify-content: space-between;
+                      gap: 12px;
+                      padding-bottom: 14px;
+                      border-bottom: 1px solid var(--surface-200);
+                    "
+                  >
+                    <span
+                      style="
+                        font-family: var(--font-sans);
+                        font-size: 13px;
+                        color: var(--ink-muted);
+                      "
+                      >Serviço mais frequente</span
+                    >
+                    <span
+                      style="
+                        font-family: var(--font-sans);
+                        font-size: 14px;
+                        font-weight: 600;
+                        color: var(--ink);
+                      "
+                      >{{selected.favoriteService}}</span
+                    >
+                  </div>
+                  <div
+                    style="
+                      display: flex;
+                      justify-content: space-between;
+                      gap: 12px;
+                      padding-bottom: 14px;
+                      border-bottom: 1px solid var(--surface-200);
+                    "
+                  >
+                    <span
+                      style="
+                        font-family: var(--font-sans);
+                        font-size: 13px;
+                        color: var(--ink-muted);
+                      "
+                      >Última visita</span
+                    >
+                    <span
+                      style="
+                        font-family: var(--font-sans);
+                        font-size: 14px;
+                        font-weight: 600;
+                        color: var(--ink);
+                      "
+                      >{{selected.lastVisit}}</span
+                    >
+                  </div>
+                  <div style="display: flex; justify-content: space-between; gap: 12px">
+                    <span
+                      style="
+                        font-family: var(--font-sans);
+                        font-size: 13px;
+                        color: var(--ink-muted);
+                      "
+                      >Próximo atendimento</span
+                    >
+                    <span
+                      style="font-family:var(--font-sans);font-size:14px;font-weight:600;color:{{selected.nextVisitColor}};"
+                      >{{selected.nextVisitLabel}}</span
+                    >
+                  </div>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 26px">
+                  <button
+                    type="button"
+                    onClick="{{closeModal}}"
+                    style="
+                      background: transparent;
+                      color: var(--ink-muted);
+                      border: 1px solid var(--border);
+                      border-radius: var(--radius-sm);
+                      padding: 11px 18px;
+                      font-family: var(--font-sans);
+                      font-size: 13px;
+                      font-weight: 600;
+                      letter-spacing: 0.02em;
+                      text-transform: uppercase;
+                    "
+                  >
+                    Fechar
+                  </button>
+                  <button
+                    type="button"
+                    onClick="{{goToBooking}}"
+                    style="
+                      display: inline-flex;
+                      align-items: center;
+                      gap: 8px;
+                      background: var(--brand-teal-dark);
+                      color: #ffffff;
+                      border: none;
+                      border-radius: var(--radius-sm);
+                      padding: 11px 18px;
+                      font-family: var(--font-sans);
+                      font-size: 13px;
+                      font-weight: 600;
+                      letter-spacing: 0.02em;
+                      text-transform: uppercase;
+                    "
+                  >
+                    <svg
+                      width="15"
+                      height="15"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2.2"
+                      stroke-linecap="round"
+                    >
+                      <path d="M12 5v14M5 12h14"></path>
+                    </svg>
+                    Agendar atendimento
+                  </button>
+                </div>
+              </sc-if>
+
+              <!-- Booking view -->
+              <sc-if value="{{isInfoView}}" hint-placeholder-val="{{false}}" hint-invert="true">
+                <div
+                  style="
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    margin-bottom: 6px;
+                  "
+                >
+                  <button
+                    type="button"
+                    onClick="{{backToInfo}}"
+                    style="
+                      display: inline-flex;
+                      align-items: center;
+                      gap: 6px;
+                      background: transparent;
+                      border: none;
+                      color: var(--ink-muted);
+                      font-family: var(--font-sans);
+                      font-size: 13px;
+                      font-weight: 600;
+                      padding: 4px 0;
+                    "
+                  >
+                    <svg
+                      width="15"
+                      height="15"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path d="M15 18l-6-6 6-6"></path>
+                    </svg>
+                    Voltar
+                  </button>
+                  <button
+                    type="button"
+                    aria-label="Fechar"
+                    onClick="{{closeModal}}"
+                    style="
+                      background: transparent;
+                      border: none;
+                      color: var(--ink-muted);
+                      padding: 4px;
+                    "
+                  >
+                    <svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                    >
+                      <path d="M6 6l12 12M18 6L6 18"></path>
+                    </svg>
+                  </button>
+                </div>
+                <h2
+                  style="
+                    margin: 8px 0 4px;
+                    font-family: var(--font-display);
+                    font-size: 20px;
+                    line-height: 28px;
+                    font-weight: 600;
+                    color: var(--ink);
+                  "
+                >
+                  Agendar para {{selected.name}}
+                </h2>
+                <p
+                  style="
+                    margin: 0 0 20px;
+                    font-family: var(--font-sans);
+                    font-size: 13px;
+                    color: var(--ink-muted);
+                  "
+                >
+                  Confira os dados e escolha data, horário e serviço.
+                </p>
+
+                <div style="display: flex; flex-direction: column; gap: 16px">
+                  <div>
+                    <label
+                      for="cb-client"
+                      style="
+                        display: block;
+                        margin-bottom: 6px;
+                        font-family: var(--font-sans);
+                        font-size: 13px;
+                        line-height: 18px;
+                        font-weight: 600;
+                        letter-spacing: 0.02em;
+                        text-transform: uppercase;
+                        color: var(--ink-muted);
+                      "
+                      >Nome do cliente</label
+                    >
+                    <input
+                      id="cb-client"
+                      type="text"
+                      value="{{selected.name}}"
+                      style="
+                        width: 100%;
+                        padding: 11px 14px;
+                        border: 1px solid var(--border);
+                        border-radius: var(--radius-sm);
+                        font-size: 15px;
+                        color: var(--ink);
+                        background: var(--surface-200);
+                      "
+                      readonly=""
+                    />
+                  </div>
+                  <div>
+                    <label
+                      for="cb-phone"
+                      style="
+                        display: block;
+                        margin-bottom: 6px;
+                        font-family: var(--font-sans);
+                        font-size: 13px;
+                        line-height: 18px;
+                        font-weight: 600;
+                        letter-spacing: 0.02em;
+                        text-transform: uppercase;
+                        color: var(--ink-muted);
+                      "
+                      >Telefone</label
+                    >
+                    <input
+                      id="cb-phone"
+                      type="tel"
+                      value="{{selected.phone}}"
+                      style="
+                        width: 100%;
+                        padding: 11px 14px;
+                        border: 1px solid var(--border);
+                        border-radius: var(--radius-sm);
+                        font-size: 15px;
+                        color: var(--ink);
+                        background: var(--surface-200);
+                      "
+                      readonly=""
+                    />
+                  </div>
+                  <div style="display: flex; gap: 12px">
+                    <div style="flex: 1">
+                      <label
+                        for="cb-date"
+                        style="
+                          display: block;
+                          margin-bottom: 6px;
+                          font-family: var(--font-sans);
+                          font-size: 13px;
+                          line-height: 18px;
+                          font-weight: 600;
+                          letter-spacing: 0.02em;
+                          text-transform: uppercase;
+                          color: var(--ink-muted);
+                        "
+                        >Data</label
+                      >
+                      <input
+                        id="cb-date"
+                        type="date"
+                        value="2026-09-22"
+                        style="
+                          width: 100%;
+                          padding: 10px 12px;
+                          border: 1px solid var(--border);
+                          border-radius: var(--radius-sm);
+                          font-size: 14px;
+                          color: var(--ink);
+                          background: var(--surface-100);
+                        "
+                      />
+                    </div>
+                    <div style="flex: 1">
+                      <label
+                        for="cb-time"
+                        style="
+                          display: block;
+                          margin-bottom: 6px;
+                          font-family: var(--font-sans);
+                          font-size: 13px;
+                          line-height: 18px;
+                          font-weight: 600;
+                          letter-spacing: 0.02em;
+                          text-transform: uppercase;
+                          color: var(--ink-muted);
+                        "
+                        >Horário</label
+                      >
+                      <input
+                        id="cb-time"
+                        type="time"
+                        value="10:00"
+                        style="
+                          width: 100%;
+                          padding: 10px 12px;
+                          border: 1px solid var(--border);
+                          border-radius: var(--radius-sm);
+                          font-size: 14px;
+                          color: var(--ink);
+                          background: var(--surface-100);
+                        "
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label
+                      for="cb-service"
+                      style="
+                        display: block;
+                        margin-bottom: 6px;
+                        font-family: var(--font-sans);
+                        font-size: 13px;
+                        line-height: 18px;
+                        font-weight: 600;
+                        letter-spacing: 0.02em;
+                        text-transform: uppercase;
+                        color: var(--ink-muted);
+                      "
+                      >Serviço</label
+                    >
+                    <select
+                      id="cb-service"
+                      style="
+                        width: 100%;
+                        padding: 11px 14px;
+                        border: 1px solid var(--border);
+                        border-radius: var(--radius-sm);
+                        font-size: 15px;
+                        color: var(--ink);
+                        background: var(--surface-100);
+                      "
+                    >
+                      <option>Sombrancelha · 30 min · R$ 50,00</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 26px">
+                  <button
+                    type="button"
+                    onClick="{{backToInfo}}"
+                    style="
+                      background: transparent;
+                      color: var(--ink-muted);
+                      border: 1px solid var(--border);
+                      border-radius: var(--radius-sm);
+                      padding: 11px 18px;
+                      font-family: var(--font-sans);
+                      font-size: 13px;
+                      font-weight: 600;
+                      letter-spacing: 0.02em;
+                      text-transform: uppercase;
+                    "
+                  >
+                    Voltar
+                  </button>
+                  <button
+                    type="button"
+                    onClick="{{confirmBooking}}"
+                    style="
+                      background: var(--brand-teal-dark);
+                      color: #ffffff;
+                      border: none;
+                      border-radius: var(--radius-sm);
+                      padding: 11px 18px;
+                      font-family: var(--font-sans);
+                      font-size: 13px;
+                      font-weight: 600;
+                      letter-spacing: 0.02em;
+                      text-transform: uppercase;
+                    "
+                  >
+                    Confirmar agendamento
+                  </button>
+                </div>
+              </sc-if>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+    </x-dc>
+    <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1050}}'>
+      class Component extends DCLogic {
+        constructor(props) {
+          super(props);
+          this.state = {
+            query: '',
+            selectedId: null,
+            view: 'info',
+            clients: [
+              { id: 1, name: 'Ana Clara Ferreira', phone: '(11) 98221-4432', totalVisits: 12, favoriteService: 'Sombrancelha', clientSince: 'Março de 2025', lastVisit: '14/09/2026', nextVisit: '21/09/2026 · 09:00' },
+              { id: 2, name: 'Bruna Martins', phone: '(11) 97744-1290', totalVisits: 8, favoriteService: 'Sombrancelha', clientSince: 'Junho de 2025', lastVisit: '14/09/2026', nextVisit: '21/09/2026 · 10:00' },
+              { id: 3, name: 'Camila Rocha', phone: '(11) 96633-5581', totalVisits: 5, favoriteService: 'Sombrancelha', clientSince: 'Agosto de 2025', lastVisit: '07/09/2026', nextVisit: null },
+              { id: 4, name: 'Débora Lima', phone: '(11) 95521-7743', totalVisits: 15, favoriteService: 'Sombrancelha', clientSince: 'Janeiro de 2025', lastVisit: '07/09/2026', nextVisit: '21/09/2026 · 14:00' },
+              { id: 5, name: 'Elisa Nogueira', phone: '(11) 94487-3320', totalVisits: 3, favoriteService: 'Sombrancelha', clientSince: 'Julho de 2026', lastVisit: '07/09/2026', nextVisit: null },
+              { id: 6, name: 'Fernanda Souza', phone: '(11) 93398-6612', totalVisits: 9, favoriteService: 'Sombrancelha', clientSince: 'Abril de 2025', lastVisit: '07/09/2026', nextVisit: '21/09/2026 · 17:00' },
+              { id: 7, name: 'Gabriela Prado', phone: '(11) 92287-1103', totalVisits: 6, favoriteService: 'Sombrancelha', clientSince: 'Setembro de 2025', lastVisit: '31/08/2026', nextVisit: null },
+              { id: 8, name: 'Helena Castro', phone: '(11) 91198-4420', totalVisits: 11, favoriteService: 'Sombrancelha', clientSince: 'Fevereiro de 2025', lastVisit: '31/08/2026', nextVisit: null },
+              { id: 9, name: 'Isabela Ramos', phone: '(11) 90045-7789', totalVisits: 4, favoriteService: 'Sombrancelha', clientSince: 'Outubro de 2025', lastVisit: '31/08/2026', nextVisit: null },
+              { id: 10, name: 'Juliana Alves', phone: '(11) 98811-2234', totalVisits: 2, favoriteService: 'Sombrancelha', clientSince: 'Agosto de 2026', lastVisit: '24/08/2026', nextVisit: null }
+            ]
+          };
+        }
+
+        setQuery(e) {
+          this.setState({ query: e.target.value });
+        }
+        openDetail(id) {
+          this.setState({ selectedId: id, view: 'info' });
+        }
+        closeModal() {
+          this.setState({ selectedId: null, view: 'info' });
+        }
+        goToBooking() {
+          this.setState({ view: 'booking' });
+        }
+        backToInfo() {
+          this.setState({ view: 'info' });
+        }
+        confirmBooking() {
+          this.setState({ selectedId: null, view: 'info' });
+        }
+
+        renderVals() {
+          const s = this.state;
+          const q = s.query.trim().toLowerCase();
+          const filtered = q ? s.clients.filter(c => c.name.toLowerCase().includes(q)) : s.clients;
+
+          const clients = filtered.map(c => ({
+            ...c,
+            initial: c.name.charAt(0),
+            visitsLabel: c.totalVisits + (c.totalVisits === 1 ? ' atendimento' : ' atendimentos'),
+            ariaLabel: 'Ver detalhes de ' + c.name,
+            openDetail: () => this.openDetail(c.id)
+          }));
+
+          const selectedRaw = s.clients.find(c => c.id === s.selectedId) || null;
+          let selected = null;
+          if (selectedRaw) {
+            selected = {
+              ...selectedRaw,
+              initial: selectedRaw.name.charAt(0),
+              nextVisitLabel: selectedRaw.nextVisit || 'Nenhum agendado',
+              nextVisitColor: selectedRaw.nextVisit ? 'var(--brand-teal-dark)' : 'var(--ink-muted)'
+            };
+          }
+
+          return {
+            query: s.query,
+            setQuery: (e) => this.setQuery(e),
+            clients,
+            hasResults: clients.length > 0,
+            totalClients: s.clients.length,
+            hasSelected: !!selected,
+            selected: selected || {},
+            isInfoView: s.view === 'info',
+            closeModal: () => this.closeModal(),
+            goToBooking: () => this.goToBooking(),
+            backToInfo: () => this.backToInfo(),
+            confirmBooking: () => this.confirmBooking()
+          };
+        }
+      }
+    </script>
+  </body>
+</html>

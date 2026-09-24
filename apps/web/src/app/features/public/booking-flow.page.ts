@@ -7,13 +7,8 @@ import {
   signal,
 } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ActivatedRoute, RouterLink } from '@angular/router';
-import {
-  EmptyStateComponent,
-  FormFieldComponent,
-  PageHeaderComponent,
-  SpinnerComponent,
-} from '@agendarhorario/web-ui';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { EmptyStateComponent, FormFieldComponent, SpinnerComponent } from '@agendarhorario/web-ui';
 import { PublicCompaniesApi, PublicVerificationApi } from '@agendarhorario/web-data-access';
 import {
   AvailabilityResponseDto,
@@ -26,32 +21,26 @@ import { formatBrDateTime } from '@agendarhorario/utils';
 import { firstError } from '../../core/forms/form-error';
 import type { ApiError } from '../../core/http/error.interceptor';
 import { trackBooking } from '../../core/observability/booking-breadcrumb';
+import { BookingIdentityComponent } from './booking/booking-identity.component';
+import { BookingOtpInputComponent } from './booking/booking-otp-input.component';
+import { BookingServicePickerComponent } from './booking/booking-service-picker.component';
+import { BookingSlotPickerComponent } from './booking/booking-slot-picker.component';
+import { BookingStepComponent } from './booking/booking-step.component';
+import {
+  type BookingAccordionStep,
+  BR_MOBILE_MASK,
+  localDate,
+  maskBrMobile,
+  serviceStepSummary,
+  slotStepSummary,
+  stepCounterLabel,
+  summarizeBusinessHours,
+  toE164Br,
+} from './booking/booking-display';
 
-type Step = 'slot' | 'data' | 'otp' | 'done';
+type Step = BookingAccordionStep | 'done';
 
 const RESEND_COOLDOWN_SECONDS = 60;
-const BR_MOBILE_MASK = /^\(\d{2}\) \d{5}-\d{4}$/;
-
-const brMobileDigits = (value: string): string => {
-  let digits = value.replace(/\D/g, '');
-  if (digits.startsWith('55') && digits.length > 11) {
-    digits = digits.slice(2);
-  }
-  return digits.slice(0, 11);
-};
-
-const maskBrMobile = (value: string): string => {
-  const digits = brMobileDigits(value);
-  const ddd = digits.slice(0, 2);
-  const prefix = digits.slice(2, 7);
-  const suffix = digits.slice(7, 11);
-  if (digits.length === 0) return '';
-  if (digits.length <= 2) return `(${ddd}`;
-  if (digits.length <= 7) return `(${ddd}) ${prefix}`;
-  return `(${ddd}) ${prefix}-${suffix}`;
-};
-
-const toE164Br = (value: string): string => `+55${brMobileDigits(value)}`;
 
 @Component({
   selector: 'app-booking-flow-page',
@@ -59,10 +48,14 @@ const toE164Br = (value: string): string => `+55${brMobileDigits(value)}`;
   imports: [
     ReactiveFormsModule,
     RouterLink,
-    PageHeaderComponent,
     FormFieldComponent,
     EmptyStateComponent,
     SpinnerComponent,
+    BookingIdentityComponent,
+    BookingStepComponent,
+    BookingServicePickerComponent,
+    BookingSlotPickerComponent,
+    BookingOtpInputComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './booking-flow.page.html',
@@ -72,6 +65,7 @@ export class BookingFlowPageComponent {
   private readonly api = inject(PublicCompaniesApi);
   private readonly verificationApi = inject(PublicVerificationApi);
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly fb = inject(FormBuilder);
   private readonly destroyRef = inject(DestroyRef);
   private resendTimer: ReturnType<typeof setInterval> | null = null;
@@ -80,10 +74,12 @@ export class BookingFlowPageComponent {
   readonly serviceId = signal<string>(this.route.snapshot.paramMap.get('serviceId') ?? '');
   readonly company = signal<PublicCompanyDto | null>(null);
   readonly availability = signal<AvailabilityResponseDto | null>(null);
+  readonly selectedDate = signal<string | null>(null);
   readonly selectedSlot = signal<SlotDto | null>(null);
   readonly verificationToken = signal<string | null>(null);
   readonly verificationTarget = signal<string | null>(null);
   readonly verificationChannel = signal<VerificationChannel>('EMAIL');
+  readonly otpReady = signal(false);
 
   readonly loading = signal(false);
   readonly loadError = signal<string | null>(null);
@@ -106,8 +102,42 @@ export class BookingFlowPageComponent {
     return c.services.find((s) => s.id === this.serviceId()) ?? null;
   });
 
+  readonly hoursLabel = computed(() => summarizeBusinessHours(this.company()?.businessHours ?? []));
+  readonly openDays = computed(
+    () => this.availability()?.days.filter((day) => day.slots.length > 0) ?? [],
+  );
+  readonly counterLabel = computed(() => {
+    const step = this.step();
+    return step === 'done' ? 'Agendamento solicitado' : stepCounterLabel(step);
+  });
+  readonly serviceSummary = computed(() =>
+    serviceStepSummary(this.service(), this.step() === 'service'),
+  );
+  readonly scheduleSummary = computed(() => {
+    const slot = this.selectedSlot();
+    return slotStepSummary(
+      slot ? localDate(slot.start) : null,
+      slot?.start ?? null,
+      this.step() === 'slot' || !slot,
+    );
+  });
+  readonly confirmedSummary = computed(() => {
+    const slot = this.selectedSlot();
+    if (!slot) return '';
+    return slotStepSummary(localDate(slot.start), slot.start, false);
+  });
+  readonly otpHint = computed(() => {
+    const via = this.verificationChannel() === 'SMS' ? 'SMS' : 'e-mail';
+    const target = this.verificationTarget();
+    return target
+      ? `Enviamos um código de 6 dígitos por ${via} para ${target}.`
+      : 'Enviamos um código de 6 dígitos.';
+  });
+
   readonly stepTitle = computed(() => {
     switch (this.step()) {
+      case 'service':
+        return 'Escolha um serviço';
       case 'slot':
         return 'Escolha um horário';
       case 'data':
@@ -157,15 +187,59 @@ export class BookingFlowPageComponent {
     });
   }
 
+  chooseService(id: string): void {
+    if (this.company()?.status !== 'AVAILABLE') return;
+    if (id === this.serviceId()) {
+      this.step.set('slot');
+      return;
+    }
+    this.serviceId.set(id);
+    this.selectedSlot.set(null);
+    this.selectedDate.set(null);
+    this.availability.set(null);
+    this.otpReady.set(false);
+    this.step.set('slot');
+    void this.router.navigate(['/p', this.slug(), 'agendar', id], { replaceUrl: true });
+    this.fetchAvailability();
+    trackBooking('service_selected');
+  }
+
+  selectDate(date: string): void {
+    this.selectedDate.set(date);
+    const slot = this.selectedSlot();
+    if (slot && localDate(slot.start) !== date) {
+      this.selectedSlot.set(null);
+    }
+  }
+
+  openStep(next: BookingAccordionStep): void {
+    if (next === 'slot' && !this.service()) return;
+    if (next === 'data' && !this.selectedSlot()) return;
+    if (next === 'otp' && !this.otpReady()) return;
+    this.step.set(next);
+  }
+
+  contactSummary(): string {
+    const name = this.contactForm.controls.name.value.trim();
+    const step = this.step();
+    if (!name || step === 'service' || step === 'slot' || step === 'data') {
+      return 'Nome, telefone e e-mail';
+    }
+    return name;
+  }
+
   private fetchAvailability(): void {
     const today = new Date();
     const from = today.toISOString().slice(0, 10);
     const future = new Date(today);
     future.setDate(future.getDate() + 14);
     const to = future.toISOString().slice(0, 10);
+    this.loading.set(true);
+    this.loadError.set(null);
     this.api.availability(this.slug(), this.serviceId(), from, to).subscribe({
       next: (a) => {
         this.availability.set(a);
+        this.syncSelectedDate();
         this.loading.set(false);
       },
       error: (err: ApiError) => {
@@ -176,8 +250,17 @@ export class BookingFlowPageComponent {
     });
   }
 
+  private syncSelectedDate(): void {
+    const open = this.openDays();
+    const current = this.selectedDate();
+    if (current && open.some((day) => day.date === current)) return;
+    this.selectedDate.set(open[0]?.date ?? null);
+  }
+
   selectSlot(slot: SlotDto): void {
     this.selectedSlot.set(slot);
+    const date = localDate(slot.start);
+    if (date) this.selectedDate.set(date);
     trackBooking('slot_selected');
   }
 
@@ -215,6 +298,13 @@ export class BookingFlowPageComponent {
     const masked = maskBrMobile(input.value);
     this.contactForm.controls.phone.setValue(masked);
     input.value = masked;
+  }
+
+  onOtpCode(code: string): void {
+    this.otpForm.controls.code.setValue(code);
+    if (/^\d{6}$/.test(code)) {
+      this.otpForm.controls.code.markAsDirty();
+    }
   }
 
   onRequestOtp(): void {
@@ -289,6 +379,7 @@ export class BookingFlowPageComponent {
           this.verificationToken.set(null);
           this.verificationChannel.set(response.channel);
           this.verificationTarget.set(response.target);
+          this.otpReady.set(true);
           this.otpForm.reset({ code: '' });
           this.step.set('otp');
           this.startResendCooldown();

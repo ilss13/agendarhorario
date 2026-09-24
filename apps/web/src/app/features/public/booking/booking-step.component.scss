@@ -1,0 +1,125 @@
+@use '../../../../styles/ui' as ui;
+
+:host {
+  display: block;
+}
+
+.step {
+  @include ui.booking-card;
+}
+
+.head {
+  all: unset;
+  box-sizing: border-box;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 22px;
+  cursor: pointer;
+  @include ui.booking-focus;
+
+  &:disabled {
+    cursor: default;
+  }
+}
+
+.badge {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  border: 1.5px solid ui.$bk-border;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: ui.$bk-border;
+}
+
+.badge.active {
+  border-color: ui.$bk-brand;
+  color: ui.$bk-brand;
+}
+
+.badge.done {
+  border-color: ui.$bk-primary;
+  background: ui.$bk-primary;
+  color: ui.$color-surface;
+}
+
+.badge svg {
+  width: 15px;
+  height: 15px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 3.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.copy {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+}
+
+.kicker {
+  display: block;
+  @include ui.booking-kicker;
+}
+
+.summary {
+  display: block;
+  margin-top: 1px;
+  font-size: 17px;
+  line-height: 24px;
+  font-weight: 600;
+  color: ui.$bk-ink;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.summary.idle {
+  color: ui.$bk-muted;
+}
+
+.chevron {
+  width: 8px;
+  height: 8px;
+  margin-right: 4px;
+  border-right: 2.4px solid ui.$bk-muted;
+  border-bottom: 2.4px solid ui.$bk-muted;
+  transform: rotate(45deg);
+  flex-shrink: 0;
+}
+
+.chevron.up {
+  transform: rotate(-135deg);
+}
+
+.body {
+  padding: 4px 22px 22px;
+}
+
+@media (max-width: 900px) {
+  .head {
+    gap: 12px;
+    padding: 16px 18px;
+  }
+
+  .badge {
+    width: 26px;
+    height: 26px;
+  }
+
+  .summary {
+    font-size: 16px;
+  }
+
+  .body {
+    padding: 4px 18px 18px;
+  }
+}

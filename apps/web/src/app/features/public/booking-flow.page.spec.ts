@@ -222,4 +222,30 @@ describe('BookingFlowPageComponent', () => {
     page.resendCooldownSeconds.set(5);
     page.destroy();
   }));
+
+  it('opens the schedule when the same service is chosen again', () => {
+    const page = setup();
+    page.step.set('service');
+    page.chooseService(serviceId);
+    expect(page.step()).toBe('slot');
+    expect(companies.availability).toHaveBeenCalledTimes(1);
+  });
+
+  it('reloads slots for another service and ignores a suspended company', () => {
+    const page = setup();
+    const other = '33333333-3333-4333-8333-333333333333';
+    page.company.set({
+      ...company,
+      services: [...company.services, { ...company.services[0], id: other, name: 'Barba' }],
+    });
+    page.selectSlot(slot);
+    page.chooseService(other);
+    expect(page.service()?.name).toBe('Barba');
+    expect(page.selectedSlot()).toBeNull();
+    expect(companies.availability).toHaveBeenCalledTimes(2);
+
+    page.company.set({ ...page.company()!, status: 'SUSPENDED' });
+    page.chooseService(serviceId);
+    expect(page.serviceId()).toBe(other);
+  });
 });

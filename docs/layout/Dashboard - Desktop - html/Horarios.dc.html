@@ -1,0 +1,709 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <title>Horários</title>
+    <script src="./vendor/react.js"></script>
+    <script src="./vendor/react-dom.js"></script>
+    <script src="./support.js"></script>
+  </head>
+  <body>
+    <x-dc>
+      <helmet>
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap"
+        />
+        <style>
+          body {
+            margin: 0;
+            font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+            background: #f2f7f8;
+            --surface-100: #ffffff;
+            --surface-200: #f2f7f8;
+            --ink: #0b2530;
+            --ink-muted: #4c6672;
+            --border: #8fb0b7;
+            --brand-navy: #185280;
+            --brand-teal: #0f9e9e;
+            --brand-teal-dark: #09424b;
+            --danger: #a3332b;
+            --danger-bg: #fbecea;
+            --font-display: 'Outfit', 'Plus Jakarta Sans', system-ui, sans-serif;
+            --font-sans: 'Plus Jakarta Sans', system-ui, sans-serif;
+            --radius-sm: 8px;
+            --radius-md: 14px;
+            --radius-full: 999px;
+          }
+          * {
+            box-sizing: border-box;
+          }
+          a {
+            color: var(--brand-teal-dark);
+          }
+          a:hover {
+            color: var(--brand-navy);
+          }
+          button {
+            font-family: inherit;
+            cursor: pointer;
+          }
+          input,
+          select,
+          textarea {
+            font-family: inherit;
+          }
+          ::placeholder {
+            color: var(--ink-muted);
+            opacity: 0.7;
+          }
+        </style>
+      </helmet>
+      <div style="display: flex; width: 100%; min-height: 100%; background: var(--surface-200)">
+        <nav
+          aria-label="Navegação principal"
+          style="
+            width: 250px;
+            flex-shrink: 0;
+            background: var(--surface-100);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 28px 18px;
+          "
+        >
+          <div>
+            <div style="display: flex; align-items: center; gap: 10px; padding: 2px 8px 26px">
+              <div
+                style="
+                  width: 36px;
+                  height: 36px;
+                  border-radius: 10px;
+                  background: var(--brand-navy);
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  flex-shrink: 0;
+                  overflow: hidden;
+                "
+              >
+                <span
+                  style="
+                    font-family: var(--font-display);
+                    font-weight: 700;
+                    font-size: 16px;
+                    color: #ffffff;
+                  "
+                  >D</span
+                >
+              </div>
+              <div>
+                <div
+                  style="
+                    font-family: var(--font-display);
+                    font-weight: 700;
+                    font-size: 16px;
+                    color: var(--ink);
+                    line-height: 1.2;
+                  "
+                >
+                  Diva Studio
+                </div>
+                <div
+                  style="font-family: var(--font-sans); font-size: 12px; color: var(--ink-muted)"
+                >
+                  /p/diva-studio
+                </div>
+              </div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 3px">
+              <a
+                href="Main.dc.html"
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: 11px;
+                  padding: 10px 12px;
+                  border-radius: 10px;
+                  text-decoration: none;
+                  font-family: var(--font-sans);
+                  font-size: 14px;
+                  font-weight: 600;
+                  color: var(--ink);
+                "
+              >
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                >
+                  <rect x="3.5" y="5" width="17" height="15.5" rx="3"></rect>
+                  <path d="M3.5 9.8h17"></path>
+                </svg>
+                Agenda
+              </a>
+              <a
+                href="Clientes.dc.html"
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: 11px;
+                  padding: 10px 12px;
+                  border-radius: 10px;
+                  text-decoration: none;
+                  font-family: var(--font-sans);
+                  font-size: 14px;
+                  font-weight: 600;
+                  color: var(--ink);
+                "
+              >
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <circle cx="12" cy="8" r="3.5"></circle>
+                  <path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6"></path>
+                </svg>
+                Clientes
+              </a>
+              <a
+                href="Empresa.dc.html"
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: 11px;
+                  padding: 10px 12px;
+                  border-radius: 10px;
+                  text-decoration: none;
+                  font-family: var(--font-sans);
+                  font-size: 14px;
+                  font-weight: 600;
+                  color: var(--ink);
+                "
+              >
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                >
+                  <rect x="4" y="3.5" width="16" height="17" rx="2"></rect>
+                  <path d="M9 21v-4.5h6V21M8 8h1M8 11.5h1M8 15h1M15 8h1M15 11.5h1"></path>
+                </svg>
+                Empresa
+              </a>
+              <a
+                href="Servicos.dc.html"
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: 11px;
+                  padding: 10px 12px;
+                  border-radius: 10px;
+                  text-decoration: none;
+                  font-family: var(--font-sans);
+                  font-size: 14px;
+                  font-weight: 600;
+                  color: var(--ink);
+                "
+              >
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <circle cx="7" cy="7" r="2.6"></circle>
+                  <circle cx="7" cy="17" r="2.6"></circle>
+                  <path d="M20 5.5L8.8 15M9.6 8.6L20 18.5"></path>
+                </svg>
+                Serviços
+              </a>
+              <a
+                href="Horarios.dc.html"
+                aria-current="page"
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: 11px;
+                  padding: 10px 12px;
+                  border-radius: 10px;
+                  text-decoration: none;
+                  font-family: var(--font-sans);
+                  font-size: 14px;
+                  font-weight: 600;
+                  color: #ffffff;
+                  background: var(--brand-navy);
+                "
+              >
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                >
+                  <circle cx="12" cy="12" r="8.5"></circle>
+                  <path d="M12 7.5V12l3 2"></path>
+                </svg>
+                Horários
+              </a>
+              <a
+                href="Excecoes.dc.html"
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: 11px;
+                  padding: 10px 12px;
+                  border-radius: 10px;
+                  text-decoration: none;
+                  font-family: var(--font-sans);
+                  font-size: 14px;
+                  font-weight: 600;
+                  color: var(--ink);
+                "
+              >
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                >
+                  <rect x="3.5" y="5" width="17" height="15.5" rx="3"></rect>
+                  <path d="M3.5 9.8h17M9 14.3h6"></path>
+                </svg>
+                Exceções / Feriados
+              </a>
+              <a
+                href="Assinatura.dc.html"
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: 11px;
+                  padding: 10px 12px;
+                  border-radius: 10px;
+                  text-decoration: none;
+                  font-family: var(--font-sans);
+                  font-size: 14px;
+                  font-weight: 600;
+                  color: var(--ink);
+                "
+              >
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <rect x="3" y="5.5" width="18" height="13" rx="2.5"></rect>
+                  <path d="M3 9.8h18"></path>
+                </svg>
+                Assinatura
+              </a>
+            </div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 12px">
+            <div style="display: flex; align-items: center; gap: 10px; padding: 0 8px">
+              <div
+                style="
+                  width: 30px;
+                  height: 30px;
+                  border-radius: var(--radius-full);
+                  background: var(--surface-200);
+                  border: 1px solid var(--border);
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  font-family: var(--font-sans);
+                  font-size: 13px;
+                  font-weight: 700;
+                  color: var(--brand-navy);
+                "
+              >
+                I
+              </div>
+              <div
+                style="
+                  font-family: var(--font-sans);
+                  font-size: 14px;
+                  font-weight: 600;
+                  color: var(--ink);
+                "
+              >
+                Igor
+              </div>
+            </div>
+            <button
+              type="button"
+              style="
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                background: transparent;
+                border: 1px solid var(--border);
+                border-radius: 10px;
+                padding: 9px 12px;
+                font-family: var(--font-sans);
+                font-size: 13px;
+                font-weight: 600;
+                color: var(--ink-muted);
+              "
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"></path>
+                <path d="M16 17l5-5-5-5M21 12H9"></path>
+              </svg>
+              Sair
+            </button>
+            <div
+              style="
+                display: flex;
+                align-items: center;
+                gap: 7px;
+                padding: 10px 8px 0;
+                border-top: 1px solid var(--surface-200);
+                margin-top: 2px;
+              "
+            >
+              <div
+                style="
+                  width: 18px;
+                  height: 18px;
+                  border-radius: 5px;
+                  background: var(--brand-navy);
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  flex-shrink: 0;
+                "
+              >
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none">
+                  <rect
+                    x="3.5"
+                    y="5"
+                    width="17"
+                    height="15.5"
+                    rx="3"
+                    stroke="#ffffff"
+                    stroke-width="2.4"
+                  ></rect>
+                  <path
+                    d="M8.3 14.6l2 2 4.2-4.4"
+                    stroke="#3fd6c6"
+                    stroke-width="2.8"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  ></path>
+                </svg>
+              </div>
+              <span style="font-family: var(--font-sans); font-size: 11px; color: var(--ink-muted)"
+                >Powered by
+                <span style="color: var(--ink); font-weight: 600">agendarhorario.com</span></span
+              >
+            </div>
+          </div>
+        </nav>
+
+        <div
+          style="
+            flex: 1;
+            padding: 40px 48px 64px;
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+            max-width: 860px;
+          "
+        >
+          <div>
+            <h1
+              style="
+                margin: 0 0 6px;
+                font-family: var(--font-display);
+                font-size: 28px;
+                line-height: 36px;
+                font-weight: 600;
+                color: var(--ink);
+              "
+            >
+              Horários de atendimento
+            </h1>
+            <p
+              style="
+                margin: 0;
+                font-family: var(--font-sans);
+                font-size: 16px;
+                line-height: 24px;
+                color: var(--ink-muted);
+              "
+            >
+              Defina os intervalos de funcionamento por dia da semana.
+            </p>
+          </div>
+
+          <div
+            style="
+              background: var(--surface-100);
+              border: 1px solid var(--border);
+              border-radius: var(--radius-md);
+              overflow: hidden;
+            "
+          >
+            <sc-for list="{{days}}" as="day" hint-placeholder-count="7">
+              <div style="padding: 20px 26px; border-top: 1px solid var(--surface-200)">
+                <div
+                  style="display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:{{day.rowMargin}};"
+                >
+                  <div style="display: flex; align-items: center; gap: 14px">
+                    <button
+                      type="button"
+                      onClick="{{day.toggle}}"
+                      role="switch"
+                      aria-checked="{{day.open}}"
+                      aria-label="Alternar {{day.name}}"
+                      style="{{day.switchTrack}}"
+                    >
+                      <span style="{{day.switchThumb}}"></span>
+                    </button>
+                    <span
+                      style="
+                        font-family: var(--font-sans);
+                        font-size: 15px;
+                        font-weight: 600;
+                        color: var(--ink);
+                      "
+                      >{{day.name}}</span
+                    >
+                  </div>
+                  <button
+                    type="button"
+                    onClick="{{day.addInterval}}"
+                    style="
+                      background: transparent;
+                      border: none;
+                      color: var(--brand-teal-dark);
+                      font-family: var(--font-sans);
+                      font-size: 13px;
+                      font-weight: 600;
+                      display: flex;
+                      align-items: center;
+                      gap: 5px;
+                    "
+                  >
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2.2"
+                      stroke-linecap="round"
+                    >
+                      <path d="M12 5v14M5 12h14"></path>
+                    </svg>
+                    Adicionar intervalo
+                  </button>
+                </div>
+
+                <sc-if value="{{day.open}}" hint-placeholder-val="{{true}}">
+                  <div style="display: flex; flex-direction: column; gap: 10px">
+                    <sc-for list="{{day.intervals}}" as="iv" hint-placeholder-count="1">
+                      <div style="display: flex; align-items: flex-end; gap: 14px">
+                        <div>
+                          <label
+                            style="
+                              display: block;
+                              margin-bottom: 5px;
+                              font-family: var(--font-sans);
+                              font-size: 11px;
+                              font-weight: 600;
+                              letter-spacing: 0.02em;
+                              text-transform: uppercase;
+                              color: var(--ink-muted);
+                            "
+                            >Início</label
+                          >
+                          <input
+                            type="time"
+                            value="{{iv.start}}"
+                            style="
+                              padding: 9px 12px;
+                              border: 1px solid var(--border);
+                              border-radius: var(--radius-sm);
+                              font-size: 14px;
+                              color: var(--ink);
+                              background: var(--surface-100);
+                            "
+                          />
+                        </div>
+                        <div>
+                          <label
+                            style="
+                              display: block;
+                              margin-bottom: 5px;
+                              font-family: var(--font-sans);
+                              font-size: 11px;
+                              font-weight: 600;
+                              letter-spacing: 0.02em;
+                              text-transform: uppercase;
+                              color: var(--ink-muted);
+                            "
+                            >Fim</label
+                          >
+                          <input
+                            type="time"
+                            value="{{iv.end}}"
+                            style="
+                              padding: 9px 12px;
+                              border: 1px solid var(--border);
+                              border-radius: var(--radius-sm);
+                              font-size: 14px;
+                              color: var(--ink);
+                              background: var(--surface-100);
+                            "
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          onClick="{{iv.remove}}"
+                          style="
+                            background: transparent;
+                            border: none;
+                            color: var(--danger);
+                            font-family: var(--font-sans);
+                            font-size: 13px;
+                            font-weight: 600;
+                            padding-bottom: 10px;
+                          "
+                        >
+                          Remover
+                        </button>
+                      </div>
+                    </sc-for>
+                  </div>
+                </sc-if>
+                <sc-if value="{{day.openFalse}}" hint-placeholder-val="{{false}}">
+                  <div
+                    style="font-family: var(--font-sans); font-size: 14px; color: var(--ink-muted)"
+                  >
+                    Fechado neste dia.
+                  </div>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="display: flex; justify-content: flex-end">
+            <button
+              type="button"
+              style="
+                background: var(--brand-teal-dark);
+                color: #ffffff;
+                border: none;
+                border-radius: var(--radius-sm);
+                padding: 12px 22px;
+                font-family: var(--font-sans);
+                font-size: 13px;
+                font-weight: 600;
+                letter-spacing: 0.02em;
+                text-transform: uppercase;
+              "
+            >
+              Salvar horários
+            </button>
+          </div>
+        </div>
+      </div>
+    </x-dc>
+    <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1100}}'>
+      class Component extends DCLogic {
+        constructor(props) {
+          super(props);
+          this.state = {
+            days: [
+              { key: 'seg', name: 'Segunda', open: true, intervals: [{ start: '09:00', end: '18:00' }] },
+              { key: 'ter', name: 'Terça', open: false, intervals: [] },
+              { key: 'qua', name: 'Quarta', open: false, intervals: [] },
+              { key: 'qui', name: 'Quinta', open: false, intervals: [] },
+              { key: 'sex', name: 'Sexta', open: false, intervals: [] },
+              { key: 'sab', name: 'Sábado', open: false, intervals: [] },
+              { key: 'dom', name: 'Domingo', open: false, intervals: [] }
+            ]
+          };
+        }
+
+        toggleDay(key) {
+          this.setState({
+            days: this.state.days.map(d => {
+              if (d.key !== key) return d;
+              const open = !d.open;
+              return { ...d, open, intervals: open && d.intervals.length === 0 ? [{ start: '09:00', end: '18:00' }] : d.intervals };
+            })
+          });
+        }
+        addInterval(key) {
+          this.setState({
+            days: this.state.days.map(d => d.key === key ? { ...d, open: true, intervals: [...d.intervals, { start: '09:00', end: '18:00' }] } : d)
+          });
+        }
+        removeInterval(key, idx) {
+          this.setState({
+            days: this.state.days.map(d => d.key === key ? { ...d, intervals: d.intervals.filter((_, i) => i !== idx) } : d)
+          });
+        }
+
+        renderVals() {
+          const days = this.state.days.map(d => ({
+            name: d.name,
+            open: d.open,
+            openFalse: !d.open,
+            rowMargin: d.open && d.intervals.length ? '16px' : '0px',
+            toggle: () => this.toggleDay(d.key),
+            addInterval: () => this.addInterval(d.key),
+            switchTrack: 'position:relative;width:38px;height:22px;border-radius:999px;border:none;padding:0;background:' + (d.open ? 'var(--brand-teal-dark)' : 'var(--border)') + ';flex-shrink:0;',
+            switchThumb: 'position:absolute;top:3px;left:' + (d.open ? '19px' : '3px') + ';width:16px;height:16px;border-radius:999px;background:#ffffff;transition:left .15s;',
+            intervals: d.intervals.map((iv, idx) => ({
+              start: iv.start,
+              end: iv.end,
+              remove: () => this.removeInterval(d.key, idx)
+            }))
+          }));
+          return { days };
+        }
+      }
+    </script>
+  </body>
+</html>

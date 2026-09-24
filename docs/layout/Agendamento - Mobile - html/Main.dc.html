@@ -1,0 +1,985 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <title>Agendamento — Mobile</title>
+    <script src="./vendor/react.js"></script>
+    <script src="./vendor/react-dom.js"></script>
+    <script src="./support.js"></script>
+  </head>
+  <body>
+    <x-dc>
+      <helmet>
+        <style>
+          body {
+            margin: 0;
+            font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+          }
+          button {
+            font-family: inherit;
+          }
+          input,
+          textarea {
+            font-family: inherit;
+          }
+          a {
+            color: #09424b;
+          }
+          a:hover {
+            color: #0b2530;
+          }
+          ::placeholder {
+            color: #8fb0b7;
+          }
+        </style>
+      </helmet>
+
+      <div
+        style="
+          width: 390px;
+          box-sizing: border-box;
+          background: #f2f7f8;
+          display: flex;
+          flex-direction: column;
+          color: #0b2530;
+        "
+      >
+        <!-- Header: customizable per client (logo + name + address) -->
+        <div
+          style="
+            padding: 32px 24px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            background: #ffffff;
+            border-bottom: 1px solid #8fb0b7;
+          "
+        >
+          <div
+            style="
+              width: 56px;
+              height: 56px;
+              border-radius: 999px;
+              background: #185280;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              flex-shrink: 0;
+            "
+          >
+            <span
+              style="
+                font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
+                font-size: 20px;
+                font-weight: 700;
+                color: #ffffff;
+              "
+              >EB</span
+            >
+          </div>
+          <div style="text-align: center">
+            <div
+              style="
+                font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
+                font-size: 20px;
+                line-height: 28px;
+                font-weight: 600;
+              "
+            >
+              Estúdio Bella
+            </div>
+            <div style="font-size: 14px; line-height: 20px; color: #4c6672; margin-top: 2px">
+              Rua das Flores, 120 — Centro
+            </div>
+          </div>
+          <div
+            style="
+              font-size: 13px;
+              line-height: 18px;
+              font-weight: 600;
+              letter-spacing: 0.02em;
+              text-transform: uppercase;
+              color: #09424b;
+              margin-top: 6px;
+            "
+          >
+            {{stepCounterLabel}}
+          </div>
+        </div>
+
+        <!-- Accordion -->
+        <div
+          style="flex: 1; padding: 20px 24px 8px; display: flex; flex-direction: column; gap: 14px"
+        >
+          <!-- Step 1: Serviço -->
+          <div
+            style="
+              background: #ffffff;
+              border: 1px solid #8fb0b7;
+              border-radius: 14px;
+              overflow: hidden;
+            "
+          >
+            <button
+              onClick="{{toggle1}}"
+              aria-expanded="{{step1Open}}"
+              style="
+                all: unset;
+                cursor: pointer;
+                width: 100%;
+                box-sizing: border-box;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 16px 18px;
+              "
+            >
+              <sc-if value="{{step1Done}}">
+                <div
+                  style="
+                    width: 26px;
+                    height: 26px;
+                    border-radius: 999px;
+                    background: #09424b;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    flex-shrink: 0;
+                  "
+                >
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#ffffff"
+                    stroke-width="3.2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <polyline points="4 12 9 17 20 6"></polyline>
+                  </svg>
+                </div>
+              </sc-if>
+              <sc-if value="{{step1NotDone}}">
+                <div
+                  style="
+                    width: 26px;
+                    height: 26px;
+                    border-radius: 999px;
+                    border: 1.5px solid #185280;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    flex-shrink: 0;
+                  "
+                >
+                  <span style="font-size: 13px; font-weight: 600; color: #185280">1</span>
+                </div>
+              </sc-if>
+              <div style="flex: 1; text-align: left; min-width: 0">
+                <div
+                  style="
+                    font-size: 13px;
+                    line-height: 18px;
+                    font-weight: 600;
+                    letter-spacing: 0.02em;
+                    text-transform: uppercase;
+                    color: #4c6672;
+                  "
+                >
+                  Etapa 1 · Serviço
+                </div>
+                <div
+                  style="
+                    font-size: 16px;
+                    line-height: 24px;
+                    font-weight: 600;
+                    color: #0b2530;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                  "
+                >
+                  {{step1Summary}}
+                </div>
+              </div>
+              <sc-if value="{{step1Open}}">
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#4c6672"
+                  stroke-width="2.4"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <polyline points="18 15 12 9 6 15"></polyline>
+                </svg>
+              </sc-if>
+              <sc-if value="{{step1Closed}}">
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#4c6672"
+                  stroke-width="2.4"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </sc-if>
+            </button>
+            <sc-if value="{{step1Open}}">
+              <div style="padding: 0 18px 18px; display: flex; flex-direction: column; gap: 8px">
+                <sc-for list="{{services}}" as="svc" hint-placeholder-count="4">
+                  <button
+                    onClick="{{svc.pick}}"
+                    style="all: unset; cursor: pointer; box-sizing: border-box; width: 100%; display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 10px; border: 1px solid {{svc.borderColor}}; background: {{svc.bgColor}};"
+                  >
+                    <sc-if value="{{svc.showPhoto}}">
+                      <div
+                        style="
+                          width: 44px;
+                          height: 44px;
+                          border-radius: 8px;
+                          background: #f2f7f8;
+                          border: 1px solid #8fb0b7;
+                          display: flex;
+                          align-items: center;
+                          justify-content: center;
+                          flex-shrink: 0;
+                        "
+                      >
+                        <svg
+                          width="18"
+                          height="18"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="#8fb0b7"
+                          stroke-width="1.8"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        >
+                          <rect x="3" y="5" width="18" height="14" rx="2"></rect>
+                          <circle cx="9" cy="11" r="2"></circle>
+                          <path d="M21 15l-4.5-4.5L9 18"></path>
+                        </svg>
+                      </div>
+                    </sc-if>
+                    <div style="flex: 1; text-align: left; min-width: 0">
+                      <div
+                        style="font-size: 15px; line-height: 20px; font-weight: 600; color: #0b2530"
+                      >
+                        {{svc.name}}
+                      </div>
+                      <div
+                        style="font-size: 13px; line-height: 18px; color: #4c6672; margin-top: 1px"
+                      >
+                        {{svc.duration}} · {{svc.price}}
+                      </div>
+                    </div>
+                    <sc-if value="{{svc.selected}}">
+                      <svg
+                        width="18"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="#09424b"
+                        stroke-width="2.6"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <polyline points="4 12 9 17 20 6"></polyline>
+                      </svg>
+                    </sc-if>
+                  </button>
+                </sc-for>
+              </div>
+            </sc-if>
+          </div>
+
+          <!-- Step 2: Dia e horário -->
+          <div
+            style="
+              background: #ffffff;
+              border: 1px solid #8fb0b7;
+              border-radius: 14px;
+              overflow: hidden;
+            "
+          >
+            <button
+              onClick="{{toggle2}}"
+              aria-expanded="{{step2Open}}"
+              style="
+                all: unset;
+                cursor: pointer;
+                width: 100%;
+                box-sizing: border-box;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 16px 18px;
+              "
+            >
+              <sc-if value="{{step2Done}}">
+                <div
+                  style="
+                    width: 26px;
+                    height: 26px;
+                    border-radius: 999px;
+                    background: #09424b;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    flex-shrink: 0;
+                  "
+                >
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#ffffff"
+                    stroke-width="3.2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <polyline points="4 12 9 17 20 6"></polyline>
+                  </svg>
+                </div>
+              </sc-if>
+              <sc-if value="{{step2NotDone}}">
+                <div
+                  style="
+                    width: 26px;
+                    height: 26px;
+                    border-radius: 999px;
+                    border: 1.5px solid #185280;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    flex-shrink: 0;
+                  "
+                >
+                  <span style="font-size: 13px; font-weight: 600; color: #185280">2</span>
+                </div>
+              </sc-if>
+              <div style="flex: 1; text-align: left; min-width: 0">
+                <div
+                  style="
+                    font-size: 13px;
+                    line-height: 18px;
+                    font-weight: 600;
+                    letter-spacing: 0.02em;
+                    text-transform: uppercase;
+                    color: #4c6672;
+                  "
+                >
+                  Etapa 2 · Dia e horário
+                </div>
+                <div
+                  style="
+                    font-size: 16px;
+                    line-height: 24px;
+                    font-weight: 600;
+                    color: #0b2530;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                  "
+                >
+                  {{step2Summary}}
+                </div>
+              </div>
+              <sc-if value="{{step2Open}}">
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#4c6672"
+                  stroke-width="2.4"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <polyline points="18 15 12 9 6 15"></polyline>
+                </svg>
+              </sc-if>
+              <sc-if value="{{step2Closed}}">
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#4c6672"
+                  stroke-width="2.4"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </sc-if>
+            </button>
+            <sc-if value="{{step2Open}}">
+              <div style="padding: 4px 18px 20px; display: flex; flex-direction: column; gap: 16px">
+                <div>
+                  <div
+                    style="
+                      font-size: 13px;
+                      line-height: 18px;
+                      font-weight: 600;
+                      letter-spacing: 0.02em;
+                      text-transform: uppercase;
+                      color: #4c6672;
+                      margin-bottom: 8px;
+                    "
+                  >
+                    Dia
+                  </div>
+                  <div style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px">
+                    <sc-for list="{{days}}" as="day" hint-placeholder-count="6">
+                      <button
+                        onClick="{{day.pick}}"
+                        style="all: unset; cursor: pointer; flex-shrink: 0; width: 48px; box-sizing: border-box; padding: 8px 0; border-radius: 10px; text-align: center; border: 1px solid {{day.borderColor}}; background: {{day.bgColor}};"
+                      >
+                        <div style="font-size: 12px; line-height: 16px; color: {{day.textColor}};">
+                          {{day.weekday}}
+                        </div>
+                        <div
+                          style="font-size: 16px; line-height: 22px; font-weight: 600; color: {{day.textColor}}; margin-top: 2px;"
+                        >
+                          {{day.num}}
+                        </div>
+                      </button>
+                    </sc-for>
+                  </div>
+                </div>
+                <div>
+                  <div
+                    style="
+                      font-size: 13px;
+                      line-height: 18px;
+                      font-weight: 600;
+                      letter-spacing: 0.02em;
+                      text-transform: uppercase;
+                      color: #4c6672;
+                      margin-bottom: 8px;
+                    "
+                  >
+                    Horário
+                  </div>
+                  <div
+                    style="
+                      display: grid;
+                      grid-template-columns: repeat(3, minmax(0, 1fr));
+                      gap: 8px;
+                    "
+                  >
+                    <sc-for list="{{times}}" as="slot" hint-placeholder-count="9">
+                      <button
+                        onClick="{{slot.pick}}"
+                        disabled="{{slot.disabled}}"
+                        style="all: unset; cursor: pointer; box-sizing: border-box; text-align: center; padding: 9px 0; border-radius: 10px; font-size: 14px; line-height: 20px; font-weight: 600; border: 1px solid {{slot.borderColor}}; background: {{slot.bgColor}}; color: {{slot.textColor}};"
+                      >
+                        {{slot.label}}
+                      </button>
+                    </sc-for>
+                  </div>
+                </div>
+                <button
+                  onClick="{{toggle3}}"
+                  style="
+                    all: unset;
+                    cursor: pointer;
+                    box-sizing: border-box;
+                    width: 100%;
+                    text-align: center;
+                    padding: 13px 0;
+                    border-radius: 10px;
+                    background: #09424b;
+                    margin-top: 4px;
+                  "
+                >
+                  <span style="font-size: 15px; line-height: 20px; font-weight: 600; color: #ffffff"
+                    >Confirmar horário</span
+                  >
+                </button>
+              </div>
+            </sc-if>
+          </div>
+
+          <!-- Step 3: Dados pessoais -->
+          <div
+            style="
+              background: #ffffff;
+              border: 1px solid #8fb0b7;
+              border-radius: 14px;
+              overflow: hidden;
+            "
+          >
+            <button
+              onClick="{{toggle3}}"
+              aria-expanded="{{step3Open}}"
+              style="
+                all: unset;
+                cursor: pointer;
+                width: 100%;
+                box-sizing: border-box;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 16px 18px;
+              "
+            >
+              <div
+                style="width: 26px; height: 26px; border-radius: 999px; border: 1.5px solid {{step3BadgeColor}}; display: flex; align-items: center; justify-content: center; flex-shrink: 0;"
+              >
+                <span style="font-size: 13px; font-weight: 600; color: {{step3BadgeColor}};"
+                  >3</span
+                >
+              </div>
+              <div style="flex: 1; text-align: left; min-width: 0">
+                <div
+                  style="
+                    font-size: 13px;
+                    line-height: 18px;
+                    font-weight: 600;
+                    letter-spacing: 0.02em;
+                    text-transform: uppercase;
+                    color: #4c6672;
+                  "
+                >
+                  Etapa 3 · Seus dados
+                </div>
+                <div
+                  style="font-size: 16px; line-height: 24px; font-weight: 600; color: {{step3TitleColor}};"
+                >
+                  Nome, telefone e e-mail
+                </div>
+              </div>
+              <sc-if value="{{step3Open}}">
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#4c6672"
+                  stroke-width="2.4"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <polyline points="18 15 12 9 6 15"></polyline>
+                </svg>
+              </sc-if>
+              <sc-if value="{{step3Closed}}">
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#4c6672"
+                  stroke-width="2.4"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </sc-if>
+            </button>
+            <sc-if value="{{step3Open}}">
+              <div style="padding: 4px 18px 20px; display: flex; flex-direction: column; gap: 14px">
+                <label style="display: flex; flex-direction: column; gap: 6px">
+                  <span
+                    style="
+                      font-size: 13px;
+                      line-height: 18px;
+                      font-weight: 600;
+                      letter-spacing: 0.02em;
+                      text-transform: uppercase;
+                      color: #4c6672;
+                    "
+                    >Nome completo</span
+                  >
+                  <input
+                    type="text"
+                    placeholder="Como você se chama?"
+                    style="
+                      box-sizing: border-box;
+                      width: 100%;
+                      padding: 12px 14px;
+                      border-radius: 8px;
+                      border: 1px solid #8fb0b7;
+                      font-size: 15px;
+                      color: #0b2530;
+                      background: #ffffff;
+                    "
+                  />
+                </label>
+                <label style="display: flex; flex-direction: column; gap: 6px">
+                  <span
+                    style="
+                      font-size: 13px;
+                      line-height: 18px;
+                      font-weight: 600;
+                      letter-spacing: 0.02em;
+                      text-transform: uppercase;
+                      color: #4c6672;
+                    "
+                    >Telefone (WhatsApp)</span
+                  >
+                  <input
+                    type="tel"
+                    placeholder="(11) 90000-0000"
+                    style="
+                      box-sizing: border-box;
+                      width: 100%;
+                      padding: 12px 14px;
+                      border-radius: 8px;
+                      border: 1px solid #8fb0b7;
+                      font-size: 15px;
+                      color: #0b2530;
+                      background: #ffffff;
+                    "
+                  />
+                </label>
+                <label style="display: flex; flex-direction: column; gap: 6px">
+                  <span
+                    style="
+                      font-size: 13px;
+                      line-height: 18px;
+                      font-weight: 600;
+                      letter-spacing: 0.02em;
+                      text-transform: uppercase;
+                      color: #4c6672;
+                    "
+                    >E-mail</span
+                  >
+                  <input
+                    type="email"
+                    placeholder="voce@email.com"
+                    style="
+                      box-sizing: border-box;
+                      width: 100%;
+                      padding: 12px 14px;
+                      border-radius: 8px;
+                      border: 1px solid #8fb0b7;
+                      font-size: 15px;
+                      color: #0b2530;
+                      background: #ffffff;
+                    "
+                  />
+                </label>
+                <label style="display: flex; flex-direction: column; gap: 6px">
+                  <span
+                    style="
+                      font-size: 13px;
+                      line-height: 18px;
+                      font-weight: 600;
+                      letter-spacing: 0.02em;
+                      text-transform: uppercase;
+                      color: #4c6672;
+                    "
+                    >Observações (opcional)</span
+                  >
+                  <textarea
+                    rows="2"
+                    placeholder="Alguma preferência para o atendimento?"
+                    style="
+                      box-sizing: border-box;
+                      width: 100%;
+                      padding: 12px 14px;
+                      border-radius: 8px;
+                      border: 1px solid #8fb0b7;
+                      font-size: 15px;
+                      color: #0b2530;
+                      background: #ffffff;
+                      resize: none;
+                    "
+                  ></textarea>
+                </label>
+                <button
+                  onClick="{{toggle4}}"
+                  style="
+                    all: unset;
+                    cursor: pointer;
+                    box-sizing: border-box;
+                    width: 100%;
+                    text-align: center;
+                    padding: 13px 0;
+                    border-radius: 10px;
+                    background: #09424b;
+                    margin-top: 4px;
+                  "
+                >
+                  <span style="font-size: 15px; line-height: 20px; font-weight: 600; color: #ffffff"
+                    >Continuar</span
+                  >
+                </button>
+              </div>
+            </sc-if>
+          </div>
+
+          <!-- Step 4: Código de confirmação -->
+          <div
+            style="
+              background: #ffffff;
+              border: 1px solid #8fb0b7;
+              border-radius: 14px;
+              overflow: hidden;
+            "
+          >
+            <button
+              onClick="{{toggle4}}"
+              aria-expanded="{{step4Open}}"
+              style="
+                all: unset;
+                cursor: pointer;
+                width: 100%;
+                box-sizing: border-box;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 16px 18px;
+              "
+            >
+              <div
+                style="width: 26px; height: 26px; border-radius: 999px; border: 1.5px solid {{step4BadgeColor}}; display: flex; align-items: center; justify-content: center; flex-shrink: 0;"
+              >
+                <span style="font-size: 13px; font-weight: 600; color: {{step4BadgeColor}};"
+                  >4</span
+                >
+              </div>
+              <div style="flex: 1; text-align: left; min-width: 0">
+                <div
+                  style="
+                    font-size: 13px;
+                    line-height: 18px;
+                    font-weight: 600;
+                    letter-spacing: 0.02em;
+                    text-transform: uppercase;
+                    color: #4c6672;
+                  "
+                >
+                  Etapa 4 · Confirmação
+                </div>
+                <div
+                  style="font-size: 16px; line-height: 24px; font-weight: 600; color: {{step4TitleColor}};"
+                >
+                  Código por SMS ou e-mail
+                </div>
+              </div>
+              <sc-if value="{{step4Open}}">
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#4c6672"
+                  stroke-width="2.4"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <polyline points="18 15 12 9 6 15"></polyline>
+                </svg>
+              </sc-if>
+              <sc-if value="{{step4Closed}}">
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#4c6672"
+                  stroke-width="2.4"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </sc-if>
+            </button>
+            <sc-if value="{{step4Open}}">
+              <div style="padding: 4px 18px 20px; display: flex; flex-direction: column; gap: 14px">
+                <div style="font-size: 14px; line-height: 20px; color: #4c6672">
+                  Enviamos um código de 6 dígitos por SMS para (11) 90000-0000.
+                </div>
+                <div style="display: flex; gap: 8px">
+                  <sc-for list="{{codeDigits}}" as="digit" hint-placeholder-count="6">
+                    <div
+                      style="width: 40px; height: 48px; border-radius: 8px; border: 1.5px solid {{digit.borderColor}}; display: flex; align-items: center; justify-content: center; background: #ffffff;"
+                    >
+                      <span style="font-size: 18px; font-weight: 700; color: #0b2530"
+                        >{{digit.value}}</span
+                      >
+                    </div>
+                  </sc-for>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center">
+                  <a href="#" style="font-size: 13px; font-weight: 600">Reenviar código</a>
+                  <a href="#" style="font-size: 13px; font-weight: 600">Receber por e-mail</a>
+                </div>
+                <button
+                  style="
+                    all: unset;
+                    cursor: pointer;
+                    box-sizing: border-box;
+                    width: 100%;
+                    text-align: center;
+                    padding: 13px 0;
+                    border-radius: 10px;
+                    background: #09424b;
+                    margin-top: 4px;
+                  "
+                >
+                  <span style="font-size: 15px; line-height: 20px; font-weight: 600; color: #ffffff"
+                    >Confirmar agendamento</span
+                  >
+                </button>
+              </div>
+            </sc-if>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div
+          style="
+            padding: 18px 24px 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+          "
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+            <rect x="3" y="5" width="18" height="16" rx="3" fill="#185280"></rect>
+            <rect x="3" y="5" width="18" height="5" rx="3" fill="#09424b"></rect>
+            <path
+              d="M8 14l2.5 2.5L16 11"
+              stroke="#0f9e9e"
+              stroke-width="2.2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              fill="none"
+            ></path>
+          </svg>
+          <span style="font-size: 12px; line-height: 16px; color: #4c6672"
+            >Agendamento por agendarhorario.com</span
+          >
+        </div>
+      </div>
+    </x-dc>
+    <script
+      type="text/x-dc"
+      data-dc-script
+      data-props='{"primaryColor":{"editor":"color","default":"#09424b","options":["#09424b","#185280","#0f9e9e"]},"showServicePhotos":{"editor":"boolean","default":true}}'
+    >
+      class Component extends DCLogic {
+        state = { openStep: 2, selectedServiceId: 'corte-barba', selectedDayIndex: 1, selectedTime: '10:00' };
+
+        toggle(step) {
+          return () => this.setState({ openStep: this.state.openStep === step ? null : step });
+        }
+
+        pickService(id) {
+          return () => this.setState({ selectedServiceId: id, openStep: 2 });
+        }
+
+        pickDay(i) {
+          return () => this.setState({ selectedDayIndex: i });
+        }
+
+        pickTime(value) {
+          return () => this.setState({ selectedTime: value, openStep: 3 });
+        }
+
+        renderVals() {
+          const primary = this.props.primaryColor ?? '#09424b';
+          const showPhotos = this.props.showServicePhotos ?? true;
+          const { openStep, selectedServiceId, selectedDayIndex, selectedTime } = this.state;
+
+          const serviceList = [
+            { id: 'corte-barba', name: 'Corte + Barba', duration: '45 min', price: 'R$ 80', photo: true },
+            { id: 'corte', name: 'Corte simples', duration: '30 min', price: 'R$ 50', photo: false },
+            { id: 'barba', name: 'Barba desenhada', duration: '20 min', price: 'R$ 35', photo: false },
+            { id: 'coloracao', name: 'Coloração', duration: '90 min', price: 'R$ 150', photo: true },
+          ];
+          const selectedService = serviceList.find((s) => s.id === selectedServiceId) ?? serviceList[0];
+          const services = serviceList.map((s) => {
+            const selected = s.id === selectedServiceId;
+            return {
+              ...s,
+              selected,
+              showPhoto: showPhotos && s.photo,
+              borderColor: selected ? '#185280' : '#8fb0b7',
+              bgColor: selected ? '#f2f7f8' : '#ffffff',
+              pick: this.pickService(s.id),
+            };
+          });
+
+          const dayList = [
+            { weekday: 'Ter', num: '22' },
+            { weekday: 'Qua', num: '23' },
+            { weekday: 'Qui', num: '24' },
+            { weekday: 'Sex', num: '25' },
+            { weekday: 'Sáb', num: '26' },
+            { weekday: 'Dom', num: '27' },
+          ];
+          const days = dayList.map((d, i) => {
+            const selected = i === selectedDayIndex;
+            return {
+              ...d,
+              borderColor: selected ? '#185280' : '#8fb0b7',
+              bgColor: selected ? '#185280' : '#ffffff',
+              textColor: selected ? '#ffffff' : '#0b2530',
+              pick: this.pickDay(i),
+            };
+          });
+          const selectedDay = dayList[selectedDayIndex];
+
+          const timeList = [
+            { value: '09:00', available: true }, { value: '09:30', available: true }, { value: '10:00', available: true },
+            { value: '10:30', available: true }, { value: '11:00', available: false }, { value: '14:00', available: true },
+            { value: '14:30', available: false }, { value: '15:00', available: true }, { value: '15:30', available: true },
+          ];
+          const times = timeList.map((t) => {
+            const selected = t.value === selectedTime;
+            return {
+              label: t.value,
+              disabled: !t.available,
+              borderColor: !t.available ? '#8fb0b7' : (selected ? '#09424b' : '#8fb0b7'),
+              bgColor: !t.available ? '#f2f7f8' : (selected ? '#09424b' : '#ffffff'),
+              textColor: !t.available ? '#8fb0b7' : (selected ? '#ffffff' : '#0b2530'),
+              pick: t.available ? this.pickTime(t.value) : undefined,
+            };
+          });
+
+          const stepLabels = { 1: 'Serviço', 2: 'Dia e horário', 3: 'Seus dados', 4: 'Confirmação' };
+
+          return {
+            primary,
+            stepCounterLabel: `Etapa ${openStep ?? 1} de 4 · ${stepLabels[openStep ?? 1]}`,
+            toggle1: this.toggle(1), toggle2: this.toggle(2), toggle3: this.toggle(3), toggle4: this.toggle(4),
+            step1Open: openStep === 1, step1Closed: openStep !== 1,
+            step2Open: openStep === 2, step2Closed: openStep !== 2,
+            step3Open: openStep === 3, step3Closed: openStep !== 3,
+            step4Open: openStep === 4, step4Closed: openStep !== 4,
+            step1Done: openStep !== 1, step1NotDone: openStep === 1,
+            step2Done: !!selectedTime && openStep !== 2, step2NotDone: !(!!selectedTime && openStep !== 2),
+            step1Summary: openStep === 1 ? 'Escolha um serviço' : `${selectedService.name} · ${selectedService.duration} · ${selectedService.price}`,
+            step2Summary: openStep === 2 ? 'Escolha o dia e o horário' : `${selectedDay.weekday}, ${selectedDay.num} set · ${selectedTime}`,
+            step3BadgeColor: openStep === 3 ? '#185280' : '#8fb0b7',
+            step3TitleColor: openStep === 3 ? '#0b2530' : '#4c6672',
+            step4BadgeColor: openStep === 4 ? '#185280' : '#8fb0b7',
+            step4TitleColor: openStep === 4 ? '#0b2530' : '#4c6672',
+            services, days, times,
+            codeDigits: ['4', '9', '2', '', '', ''].map((v) => ({ value: v, borderColor: v ? '#09424b' : '#8fb0b7' })),
+          };
+        }
+      }
+    </script>
+  </body>
+</html>

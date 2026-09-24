@@ -1,158 +1,209 @@
-<main class="wrap">
-  <a class="back" [routerLink]="['/p', slug()]">← Voltar para a empresa</a>
-
-  @if (loading() && !company()) {
-  <div class="loading"><app-spinner /></div>
-  } @else if (loadError() || !service()) {
+@if (loading() && !company()) {
+<div class="loading"><app-spinner /></div>
+} @else if (loadError() || !service()) {
+<main class="fallback">
   <app-empty-state
     title="Não foi possível carregar"
     [description]="loadError() || 'Serviço indisponível'"
     actionLabel="Tentar novamente"
     (action)="load()"
   />
-  } @else if (step() === 'done') {
-  <section class="done">
-    <h1>Agendamento solicitado!</h1>
-    <p class="muted">
-      Recebemos seu pedido para <strong>{{ service()?.name }}</strong> em
-      <strong>{{ confirmedDateLabel() }}</strong>.
-    </p>
-    <p class="muted">
-      Em breve a empresa irá confirmar. Você também receberá uma notificação para confirmar ou
-      cancelar a presença.
-    </p>
-    <a class="btn-primary" [routerLink]="['/p', slug()]">Voltar para a empresa</a>
-  </section>
-  } @else {
-  <app-page-header [title]="stepTitle()" [subtitle]="company()?.name + ' · ' + service()?.name" />
-
-  <ol class="steps" [attr.data-step]="step()">
-    <li [attr.data-active]="step() === 'slot'">1. Horário</li>
-    <li [attr.data-active]="step() === 'data'">2. Dados</li>
-    <li [attr.data-active]="step() === 'otp'">3. Confirmar</li>
-  </ol>
-
-  @if (step() === 'slot') { @if (availability(); as a) { @if (a.days.length === 0 ||
-  allDaysEmpty(a)) {
-  <app-empty-state
-    title="Sem horários disponíveis"
-    description="Não há slots disponíveis nos próximos dias. Tente outra data."
+</main>
+} @else {
+<div class="shell">
+  <app-booking-identity
+    [name]="company()!.name"
+    [phone]="company()!.phone"
+    [logoUrl]="company()!.logoUrl"
+    [hoursLabel]="hoursLabel()"
+    [stepLabel]="counterLabel()"
   />
-  }
-  <div class="days">
-    @for (day of a.days; track day.date) {
-    <article class="day">
-      <header>{{ formatDate(day.date) }}</header>
-      @if (day.slots.length === 0) {
-      <p class="muted">Sem horários</p>
+
+  <section class="flow">
+    <div class="flow-inner">
+      @if (step() === 'done') {
+      <section class="success">
+        <span class="mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><polyline points="4 12 9 17 20 6"></polyline></svg>
+        </span>
+        <h1>Agendamento solicitado</h1>
+        <p class="when">{{ confirmedSummary() }}</p>
+        <p>
+          Recebemos seu pedido para <strong>{{ service()?.name }}</strong>. Em breve a empresa
+          confirma, e você recebe um aviso para confirmar ou cancelar a presença.
+        </p>
+        <a class="primary" [routerLink]="['/p', slug()]">Voltar para a empresa</a>
+      </section>
+      } @else if (company()!.status === 'SUSPENDED') {
+      <section class="status">
+        <h1>Página de agendamentos indisponível</h1>
+        <p>
+          {{ company()!.statusReason ?? 'Esta empresa está com a página de agendamentos
+          temporariamente indisponível.' }}
+        </p>
+        <a class="back" [routerLink]="['/p', slug()]">Página da empresa</a>
+      </section>
+      } @else if (company()!.status === 'OVER_LIMIT') {
+      <section class="status">
+        <h1>Limite de agendamentos atingido</h1>
+        <p>
+          Esta empresa atingiu o limite mensal de agendamentos. Tente novamente após a renovação do
+          ciclo.
+        </p>
+        <a class="back" [routerLink]="['/p', slug()]">Página da empresa</a>
+      </section>
       } @else {
-      <div class="slot-grid">
-        @for (slot of day.slots; track slot.start) {
-        <button
-          type="button"
-          (click)="selectSlot(slot)"
-          [class.selected]="selectedSlot()?.start === slot.start"
+      <p class="step-label">{{ counterLabel() }}</p>
+      <a class="back" [routerLink]="['/p', slug()]">Página da empresa</a>
+
+      <div class="steps">
+        <app-booking-step
+          [index]="1"
+          kicker="Serviço"
+          [summary]="serviceSummary()"
+          [open]="step() === 'service'"
+          [done]="!!service() && step() !== 'service'"
+          (toggled)="openStep('service')"
         >
-          {{ slot.start.slice(11, 16) }}
-        </button>
-        }
+          <app-booking-service-picker
+            [services]="company()!.services"
+            [selectedId]="serviceId()"
+            (picked)="chooseService($event)"
+          />
+        </app-booking-step>
+
+        <app-booking-step
+          [index]="2"
+          kicker="Dia e horário"
+          [summary]="scheduleSummary()"
+          [open]="step() === 'slot'"
+          [done]="!!selectedSlot() && step() !== 'slot'"
+          [locked]="!service()"
+          (toggled)="openStep('slot')"
+        >
+          @if (loading()) {
+          <div class="loading compact"><app-spinner /></div>
+          } @else { @if (availability(); as agenda) { @if (agenda.days.length === 0 ||
+          allDaysEmpty(agenda)) {
+          <app-empty-state
+            title="Sem horários disponíveis"
+            description="Não há horários nos próximos dias. Tente outro serviço ou volte mais tarde."
+          />
+          } @else {
+          <app-booking-slot-picker
+            [days]="openDays()"
+            [selectedDate]="selectedDate()"
+            [selectedStart]="selectedSlot()?.start ?? null"
+            (datePicked)="selectDate($event)"
+            (slotPicked)="selectSlot($event)"
+            (confirmed)="goToData()"
+          />
+          } } }
+        </app-booking-step>
+
+        <app-booking-step
+          [index]="3"
+          kicker="Seus dados"
+          [summary]="contactSummary()"
+          [open]="step() === 'data'"
+          [done]="step() === 'otp'"
+          [locked]="!selectedSlot()"
+          (toggled)="openStep('data')"
+        >
+          <form [formGroup]="contactForm" (ngSubmit)="onRequestOtp()" novalidate>
+            <div class="fields">
+              <app-form-field class="span-2" label="Nome completo" [errorMessage]="cf('name')">
+                <input
+                  type="text"
+                  formControlName="name"
+                  maxlength="120"
+                  placeholder="Como você se chama?"
+                />
+              </app-form-field>
+
+              <app-form-field label="Telefone (WhatsApp)" [errorMessage]="cf('phone')">
+                <input
+                  type="tel"
+                  inputmode="numeric"
+                  formControlName="phone"
+                  autocomplete="tel"
+                  placeholder="(11) 90000-0000"
+                  maxlength="15"
+                  (input)="onPhoneInput($event)"
+                />
+              </app-form-field>
+
+              <app-form-field label="E-mail" [errorMessage]="cf('email')">
+                <input
+                  type="email"
+                  formControlName="email"
+                  autocomplete="email"
+                  placeholder="voce@email.com"
+                />
+              </app-form-field>
+
+              <app-form-field
+                class="span-2"
+                label="Observações (opcional)"
+                [errorMessage]="cf('notes')"
+              >
+                <textarea
+                  formControlName="notes"
+                  rows="2"
+                  maxlength="500"
+                  placeholder="Alguma preferência para o atendimento?"
+                ></textarea>
+              </app-form-field>
+            </div>
+
+            @if (otpError()) {
+            <p class="error" role="alert">{{ otpError() }}</p>
+            }
+
+            <button
+              type="submit"
+              class="primary"
+              [disabled]="sending() || resendCooldownSeconds() > 0"
+            >
+              {{ sending() ? 'Enviando...' : 'Continuar' }}
+            </button>
+          </form>
+        </app-booking-step>
+
+        <app-booking-step
+          [index]="4"
+          kicker="Confirmação"
+          summary="Código por SMS ou e-mail"
+          [open]="step() === 'otp'"
+          [locked]="!otpReady()"
+          (toggled)="openStep('otp')"
+        >
+          <form class="otp" [formGroup]="otpForm" (ngSubmit)="onConfirmOtp()" novalidate>
+            <p class="hint">{{ otpHint() }}</p>
+            <app-booking-otp-input
+              [code]="otpForm.controls.code.value"
+              [disabled]="confirming() || sending()"
+              (codeChange)="onOtpCode($event)"
+            />
+            @if (otpFieldError() || otpError()) {
+            <p class="error" role="alert">{{ otpError() || otpFieldError() }}</p>
+            }
+            <button
+              type="button"
+              class="resend"
+              (click)="onResendOtp()"
+              [disabled]="sending() || confirming() || resendCooldownSeconds() > 0"
+            >
+              {{ resendLabel() }}
+            </button>
+            <button type="submit" class="primary" [disabled]="confirming() || sending()">
+              {{ confirming() ? 'Confirmando...' : 'Confirmar agendamento' }}
+            </button>
+          </form>
+        </app-booking-step>
       </div>
       }
-    </article>
-    }
-  </div>
-  } @else {
-  <div class="loading"><app-spinner /></div>
-  }
-
-  <div class="actions">
-    <button type="button" class="btn-primary" (click)="goToData()" [disabled]="!selectedSlot()">
-      Continuar
-    </button>
-  </div>
-  } @else if (step() === 'data') {
-  <form [formGroup]="contactForm" (ngSubmit)="onRequestOtp()" novalidate>
-    <app-form-field label="Seu nome" [required]="true" [errorMessage]="cf('name')">
-      <input type="text" formControlName="name" maxlength="120" />
-    </app-form-field>
-
-    <app-form-field label="E-mail" [required]="true" [errorMessage]="cf('email')">
-      <input type="email" formControlName="email" autocomplete="email" />
-    </app-form-field>
-
-    <app-form-field label="Telefone" [required]="true" [errorMessage]="cf('phone')">
-      <input
-        type="tel"
-        inputmode="numeric"
-        formControlName="phone"
-        autocomplete="tel"
-        placeholder="(11) 99999-9999"
-        maxlength="15"
-        (input)="onPhoneInput($event)"
-      />
-    </app-form-field>
-
-    <app-form-field label="Observações (opcional)" [errorMessage]="cf('notes')">
-      <textarea formControlName="notes" rows="3" maxlength="500"></textarea>
-    </app-form-field>
-
-    @if (otpError()) {
-    <p class="error" role="alert">{{ otpError() }}</p>
-    }
-
-    <div class="actions">
-      <button type="button" class="btn-secondary" (click)="step.set('slot')">Voltar</button>
-      <button
-        type="submit"
-        class="btn-primary"
-        [disabled]="contactForm.invalid || sending() || resendCooldownSeconds() > 0"
-      >
-        {{ sending() ? 'Enviando...' : 'Enviar código' }}
-      </button>
     </div>
-  </form>
-  } @else if (step() === 'otp') {
-  <form [formGroup]="otpForm" (ngSubmit)="onConfirmOtp()" novalidate>
-    <p class="muted">
-      Enviamos um código de 6 dígitos para
-      <strong>{{ verificationTarget() }}</strong>.
-    </p>
-    <app-form-field label="Código" [required]="true" [errorMessage]="otpFieldError()">
-      <input
-        type="text"
-        inputmode="numeric"
-        pattern="\\d{6}"
-        maxlength="6"
-        formControlName="code"
-        autocomplete="one-time-code"
-      />
-    </app-form-field>
-
-    @if (otpError()) {
-    <p class="error" role="alert">{{ otpError() }}</p>
-    }
-
-    <p class="resend-row">
-      <button
-        type="button"
-        class="link-btn"
-        (click)="onResendOtp()"
-        [disabled]="sending() || confirming() || resendCooldownSeconds() > 0"
-      >
-        {{ resendLabel() }}
-      </button>
-    </p>
-
-    <div class="actions">
-      <button type="button" class="btn-secondary" (click)="step.set('data')">Voltar</button>
-      <button
-        type="submit"
-        class="btn-primary"
-        [disabled]="otpForm.invalid || confirming() || sending()"
-      >
-        {{ confirming() ? 'Confirmando...' : 'Confirmar agendamento' }}
-      </button>
-    </div>
-  </form>
-  } }
-</main>
+  </section>
+</div>
+}

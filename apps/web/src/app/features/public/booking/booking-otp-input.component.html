@@ -1,0 +1,18 @@
+<div class="digits" role="group" aria-label="Código de 6 dígitos">
+  @for (index of indexes; track index) {
+    <input
+      #digit
+      type="text"
+      inputmode="numeric"
+      maxlength="6"
+      [disabled]="disabled()"
+      [class.filled]="!!chars()[index]"
+      [value]="chars()[index]"
+      [attr.aria-label]="'Dígito ' + (index + 1)"
+      [attr.autocomplete]="index === 0 ? 'one-time-code' : 'off'"
+      (input)="onInput(index, $event)"
+      (keydown)="onKeydown(index, $event)"
+      (paste)="onPaste($event)"
+    />
+  }
+</div>

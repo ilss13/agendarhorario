@@ -1,0 +1,23 @@
+<div class="grid">
+  @for (service of services(); track service.id) {
+    <button
+      type="button"
+      class="card"
+      [class.selected]="service.id === selectedId()"
+      [attr.aria-pressed]="service.id === selectedId()"
+      (click)="picked.emit(service.id)"
+    >
+      <span class="text">
+        <span class="name">{{ service.name }}</span>
+        <span class="meta"
+          >{{ service.durationMinutes }} min · {{ priceLabel(service.price) }}</span
+        >
+      </span>
+      @if (service.id === selectedId()) {
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <polyline points="4 12 9 17 20 6"></polyline>
+        </svg>
+      }
+    </button>
+  }
+</div>

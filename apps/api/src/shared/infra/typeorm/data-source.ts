@@ -43,7 +43,7 @@ export const AppDataSource = new DataSource({
     BillingEvent,
     AuditLog,
   ],
-  migrations: [__dirname + '/migrations/*.{ts,js}'],
+  migrations: [__dirname + '/migrations/!(*.spec).{ts,js}'],
   timezone: 'Z',
   charset: 'utf8mb4_unicode_ci',
   synchronize: false,

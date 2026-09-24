@@ -197,3 +197,85 @@ $radius-card: 0.75rem;
   opacity: 0.55;
   cursor: not-allowed;
 }
+
+// Agendamento público — paleta das referências de desktop e mobile.
+$bk-canvas: #f2f7f8;
+$bk-ink: #0b2530;
+$bk-muted: #4c6672;
+$bk-primary: #09424b;
+$bk-brand: #185280;
+$bk-accent: #0f9e9e;
+$bk-border: #8fb0b7;
+$bk-soft: #d7e6ea;
+$bk-radius: 14px;
+$bk-radius-control: 10px;
+
+@mixin booking-host {
+  display: block;
+  min-height: 100dvh;
+  background: $bk-canvas;
+  color: $bk-ink;
+}
+
+@mixin booking-kicker {
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: $bk-muted;
+}
+
+@mixin booking-eyebrow {
+  margin: 0 0 20px;
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: $bk-primary;
+}
+
+@mixin booking-card {
+  background: $color-surface;
+  border: 1px solid $bk-border;
+  border-radius: $bk-radius;
+  overflow: hidden;
+}
+
+@mixin booking-focus {
+  &:focus-visible {
+    outline: 2px solid $bk-accent;
+    outline-offset: 2px;
+  }
+}
+
+@mixin booking-primary-button {
+  appearance: none;
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  margin-top: 4px;
+  padding: 14px 0;
+  border: 0;
+  border-radius: $bk-radius-control;
+  background: $bk-primary;
+  color: $color-surface;
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  @include booking-focus;
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+}
+
+@mixin booking-section-label {
+  margin: 0 0 8px;
+  @include booking-kicker;
+}

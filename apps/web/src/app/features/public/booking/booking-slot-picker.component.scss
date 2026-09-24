@@ -1,0 +1,95 @@
+@use '../../../../styles/ui' as ui;
+
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.label {
+  @include ui.booking-section-label;
+}
+
+.days {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.day,
+.time {
+  appearance: none;
+  box-sizing: border-box;
+  border: 1px solid ui.$bk-border;
+  border-radius: ui.$bk-radius-control;
+  background: ui.$color-surface;
+  color: ui.$bk-ink;
+  cursor: pointer;
+  @include ui.booking-focus;
+}
+
+.day {
+  flex: 0 0 72px;
+  padding: 10px 0;
+  text-align: center;
+}
+
+.day.selected {
+  border-color: ui.$bk-brand;
+  background: ui.$bk-brand;
+  color: ui.$color-surface;
+}
+
+.weekday,
+.num {
+  display: block;
+}
+
+.weekday {
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.num {
+  margin-top: 2px;
+  font-size: 17px;
+  line-height: 22px;
+  font-weight: 600;
+}
+
+.times {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.time {
+  padding: 10px 0;
+  text-align: center;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+}
+
+.time.selected {
+  border-color: ui.$bk-primary;
+  background: ui.$bk-primary;
+  color: ui.$color-surface;
+}
+
+.empty {
+  margin: 0;
+  color: ui.$bk-muted;
+  font-size: 14px;
+}
+
+.confirm {
+  @include ui.booking-primary-button;
+}
+
+@media (max-width: 420px) {
+  .times {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}

@@ -1,0 +1,32 @@
+@use '../../../../styles/ui' as ui;
+
+:host {
+  display: block;
+}
+
+.digits {
+  display: flex;
+  gap: 8px;
+}
+
+input {
+  width: 44px;
+  height: 52px;
+  box-sizing: border-box;
+  border-radius: 8px;
+  border: 1.5px solid ui.$bk-border;
+  background: ui.$color-surface;
+  text-align: center;
+  font-size: 19px;
+  font-weight: 700;
+  color: ui.$bk-ink;
+  @include ui.booking-focus;
+}
+
+input.filled {
+  border-color: ui.$bk-primary;
+}
+
+input:disabled {
+  opacity: 0.55;
+}
