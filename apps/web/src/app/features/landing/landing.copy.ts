@@ -1,181 +1,250 @@
 import { SUBSCRIPTION_TRIAL_DAYS } from '@agendarhorario/contracts';
 
+export type LandingIconName =
+  | 'check'
+  | 'link'
+  | 'bell'
+  | 'calendar'
+  | 'phone'
+  | 'mail'
+  | 'chat'
+  | 'chart'
+  | 'shield';
+
 export interface PlanCopy {
   /** Identificador legível para o destaque visual; deve casar com PlanCode do backend. */
   code: 'basico' | 'medio' | 'grande' | 'super';
+  tagline: string;
   highlight?: boolean;
   features: string[];
 }
 
 export const LANDING_COPY = {
   brand: 'Agendar Horário',
+  nav: [
+    { label: 'Como funciona', href: '#como-funciona' },
+    { label: 'Recursos', href: '#recursos' },
+    { label: 'Planos', href: '#planos' },
+    { label: 'Dúvidas', href: '#duvidas' },
+  ],
   hero: {
-    eyebrow: 'Agenda online sem dor de cabeça',
-    headline: 'Sua agenda lotada sem WhatsApp travado.',
+    chip: `${SUBSCRIPTION_TRIAL_DAYS} dias grátis · conta sem cartão`,
+    headline: 'Seu cliente escolhe o horário. Você só confere a agenda do dia.',
     subheadline:
-      'Receba agendamentos online com lembretes automáticos por e-mail, SMS ou WhatsApp.',
-    primaryCta: `Começar grátis por ${SUBSCRIPTION_TRIAL_DAYS} dias`,
-    secondaryCta: 'Ver planos',
-    trustBadges: [
-      `${SUBSCRIPTION_TRIAL_DAYS} dias grátis`,
-      'Sem fidelidade',
-      'Cancele quando quiser',
-    ],
+      'Um link de agendamento que funciona 24h, lembretes automáticos por e-mail, SMS ou WhatsApp e a agenda do dia inteira num olhar. Tudo pronto em 5 minutos.',
+    emailLabel: 'Seu e-mail',
+    emailPlaceholder: 'Seu melhor e-mail',
+    primaryCta: 'Criar minha agenda grátis',
+    checks: ['Sem fidelidade', 'Cancele quando quiser', 'Pronto em 5 minutos'],
+    emailError: 'Informe um e-mail válido.',
   },
-  socialProof: {
-    headline: 'Salões, clínicas, estúdios e prestadores autônomos já agendam por aqui.',
+  audiences: {
+    headline: 'Feito para quem vive de hora marcada:',
+    items: [
+      'Barbearias',
+      'Salões de beleza',
+      'Estética',
+      'Clínicas',
+      'Psicólogos',
+      'Personal trainers',
+      'Autônomos',
+    ],
   },
   problems: {
-    headline: 'Pare de perder tempo (e clientes) com a agenda no WhatsApp.',
+    eyebrow: 'Por que trocar',
+    headline: 'Pare de perder tempo — e clientes — com a agenda no WhatsApp.',
     items: [
       {
-        title: 'Sem mais "qual horário está livre?"',
+        icon: 'link' as const,
+        title: 'Agenda aberta 24h',
         description:
-          'O cliente vê só os horários disponíveis e marca em 30 segundos, sem você responder mensagens.',
+          'Um link na bio e no WhatsApp. O cliente vê só os horários livres e marca em 30 segundos, sem você responder mensagem.',
+        punchline: 'Chega de "tem horário amanhã?"',
       },
       {
-        title: 'Adeus aos no-shows',
+        icon: 'bell' as const,
+        title: 'Menos faltas',
         description:
-          'Lembretes automáticos 24h e 1h antes; o cliente pode confirmar ou cancelar com 1 clique.',
+          'Lembretes automáticos 24h e 1h antes. O cliente confirma ou cancela com um clique e o horário volta a ficar livre.',
+        punchline: 'Cadeira vazia custa caro.',
       },
       {
-        title: 'Visão clara da semana',
+        icon: 'calendar' as const,
+        title: 'O dia num olhar',
         description:
-          'Saiba quantos agendamentos faltam para fechar a semana e quem está chegando hoje.',
+          'Linha do tempo do dia, próximos dias numa tira e encaixe manual quando o cliente liga ou aparece na porta.',
+        punchline: 'Abra o celular e saiba como é seu dia.',
       },
     ],
   },
-  pricing: {
-    headline: 'Planos simples por volume de agendamentos.',
-    sub: `${SUBSCRIPTION_TRIAL_DAYS} dias grátis em todos os planos. Cancele antes do fim do teste e não cobramos nada.`,
-    trialNote: `${SUBSCRIPTION_TRIAL_DAYS} dias grátis, depois o valor mensal`,
-    cta: 'Começar teste grátis',
-    plans: [
-      {
-        code: 'basico' as const,
-        features: [
-          'Até 25 agendamentos/mês',
-          'E-mail + SMS ou WhatsApp',
-          'Página pública /p/sua-empresa',
-          'Lembretes automáticos',
-        ],
-      },
-      {
-        code: 'medio' as const,
-        highlight: true,
-        features: [
-          'Até 50 agendamentos/mês',
-          'E-mail + SMS ou WhatsApp',
-          'Lembretes 24h e 1h',
-          'Confirmação por link',
-        ],
-      },
-      {
-        code: 'grande' as const,
-        features: [
-          'Até 100 agendamentos/mês',
-          'E-mail + SMS ou WhatsApp',
-          'Múltiplos serviços',
-          'Página pública mobile-first',
-        ],
-      },
-      {
-        code: 'super' as const,
-        features: [
-          'Até 250 agendamentos/mês',
-          'E-mail + SMS ou WhatsApp',
-          'Faturas e relatórios',
-          'Suporte prioritário',
-        ],
-      },
-    ] satisfies PlanCopy[],
-  },
   howItWorks: {
-    headline: 'Em 5 minutos sua agenda está no ar.',
+    eyebrow: 'Como funciona',
+    headline: 'Sua agenda no ar em 5 minutos.',
+    cta: 'Começar agora',
     steps: [
       {
         n: 1,
-        title: 'Crie a conta da empresa',
-        description: 'Você precisa apenas de nome, slug, e-mail e senha.',
+        title: 'Crie a conta',
+        description: 'Nome da empresa, e-mail e senha. Sem cartão.',
       },
       {
         n: 2,
-        title: 'Configure serviços e horários',
-        description: 'Defina duração, preço e seus horários de atendimento por dia da semana.',
+        title: 'Cadastre serviços e horários',
+        description: 'Duração, preço, dias de atendimento, folgas e feriados.',
       },
       {
         n: 3,
         title: 'Compartilhe seu link',
-        description: 'agendar.com/p/sua-empresa — pronto pro Instagram e WhatsApp.',
+        description: 'agendarhorario.com/p/sua-empresa — pronto para o Instagram e o WhatsApp.',
       },
     ],
   },
   features: {
-    headline: 'Tudo que você precisa para profissionalizar a agenda.',
+    eyebrow: 'Recursos',
+    headline: 'Tudo o que você precisa para profissionalizar a agenda.',
     items: [
       {
-        title: 'Página pública mobile-first',
-        description: 'Carrega rápido no celular, com seus horários sempre atualizados.',
+        icon: 'phone' as const,
+        title: 'Página pública no celular',
+        description: 'Carrega rápido e mostra seus horários sempre atualizados.',
       },
       {
+        icon: 'mail' as const,
         title: 'Agendamento sem login',
-        description: 'Cliente só valida e-mail ou SMS — sem cadastros chatos.',
+        description: 'O cliente só valida e-mail ou SMS. Nada de cadastro chato.',
       },
       {
-        title: 'Confirmação por link',
-        description: 'Em cada lembrete o cliente pode confirmar ou cancelar com 1 clique.',
-      },
-      {
-        title: 'Dashboards de hoje, semana e mês',
-        description: 'Visão clara da agenda em qualquer dispositivo.',
-      },
-      {
-        title: 'Multi-canal',
+        icon: 'chat' as const,
+        title: 'E-mail, SMS ou WhatsApp',
         description: 'E-mail incluso em todos os planos; SMS ou WhatsApp à sua escolha.',
       },
       {
-        title: 'LGPD-compliant',
+        icon: 'check' as const,
+        title: 'Confirmação por link',
+        description: 'Em cada lembrete o cliente confirma ou cancela com um clique.',
+      },
+      {
+        icon: 'chart' as const,
+        title: 'Painel de hoje, semana e mês',
+        description: 'Saiba quem chega hoje e quanto falta para fechar a semana.',
+      },
+      {
+        icon: 'shield' as const,
+        title: 'Dados protegidos (LGPD)',
         description: 'Dados criptografados e exportação a qualquer momento.',
       },
     ],
   },
+  pricing: {
+    eyebrow: 'Planos',
+    headline: 'Planos simples, por volume de agendamentos.',
+    sub: `${SUBSCRIPTION_TRIAL_DAYS} dias grátis em todos os planos. Cancele antes do fim do teste e não cobramos nada.`,
+    cta: `Testar ${SUBSCRIPTION_TRIAL_DAYS} dias grátis`,
+    badge: 'Mais escolhido',
+    footnote:
+      'Pagamento por PIX, boleto ou cartão · Sem fidelidade · Troque de plano quando quiser',
+    plans: [
+      {
+        code: 'basico' as const,
+        tagline: 'Para quem atende sozinho',
+        features: ['Lembretes por e-mail', 'Página pública e link'],
+      },
+      {
+        code: 'medio' as const,
+        tagline: 'Para agenda cheia todo dia',
+        highlight: true,
+        features: ['Lembretes por e-mail + SMS ou WhatsApp', 'Painel de hoje, semana e mês'],
+      },
+      {
+        code: 'grande' as const,
+        tagline: 'Para salões e clínicas',
+        features: ['Todos os canais de lembrete', 'Múltiplos serviços'],
+      },
+      {
+        code: 'super' as const,
+        tagline: 'Para quem precisa de mais volume',
+        features: ['Faturas e relatórios', 'Suporte prioritário'],
+      },
+    ] satisfies PlanCopy[],
+  },
   faq: {
-    headline: 'Dúvidas frequentes',
+    eyebrow: 'Dúvidas',
+    headline: 'Perguntas frequentes',
+    supportLead: 'Não achou sua resposta?',
+    supportLabel: 'Fale com a gente',
+    supportHref: 'mailto:suporte@agendarhorario.com',
     items: [
+      {
+        q: 'Vocês oferecem teste grátis?',
+        a: `Sim. Ao escolher um plano você ganha ${SUBSCRIPTION_TRIAL_DAYS} dias grátis. A conta é criada sem cartão; na ativação do plano pedimos o cartão, e a cobrança só começa depois do teste se você não cancelar.`,
+      },
       {
         q: 'Posso cancelar quando quiser?',
         a: 'Sim, sem multa. O acesso continua até o fim do ciclo já pago.',
+      },
+      {
+        q: 'Meu cliente precisa criar conta?',
+        a: 'Não. O cliente só valida e-mail ou SMS para confirmar o horário.',
       },
       {
         q: 'Como troco de plano?',
         a: 'Direto no painel. Upgrade vale na hora; downgrade no próximo ciclo.',
       },
       {
-        q: 'E se eu estourar o limite?',
-        a: 'A página pública mostra "indisponível" até a renovação ou seu upgrade.',
+        q: 'E se eu estourar o limite de agendamentos?',
+        a: 'A página pública mostra indisponível até a renovação ou o seu upgrade.',
       },
       {
-        q: 'Vocês oferecem teste grátis?',
-        a: `Sim. Todos os planos incluem ${SUBSCRIPTION_TRIAL_DAYS} dias grátis na primeira contratação. Pedimos o cartão ao ativar o plano, mas a cobrança só começa depois do teste se você não cancelar.`,
+        q: 'Aceitam PIX ou boleto?',
+        a: 'Sim, via Stripe — cartão, PIX e boleto.',
       },
-      { q: 'Aceitam PIX/boleto?', a: 'Sim, via Stripe — cartão, PIX e boleto.' },
       {
         q: 'Meus dados estão seguros?',
-        a: 'LGPD-compliant, criptografia em trânsito e em repouso, com auditoria.',
+        a: 'Seguimos a LGPD, com criptografia em trânsito e em repouso, e exportação a qualquer momento.',
       },
     ],
   },
   ctaFinal: {
-    headline: 'Comece em 5 minutos.',
-    sub: `Crie a conta sem cartão. Ao escolher um plano, você ganha ${SUBSCRIPTION_TRIAL_DAYS} dias grátis — a cobrança só começa depois.`,
-    primaryCta: 'Começar teste grátis',
+    headline: 'Comece hoje. Sua agenda no ar em 5 minutos.',
+    sub: `Crie a conta sem cartão. Você só paga se decidir continuar depois dos ${SUBSCRIPTION_TRIAL_DAYS} dias.`,
+    emailLabel: 'Seu e-mail',
+    emailPlaceholder: 'voce@seunegocio.com.br',
+    primaryCta: 'Criar minha agenda grátis',
+  },
+  sticky: {
+    title: `${SUBSCRIPTION_TRIAL_DAYS} dias grátis`,
+    sub: 'Sem fidelidade · cancele quando quiser',
+    cta: 'Começar grátis',
   },
   footer: {
-    legal: '© 2026 Agendar Horário · ',
-    links: [
-      { label: 'Termos', href: '/termos' },
-      { label: 'Privacidade', href: '/privacidade' },
-      { label: 'Suporte', href: 'mailto:suporte@agendarhorario.com' },
+    blurb:
+      'Agenda online com link de agendamento e lembretes automáticos para quem vive de hora marcada.',
+    legal: '© 2026 Agendar Horário',
+    columns: [
+      {
+        title: 'Produto',
+        links: [
+          { label: 'Recursos', href: '#recursos' },
+          { label: 'Planos', href: '#planos' },
+          { label: 'Dúvidas', href: '#duvidas' },
+        ],
+      },
+      {
+        title: 'Para',
+        links: [
+          { label: 'Barbearias', href: '#para' },
+          { label: 'Salões', href: '#para' },
+          { label: 'Clínicas e terapeutas', href: '#para' },
+        ],
+      },
+      {
+        title: 'Empresa',
+        links: [
+          { label: 'Contato', href: 'mailto:suporte@agendarhorario.com' },
+          { label: 'Termos de uso', href: '/termos' },
+          { label: 'Privacidade', href: '/privacidade' },
+        ],
+      },
     ],
   },
 };

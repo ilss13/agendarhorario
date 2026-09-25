@@ -1,23 +1,25 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { BillingApi } from '@agendarhorario/web-data-access';
-import type { PlanDto } from '@agendarhorario/contracts';
 import { AuthService } from '../../core/auth/auth.service';
 import { defaultRouteForUser } from '../../core/auth/redirect-after-login';
+import { LandingIconComponent } from './landing-icon.component';
 import { LANDING_COPY } from './landing.copy';
+import { isLandingLeadEmail } from './landing.lead';
+import { LANDING_PLAN_CARDS, landingPlanCards, type LandingPlanCard } from './landing.plans';
 
 @Component({
   selector: 'app-landing-page',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, LandingIconComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './landing.page.html',
   styleUrl: './landing.page.scss',
 })
 export class LandingPageComponent {
   readonly copy = LANDING_COPY;
-  readonly plans = signal<PlanDto[]>([]);
-  readonly loadingPlans = signal(true);
+  readonly plans = signal<LandingPlanCard[]>(LANDING_PLAN_CARDS);
+  readonly leadError = signal<'hero' | 'final' | null>(null);
 
   private readonly billing = inject(BillingApi);
   private readonly router = inject(Router);
@@ -30,19 +32,13 @@ export class LandingPageComponent {
 
   constructor() {
     this.billing.plans().subscribe({
-      next: (plans) => {
-        this.plans.set(plans.sort((a, b) => a.sortOrder - b.sortOrder));
-        this.loadingPlans.set(false);
-      },
-      error: () => {
-        this.plans.set([]);
-        this.loadingPlans.set(false);
-      },
+      next: (plans) => this.plans.set(landingPlanCards(plans)),
+      error: () => this.plans.set(LANDING_PLAN_CARDS),
     });
   }
 
-  copyOf(plan: PlanDto): { highlight?: boolean; features: string[] } | undefined {
-    return this.copy.pricing.plans.find((p) => p.code === plan.code);
+  formatPrice(value: number): string {
+    return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   }
 
   signupLink(code: string): string[] | string {
@@ -67,5 +63,26 @@ export class LandingPageComponent {
       return;
     }
     void this.router.navigate(['/registrar-empresa'], { queryParams: { plan: code } });
+  }
+
+  submitLead(event: Event, source: 'hero' | 'final'): void {
+    event.preventDefault();
+    const email = String(new FormData(event.target as HTMLFormElement).get('email') ?? '');
+    if (!isLandingLeadEmail(email)) {
+      this.leadError.set(source);
+      return;
+    }
+    this.leadError.set(null);
+    const trimmed = email.trim();
+    const user = this.auth.user();
+    if (user?.role === 'OWNER' || user?.role === 'STAFF') {
+      void this.router.navigate(['/dashboard/assinatura']);
+      return;
+    }
+    if (this.auth.isAuthenticated()) {
+      void this.router.navigate([this.userHome()]);
+      return;
+    }
+    void this.router.navigate(['/registrar-empresa'], { queryParams: { email: trimmed } });
   }
 }

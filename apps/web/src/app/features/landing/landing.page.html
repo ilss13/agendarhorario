@@ -1,172 +1,330 @@
 <header class="topbar">
-  <a class="brand" routerLink="/">{{ copy.brand }}</a>
-  <nav>
-    <a href="#planos">Planos</a>
-    <a href="#como-funciona">Como funciona</a>
-    <a href="#faq">FAQ</a>
-    @if (auth.isAuthenticated()) {
-    <a class="btn-link" [routerLink]="userHome()">Ir para o painel</a>
-    } @else {
-    <a class="btn-link" routerLink="/login">Entrar</a>
-    }
-  </nav>
+  <div class="wrap topbar-inner">
+    <a class="brand" routerLink="/" [attr.aria-label]="copy.brand + ' — início'">
+      <img src="logo.png" alt="agendarhorario.com" />
+    </a>
+    <nav class="desktop-nav" aria-label="Seções">
+      @for (item of copy.nav; track item.href) {
+      <a [href]="item.href">{{ item.label }}</a>
+      }
+    </nav>
+    <div class="top-actions">
+      @if (auth.isAuthenticated()) {
+      <a class="btn btn-ghost" [routerLink]="userHome()">Ir para o painel</a>
+      } @else {
+      <a class="btn btn-ghost" routerLink="/login">Entrar</a>
+      }
+      <a class="btn btn-primary desktop-only" href="#cadastro">Começar grátis</a>
+    </div>
+  </div>
 </header>
 
 <main>
   <section class="hero">
-    <div class="hero-text">
-      <span class="eyebrow">{{ copy.hero.eyebrow }}</span>
-      <h1>{{ copy.hero.headline }}</h1>
-      <p class="lead">{{ copy.hero.subheadline }}</p>
-      <div class="hero-ctas">
-        <a class="btn-primary" (click)="startSignup('basico')" [routerLink]="signupLink('basico')">
-          {{ copy.hero.primaryCta }}
-        </a>
-        <a class="btn-ghost" href="#planos">{{ copy.hero.secondaryCta }}</a>
-      </div>
-      <ul class="trust">
-        @for (b of copy.hero.trustBadges; track b) {
-        <li>✓ {{ b }}</li>
-        }
-      </ul>
-    </div>
-    <div class="hero-art" aria-hidden="true">
-      <div class="card-mock card-mock-1">
-        <strong>Agenda de hoje</strong>
-        <ul>
-          <li><span>09:00</span> Maria Silva</li>
-          <li><span>10:30</span> João Pereira</li>
-          <li><span>14:00</span> Ana Souza</li>
+    <div class="wrap hero-grid">
+      <div class="hero-copy">
+        <span class="chip">
+          <app-landing-icon name="check" [size]="16" />
+          {{ copy.hero.chip }}
+        </span>
+        <h1>{{ copy.hero.headline }}</h1>
+        <p class="lead">{{ copy.hero.subheadline }}</p>
+        <form id="cadastro" class="lead-form" novalidate (submit)="submitLead($event, 'hero')">
+          <label class="sr-only" for="hero-email">{{ copy.hero.emailLabel }}</label>
+          <input
+            id="hero-email"
+            name="email"
+            type="email"
+            autocomplete="email"
+            [placeholder]="copy.hero.emailPlaceholder"
+            [attr.aria-invalid]="leadError() === 'hero'"
+          />
+          <button class="btn btn-primary" type="submit">{{ copy.hero.primaryCta }}</button>
+          @if (leadError() === 'hero') {
+          <p class="form-error" role="alert">{{ copy.hero.emailError }}</p>
+          }
+        </form>
+        <ul class="checks">
+          @for (item of copy.hero.checks; track item) {
+          <li>
+            <app-landing-icon name="check" [size]="18" />
+            {{ item }}
+          </li>
+          }
         </ul>
       </div>
-      <div class="card-mock card-mock-2">
-        <strong>Página pública</strong>
-        <small>/p/sua-empresa</small>
-        <div class="slot-row">
-          <span class="slot">09:00</span>
-          <span class="slot selected">10:30</span>
-          <span class="slot">14:00</span>
+
+      <div class="hero-art" aria-hidden="true">
+        <div class="agenda">
+          <div class="agenda-head">
+            <strong>Agenda de hoje</strong>
+            <span>ter, 22 set</span>
+          </div>
+          <div class="day-strip">
+            <span class="day on">Ter<br />22</span>
+            <span class="day">Qua<br />23</span>
+            <span class="day">Qui<br />24</span>
+            <span class="day">Sex<br />25</span>
+            <span class="day">Sáb<br />26</span>
+          </div>
+          <ul>
+            <li>
+              <time>09:00</time>
+              <div class="appt">
+                <strong>Maria Silva</strong>
+                <span>Corte + escova · confirmado</span>
+              </div>
+            </li>
+            <li>
+              <time>10:30</time>
+              <div class="appt">
+                <strong>João Pereira</strong>
+                <span>Barba · confirmado</span>
+              </div>
+            </li>
+            <li>
+              <time>12:00</time>
+              <div class="appt free">Horário livre</div>
+            </li>
+            <li>
+              <time>14:00</time>
+              <div class="appt">
+                <strong>Ana Souza</strong>
+                <span>Manicure · aguardando</span>
+              </div>
+            </li>
+          </ul>
+        </div>
+
+        <div class="phone">
+          <div class="phone-screen">
+            <header>
+              <small>agendarhorario.com/p/studio-bella</small>
+              <strong>Studio Bella</strong>
+            </header>
+            <p class="kicker">Corte feminino · 45 min</p>
+            <p class="when">Quarta, 23 set</p>
+            <div class="slots">
+              <span>09:00</span>
+              <span class="on">10:30</span>
+              <span>11:15</span>
+              <span>14:00</span>
+              <span>15:30</span>
+              <span>17:00</span>
+            </div>
+            <div class="confirm">Confirmar horário</div>
+            <small class="hint">Sem cadastro: só confirme seu e-mail</small>
+          </div>
+        </div>
+
+        <div class="reminder">
+          <span class="ico ico-sm"><app-landing-icon name="bell" [size]="18" /></span>
+          <div>
+            <strong>Lembrete enviado · 24h antes</strong>
+            <p>"Seu horário é amanhã às 10:30." Confirmar ou cancelar com 1 clique.</p>
+          </div>
         </div>
       </div>
     </div>
   </section>
 
-  <section class="social-proof" aria-label="prova-social">
-    <p>{{ copy.socialProof.headline }}</p>
-  </section>
-
-  <section class="problems" id="problemas">
-    <h2>{{ copy.problems.headline }}</h2>
-    <ul class="problem-grid">
-      @for (p of copy.problems.items; track p.title) {
-      <li>
-        <div class="icon" aria-hidden="true">✓</div>
-        <strong>{{ p.title }}</strong>
-        <p>{{ p.description }}</p>
-      </li>
-      }
-    </ul>
-  </section>
-
-  <section class="pricing" id="planos">
-    <header>
-      <h2>{{ copy.pricing.headline }}</h2>
-      <p class="muted">{{ copy.pricing.sub }}</p>
-    </header>
-
-    @if (loadingPlans()) {
-    <p class="muted center">Carregando planos...</p>
-    } @else if (plans().length === 0) {
-    <p class="muted center">
-      Estamos atualizando o catálogo de planos. Tente novamente em instantes.
-    </p>
-    } @else {
-    <ul class="plan-grid">
-      @for (p of plans(); track p.id) {
-      <li [class.highlight]="copyOf(p)?.highlight">
-        @if (copyOf(p)?.highlight) {
-        <span class="badge">Mais escolhido</span>
+  <section class="audiences" id="para">
+    <div class="wrap audiences-inner">
+      <p>{{ copy.audiences.headline }}</p>
+      <ul>
+        @for (item of copy.audiences.items; track item) {
+        <li>{{ item }}</li>
         }
-        <strong class="plan-name">{{ p.name }}</strong>
-        <div class="plan-price">R$ {{ p.priceBrl.toFixed(2) }}<small>/mês</small></div>
-        <small class="plan-trial">{{ copy.pricing.trialNote }}</small>
-        <small class="plan-limit"> até {{ p.monthlyAppointmentLimit }} agendamentos/mês </small>
-        <ul class="plan-features">
-          <li>✓ {{ p.trialDays }} dias grátis inclusos</li>
-          @for (f of copyOf(p)?.features ?? []; track f) {
-          <li>✓ {{ f }}</li>
-          }
-        </ul>
-        <a
-          class="btn-primary block"
-          [routerLink]="signupLink(p.code)"
-          (click)="startSignup(p.code)"
-        >
-          Começar teste grátis
-        </a>
-      </li>
-      }
-    </ul>
-    }
+      </ul>
+    </div>
+  </section>
+
+  <section class="problems">
+    <div class="wrap stack">
+      <header class="section-head">
+        <p class="eyebrow">{{ copy.problems.eyebrow }}</p>
+        <h2>{{ copy.problems.headline }}</h2>
+      </header>
+      <ul class="card-grid">
+        @for (item of copy.problems.items; track item.title) {
+        <li class="card">
+          <span class="ico"><app-landing-icon [name]="item.icon" /></span>
+          <h3>{{ item.title }}</h3>
+          <p>{{ item.description }}</p>
+          <p class="punch">{{ item.punchline }}</p>
+        </li>
+        }
+      </ul>
+    </div>
   </section>
 
   <section class="how" id="como-funciona">
-    <h2>{{ copy.howItWorks.headline }}</h2>
-    <ol class="how-steps">
-      @for (s of copy.howItWorks.steps; track s.n) {
-      <li>
-        <span class="step-num">{{ s.n }}</span>
-        <strong>{{ s.title }}</strong>
-        <p>{{ s.description }}</p>
-      </li>
-      }
-    </ol>
+    <div class="wrap stack">
+      <div class="how-head">
+        <header class="section-head">
+          <p class="eyebrow">{{ copy.howItWorks.eyebrow }}</p>
+          <h2>{{ copy.howItWorks.headline }}</h2>
+        </header>
+        <a class="btn btn-light" href="#cadastro">{{ copy.howItWorks.cta }}</a>
+      </div>
+      <ol>
+        @for (step of copy.howItWorks.steps; track step.n) {
+        <li>
+          <span>{{ step.n }}</span>
+          <h3>{{ step.title }}</h3>
+          <p>{{ step.description }}</p>
+        </li>
+        }
+      </ol>
+    </div>
   </section>
 
-  <section class="features">
-    <h2>{{ copy.features.headline }}</h2>
-    <ul class="feature-grid">
-      @for (f of copy.features.items; track f.title) {
-      <li>
-        <strong>{{ f.title }}</strong>
-        <p>{{ f.description }}</p>
-      </li>
-      }
-    </ul>
+  <section class="features" id="recursos">
+    <div class="wrap stack">
+      <header class="section-head">
+        <p class="eyebrow">{{ copy.features.eyebrow }}</p>
+        <h2>{{ copy.features.headline }}</h2>
+      </header>
+      <ul class="feature-grid">
+        @for (item of copy.features.items; track item.title) {
+        <li>
+          <span class="ico"><app-landing-icon [name]="item.icon" /></span>
+          <div>
+            <h3>{{ item.title }}</h3>
+            <p>{{ item.description }}</p>
+          </div>
+        </li>
+        }
+      </ul>
+    </div>
   </section>
 
-  <section class="faq" id="faq">
-    <h2>{{ copy.faq.headline }}</h2>
-    <ul>
-      @for (item of copy.faq.items; track item.q) {
-      <li>
-        <details>
+  <section class="pricing" id="planos">
+    <div class="wrap stack">
+      <header class="section-head center">
+        <p class="eyebrow">{{ copy.pricing.eyebrow }}</p>
+        <h2>{{ copy.pricing.headline }}</h2>
+        <p class="muted">{{ copy.pricing.sub }}</p>
+      </header>
+
+      <ul class="plan-grid">
+        @for (plan of plans(); track plan.code) {
+        <li class="card plan" [class.highlight]="plan.highlight">
+          @if (plan.highlight) {
+          <span class="badge">{{ copy.pricing.badge }}</span>
+          }
+          <div>
+            <h3>{{ plan.name }}</h3>
+            @if (plan.tagline) {
+            <p class="muted">{{ plan.tagline }}</p>
+            }
+          </div>
+          <p class="price">
+            <strong>{{ formatPrice(plan.priceBrl) }}</strong>
+            <span>/mês</span>
+          </p>
+          <ul class="checks">
+            <li>
+              <app-landing-icon name="check" [size]="18" />
+              Até {{ plan.monthlyAppointmentLimit }} agendamentos/mês
+            </li>
+            @for (feature of plan.features; track feature) {
+            <li>
+              <app-landing-icon name="check" [size]="18" />
+              {{ feature }}
+            </li>
+            }
+          </ul>
+          <a
+            class="btn"
+            [class.btn-primary]="plan.highlight"
+            [class.btn-ghost]="!plan.highlight"
+            [routerLink]="signupLink(plan.code)"
+            (click)="startSignup(plan.code)"
+          >
+            {{ copy.pricing.cta }}
+          </a>
+        </li>
+        }
+      </ul>
+      <p class="muted center">{{ copy.pricing.footnote }}</p>
+    </div>
+  </section>
+
+  <section class="faq" id="duvidas">
+    <div class="wrap faq-grid">
+      <header class="section-head">
+        <p class="eyebrow">{{ copy.faq.eyebrow }}</p>
+        <h2>{{ copy.faq.headline }}</h2>
+        <p class="muted">
+          {{ copy.faq.supportLead }}
+          <a [href]="copy.faq.supportHref">{{ copy.faq.supportLabel }}</a>.
+        </p>
+      </header>
+      <div>
+        @for (item of copy.faq.items; track item.q; let first = $first) {
+        <details [open]="first">
           <summary>{{ item.q }}</summary>
           <p>{{ item.a }}</p>
         </details>
-      </li>
-      }
-    </ul>
+        }
+      </div>
+    </div>
   </section>
 
   <section class="cta-final">
-    <h2>{{ copy.ctaFinal.headline }}</h2>
-    <p>{{ copy.ctaFinal.sub }}</p>
-    <a class="btn-primary" [routerLink]="signupLink('basico')" (click)="startSignup('basico')">
-      {{ copy.ctaFinal.primaryCta }}
-    </a>
+    <div class="wrap">
+      <div class="cta-panel">
+        <div>
+          <h2>{{ copy.ctaFinal.headline }}</h2>
+          <p>{{ copy.ctaFinal.sub }}</p>
+        </div>
+        <form novalidate (submit)="submitLead($event, 'final')">
+          <label for="cta-email">{{ copy.ctaFinal.emailLabel }}</label>
+          <input
+            id="cta-email"
+            name="email"
+            type="email"
+            autocomplete="email"
+            [placeholder]="copy.ctaFinal.emailPlaceholder"
+            [attr.aria-invalid]="leadError() === 'final'"
+          />
+          <button class="btn btn-light" type="submit">{{ copy.ctaFinal.primaryCta }}</button>
+          @if (leadError() === 'final') {
+          <p class="form-error" role="alert">{{ copy.hero.emailError }}</p>
+          }
+        </form>
+      </div>
+    </div>
   </section>
 </main>
 
 <footer class="site-footer">
-  <span>{{ copy.footer.legal }}</span>
-  <nav>
-    @for (l of copy.footer.links; track l.label) {
-    <a [href]="l.href">{{ l.label }}</a>
-    }
-  </nav>
+  <div class="wrap">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <p class="wordmark">agendar<span>horario</span>.com</p>
+        <p>{{ copy.footer.blurb }}</p>
+      </div>
+      <div class="footer-cols">
+        @for (column of copy.footer.columns; track column.title) {
+        <nav [attr.aria-label]="column.title" [class.for-column]="column.title === 'Para'">
+          <p>{{ column.title }}</p>
+          @for (link of column.links; track link.label) {
+          <a [href]="link.href">{{ link.label }}</a>
+          }
+        </nav>
+        }
+      </div>
+    </div>
+    <p class="legal">{{ copy.footer.legal }}</p>
+  </div>
 </footer>
 
-<a class="sticky-cta" [routerLink]="signupLink('basico')" (click)="startSignup('basico')">
-  {{ copy.hero.primaryCta }}
+<a class="sticky-cta" href="#cadastro">
+  <span>
+    <strong>{{ copy.sticky.title }}</strong>
+    <small>{{ copy.sticky.sub }}</small>
+  </span>
+  <span class="btn btn-primary">{{ copy.sticky.cta }}</span>
 </a>

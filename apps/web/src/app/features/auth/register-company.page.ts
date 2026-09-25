@@ -4,6 +4,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
 import { ApiError } from '../../core/http/error.interceptor';
 import { firstError, passwordStrengthValidator, slugValidator } from '../../core/forms/form-error';
+import { isLandingLeadEmail } from '../landing/landing.lead';
 
 @Component({
   selector: 'app-register-company-page',
@@ -19,6 +20,7 @@ export class RegisterCompanyPageComponent {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   readonly preselectedPlan = this.route.snapshot.queryParamMap.get('plan');
+  private readonly preselectedEmail = this.route.snapshot.queryParamMap.get('email') ?? '';
 
   readonly form = this.fb.nonNullable.group({
     companyName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(120)]],
@@ -27,6 +29,12 @@ export class RegisterCompanyPageComponent {
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required, passwordStrengthValidator]],
   });
+
+  constructor() {
+    if (isLandingLeadEmail(this.preselectedEmail)) {
+      this.form.controls.email.setValue(this.preselectedEmail.trim());
+    }
+  }
 
   readonly submitting = signal(false);
   readonly serverError = signal<string | null>(null);

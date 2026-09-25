@@ -7,7 +7,7 @@ import { RegisterCompanyPageComponent } from './register-company.page';
 describe('RegisterCompanyPageComponent', () => {
   const registerCompany = jest.fn();
 
-  const setup = (plan: string | null = null): RegisterCompanyPageComponent => {
+  const setup = (query: Record<string, string> = {}): RegisterCompanyPageComponent => {
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({
       imports: [RegisterCompanyPageComponent],
@@ -16,7 +16,7 @@ describe('RegisterCompanyPageComponent', () => {
         { provide: AuthService, useValue: { registerCompany } },
         {
           provide: ActivatedRoute,
-          useValue: { snapshot: { queryParamMap: convertToParamMap(plan ? { plan } : {}) } },
+          useValue: { snapshot: { queryParamMap: convertToParamMap(query) } },
         },
       ],
     });
@@ -42,8 +42,13 @@ describe('RegisterCompanyPageComponent', () => {
     expect(page.error('companyName')).toBe('Campo obrigatório');
   });
 
+  it('prefills a valid lead email and ignores an invalid one', () => {
+    expect(setup({ email: ' ana@studio.com ' }).form.controls.email.value).toBe('ana@studio.com');
+    expect(setup({ email: 'nao-e-email' }).form.controls.email.value).toBe('');
+  });
+
   it('opens the subscription page when a plan was preselected', () => {
-    const page = setup('medio');
+    const page = setup({ plan: 'medio' });
     const navigate = jest.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
     fill(page);
     registerCompany.mockReturnValue(of({}));

@@ -10,14 +10,15 @@ describe('LANDING_COPY', () => {
       'super',
     ]);
     expect(LANDING_COPY.pricing.plans.filter((plan) => plan.highlight)).toHaveLength(1);
-    expect(LANDING_COPY.hero.primaryCta).toContain(String(SUBSCRIPTION_TRIAL_DAYS));
+    expect(LANDING_COPY.hero.chip).toContain(String(SUBSCRIPTION_TRIAL_DAYS));
     expect(
       LANDING_COPY.faq.items.some((item) => item.a.includes(String(SUBSCRIPTION_TRIAL_DAYS))),
     ).toBe(true);
-    expect(LANDING_COPY.footer.links.map((link) => link.href)).toEqual([
-      '/termos',
-      '/privacidade',
-      'mailto:suporte@agendarhorario.com',
-    ]);
+    expect(LANDING_COPY.faq.items.some((item) => item.q.includes('criar conta'))).toBe(true);
+    expect(
+      LANDING_COPY.footer.columns.flatMap((column) => column.links.map((link) => link.href)),
+    ).toEqual(
+      expect.arrayContaining(['/termos', '/privacidade', 'mailto:suporte@agendarhorario.com']),
+    );
   });
 });

@@ -53,20 +53,19 @@ describe('LandingPageComponent', () => {
     plans.mockReset();
   });
 
-  it('sorts plans and clears them when the catalog fails', () => {
+  it('shows the commercial catalog and replaces it when the API responds', () => {
     plans.mockReturnValue(of([plan('super', 2), plan('basico', 1)]));
     const page = setup();
-    expect(page.plans().map((item) => item.code)).toEqual(['basico', 'super']);
-    expect(page.loadingPlans()).toBe(false);
-    expect(page.copyOf(plan('basico', 1))?.features.length).toBeGreaterThan(0);
-    expect(
-      page.copyOf({ ...plan('basico', 1), code: 'inexistente' } as unknown as PlanDto),
-    ).toBeUndefined();
+    expect(page.plans().map((item) => [item.code, item.priceBrl])).toEqual([
+      ['basico', 10],
+      ['super', 10],
+    ]);
+    expect(page.plans()[0]?.features.length).toBeGreaterThan(0);
     expect(page.userHome()).toBe('/login');
 
     plans.mockReturnValue(throwError(() => new Error('offline')));
     const failed = setup();
-    expect(failed.plans()).toEqual([]);
+    expect(failed.plans().map((item) => item.priceBrl)).toEqual([39.9, 79.9, 149.9, 249.9]);
   });
 
   it('routes owners, customers and guests differently', () => {
@@ -96,5 +95,28 @@ describe('LandingPageComponent', () => {
     expect(guestRouter).toHaveBeenCalledWith(['/registrar-empresa'], {
       queryParams: { plan: 'grande' },
     });
+  });
+
+  it('sends a valid lead email to company registration and rejects a blank one', () => {
+    plans.mockReturnValue(of([]));
+    const page = setup();
+    const navigate = jest.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    const form = document.createElement('form');
+    const input = document.createElement('input');
+    input.name = 'email';
+    input.value = 'ana@studio.com';
+    form.append(input);
+
+    const event = new Event('submit');
+    Object.defineProperty(event, 'target', { value: form });
+    page.submitLead(event, 'hero');
+    expect(page.leadError()).toBeNull();
+    expect(navigate).toHaveBeenCalledWith(['/registrar-empresa'], {
+      queryParams: { email: 'ana@studio.com' },
+    });
+
+    input.value = 'sem-arroba';
+    page.submitLead(event, 'final');
+    expect(page.leadError()).toBe('final');
   });
 });

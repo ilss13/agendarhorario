@@ -7,6 +7,22 @@ export type PlanCode = z.infer<typeof planCodeSchema>;
 /** Trial na primeira contratação de qualquer plano. */
 export const SUBSCRIPTION_TRIAL_DAYS = 14;
 
+export interface PublicPlanOffer {
+  code: PlanCode;
+  name: string;
+  priceBrl: number;
+  monthlyAppointmentLimit: number;
+  sortOrder: number;
+}
+
+/** Oferta comercial pública. A API semeia a tabela `plans` a partir desta lista. */
+export const PUBLIC_PLAN_OFFERS: readonly PublicPlanOffer[] = [
+  { code: 'basico', name: 'Básico', priceBrl: 39.9, monthlyAppointmentLimit: 25, sortOrder: 1 },
+  { code: 'medio', name: 'Médio', priceBrl: 79.9, monthlyAppointmentLimit: 50, sortOrder: 2 },
+  { code: 'grande', name: 'Grande', priceBrl: 149.9, monthlyAppointmentLimit: 100, sortOrder: 3 },
+  { code: 'super', name: 'Super', priceBrl: 249.9, monthlyAppointmentLimit: 250, sortOrder: 4 },
+];
+
 export const planSchema = z.object({
   id: uuidSchema,
   code: planCodeSchema,
