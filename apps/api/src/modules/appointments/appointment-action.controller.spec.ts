@@ -22,13 +22,14 @@ describe('AppointmentActionController', () => {
     it('maps appointment relations into ActionPreviewDto', async () => {
       const startsAt = new Date('2026-05-11T13:00:00.000Z');
       const endsAt = new Date('2026-05-11T13:30:00.000Z');
+      const expiresAt = new Date('2026-05-12T13:00:00.000Z');
       const appointment = {
         id: 'appt-1',
         status: 'PENDING',
         startsAt,
         endsAt,
-        service: { name: 'Corte' },
-        company: { name: 'Barbearia' },
+        service: { name: 'Corte', durationMinutes: 30, price: 40 },
+        company: { name: 'Barbearia', phone: '+5511999999999', logoUrl: null },
         customer: { name: 'Ana' },
       } as Appointment;
 
@@ -36,16 +37,22 @@ describe('AppointmentActionController', () => {
         appointment,
         kind: 'CONFIRM',
         consumed: false,
+        expiresAt,
       });
 
       await expect(controller.preview('tok')).resolves.toEqual({
         kind: 'CONFIRM',
         alreadyConsumed: false,
+        expiresAt: expiresAt.toISOString(),
         appointment: {
           id: 'appt-1',
           serviceName: 'Corte',
           companyName: 'Barbearia',
+          companyPhone: '+5511999999999',
+          logoUrl: null,
           customerName: 'Ana',
+          durationMinutes: 30,
+          price: 40,
           startsAt: startsAt.toISOString(),
           endsAt: endsAt.toISOString(),
           status: 'PENDING',
@@ -67,6 +74,7 @@ describe('AppointmentActionController', () => {
         appointment,
         kind: 'CANCEL',
         consumed: true,
+        expiresAt: new Date('2026-05-12T13:00:00.000Z'),
       });
 
       const result = await controller.preview('tok');
@@ -74,6 +82,10 @@ describe('AppointmentActionController', () => {
       expect(result.appointment.serviceName).toBe('');
       expect(result.appointment.companyName).toBe('');
       expect(result.appointment.customerName).toBe('');
+      expect(result.appointment.durationMinutes).toBe(0);
+      expect(result.appointment.price).toBe(0);
+      expect(result.appointment.companyPhone).toBeNull();
+      expect(result.appointment.logoUrl).toBeNull();
     });
   });
 
@@ -84,7 +96,7 @@ describe('AppointmentActionController', () => {
       await expect(controller.confirm('tok', { kind: 'CONFIRM' })).resolves.toEqual({
         status: 'CONFIRMED',
       });
-      expect(actions.consume).toHaveBeenCalledWith('tok');
+      expect(actions.consume).toHaveBeenCalledWith('tok', 'CONFIRM');
     });
 
     it('propagates consume failures', async () => {

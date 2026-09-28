@@ -53,7 +53,12 @@ export const appRoutes: Route[] = [
     loadComponent: () =>
       import('./features/admin/admin-layout.page').then((m) => m.AdminLayoutPageComponent),
     children: [
-      { path: '', pathMatch: 'full', redirectTo: 'empresa' },
+      { path: '', pathMatch: 'full', redirectTo: 'agenda' },
+      {
+        path: 'agenda',
+        loadComponent: () =>
+          import('./features/admin/agenda/agenda.page').then((m) => m.AgendaPageComponent),
+      },
       {
         path: 'empresa',
         loadComponent: () =>

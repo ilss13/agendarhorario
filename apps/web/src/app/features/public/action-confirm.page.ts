@@ -1,10 +1,20 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ActionTokenApi } from '@agendarhorario/web-data-access';
-import type { ActionPreviewDto } from '@agendarhorario/contracts';
+import type { ActionKind, ActionPreviewDto, AppointmentStatus } from '@agendarhorario/contracts';
 import { EmptyStateComponent, SpinnerComponent } from '@agendarhorario/web-ui';
-import { formatBrDateTime } from '@agendarhorario/utils';
+import { nowInAppTz } from '@agendarhorario/utils';
+import { companyInitials, formatDisplayPhone, formatServicePrice } from './booking/booking-display';
 import type { ApiError } from '../../core/http/error.interceptor';
+import {
+  buildAppointmentIcs,
+  confirmationDateLabel,
+  confirmationIntro,
+  confirmationPhase,
+  confirmationTimeLabel,
+  linkExpiryCopy,
+  type ConfirmationPhase,
+} from './confirmation-display';
 
 @Component({
   selector: 'app-action-confirm-page',
@@ -19,11 +29,59 @@ export class ActionConfirmPageComponent {
   private readonly route = inject(ActivatedRoute);
 
   readonly preview = signal<ActionPreviewDto | null>(null);
-  readonly result = signal<{ status: ActionPreviewDto['appointment']['status'] } | null>(null);
+  readonly resultStatus = signal<AppointmentStatus | null>(null);
   readonly loading = signal(false);
   readonly submitting = signal(false);
   readonly loadError = signal<string | null>(null);
   readonly submitError = signal<string | null>(null);
+  readonly logoFailed = signal(false);
+
+  readonly phase = computed((): ConfirmationPhase | null => {
+    const preview = this.preview();
+    if (!preview) return null;
+    return confirmationPhase({
+      kind: preview.kind,
+      alreadyConsumed: preview.alreadyConsumed,
+      status: preview.appointment.status,
+      resultStatus: this.resultStatus(),
+    });
+  });
+
+  readonly intro = computed(() => {
+    const appointment = this.preview()?.appointment;
+    if (!appointment) return '';
+    return confirmationIntro(appointment.customerName, appointment.companyName);
+  });
+
+  readonly dateLabel = computed(() => {
+    const appointment = this.preview()?.appointment;
+    return appointment ? confirmationDateLabel(appointment.startsAt) : '';
+  });
+
+  readonly timeLabel = computed(() => {
+    const appointment = this.preview()?.appointment;
+    return appointment
+      ? confirmationTimeLabel(appointment.startsAt, appointment.durationMinutes)
+      : '';
+  });
+
+  readonly priceLabel = computed(() => {
+    const appointment = this.preview()?.appointment;
+    return appointment ? formatServicePrice(appointment.price) : '';
+  });
+
+  readonly expiryLabel = computed(() => {
+    const preview = this.preview();
+    return preview ? linkExpiryCopy(preview.expiresAt, nowInAppTz()) : '';
+  });
+
+  readonly initials = computed(() =>
+    companyInitials(this.preview()?.appointment.companyName ?? ''),
+  );
+
+  readonly phoneLabel = computed(() =>
+    formatDisplayPhone(this.preview()?.appointment.companyPhone),
+  );
 
   constructor() {
     this.load();
@@ -48,16 +106,15 @@ export class ActionConfirmPageComponent {
     });
   }
 
-  submit(): void {
+  submit(kind: ActionKind): void {
     const token = this.route.snapshot.paramMap.get('token');
-    const preview = this.preview();
-    if (!token || !preview) return;
+    if (!token || !this.preview()) return;
     this.submitting.set(true);
     this.submitError.set(null);
-    this.api.confirm(token, preview.kind).subscribe({
+    this.api.confirm(token, kind).subscribe({
       next: (result) => {
         this.submitting.set(false);
-        this.result.set(result);
+        this.resultStatus.set(result.status);
       },
       error: (err: ApiError) => {
         this.submitting.set(false);
@@ -66,22 +123,22 @@ export class ActionConfirmPageComponent {
     });
   }
 
-  formatDate(iso: string): string {
-    return formatBrDateTime(iso);
-  }
-
-  statusLabel(status: ActionPreviewDto['appointment']['status']): string {
-    switch (status) {
-      case 'PENDING':
-        return 'Aguardando confirmação';
-      case 'CONFIRMED':
-        return 'Confirmado';
-      case 'CANCELLED':
-        return 'Cancelado';
-      case 'COMPLETED':
-        return 'Concluído';
-      case 'NO_SHOW':
-        return 'Não compareceu';
-    }
+  downloadCalendar(): void {
+    const appointment = this.preview()?.appointment;
+    if (!appointment) return;
+    const ics = buildAppointmentIcs({
+      uid: appointment.id,
+      startsAt: appointment.startsAt,
+      endsAt: appointment.endsAt,
+      summary: `${appointment.serviceName} — ${appointment.companyName}`,
+    });
+    if (!ics) return;
+    const blob = new Blob([ics], { type: 'text/calendar' });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = 'agendamento.ics';
+    anchor.click();
+    URL.revokeObjectURL(url);
   }
 }

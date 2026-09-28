@@ -14,7 +14,7 @@
       } @else {
       <a class="btn btn-ghost" routerLink="/login">Entrar</a>
       }
-      <a class="btn btn-primary desktop-only" href="#cadastro">Começar grátis</a>
+      <a class="btn btn-primary desktop-only" [routerLink]="registrationLink()">Começar grátis</a>
     </div>
   </div>
 </header>
@@ -165,7 +165,7 @@
           <p class="eyebrow">{{ copy.howItWorks.eyebrow }}</p>
           <h2>{{ copy.howItWorks.headline }}</h2>
         </header>
-        <a class="btn btn-light" href="#cadastro">{{ copy.howItWorks.cta }}</a>
+        <a class="btn btn-light" [routerLink]="registrationLink()">{{ copy.howItWorks.cta }}</a>
       </div>
       <ol>
         @for (step of copy.howItWorks.steps; track step.n) {
@@ -239,8 +239,8 @@
             class="btn"
             [class.btn-primary]="plan.highlight"
             [class.btn-ghost]="!plan.highlight"
-            [routerLink]="signupLink(plan.code)"
-            (click)="startSignup(plan.code)"
+            [routerLink]="registrationLink()"
+            [queryParams]="signupQuery(plan.code)"
           >
             {{ copy.pricing.cta }}
           </a>
@@ -321,7 +321,7 @@
   </div>
 </footer>
 
-<a class="sticky-cta" href="#cadastro">
+<a class="sticky-cta" [routerLink]="registrationLink()">
   <span>
     <strong>{{ copy.sticky.title }}</strong>
     <small>{{ copy.sticky.sub }}</small>

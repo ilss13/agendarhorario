@@ -98,10 +98,12 @@ describe('AppointmentActionService', () => {
         kind: 'CONFIRM',
         nonce: 'n1',
       });
+      const expiresAt = new Date('2026-05-12T13:00:00.000Z');
       tokens.findOne.mockResolvedValue({
         tokenHash: hash('tok'),
         kind: 'CONFIRM',
         consumedAt: null,
+        expiresAt,
       });
       const appointment = { id: 'appt-1' } as Appointment;
       appointments.findOne.mockResolvedValue(appointment);
@@ -110,6 +112,7 @@ describe('AppointmentActionService', () => {
         appointment,
         kind: 'CONFIRM',
         consumed: false,
+        expiresAt,
       });
     });
 
@@ -330,6 +333,51 @@ describe('AppointmentActionService', () => {
         appointment: { id: 'appt-1', status: 'CANCELLED' } as Appointment,
       });
       await expect(service.consume('tok')).rejects.toThrow(BadRequestException);
+    });
+
+    it('cancels from a confirmation link when the client chooses cancel', async () => {
+      jwt.verifyAsync.mockResolvedValue({
+        appointmentId: 'appt-1',
+        kind: 'CONFIRM',
+        nonce: 'n1',
+      });
+      const appointment = {
+        id: 'appt-1',
+        status: 'PENDING',
+        cancelReason: null,
+      } as Appointment;
+      setupTransaction({
+        record: {
+          tokenHash: hash('tok'),
+          kind: 'CONFIRM',
+          consumedAt: null,
+          expiresAt: new Date(Date.now() + 60_000),
+        } as AppointmentActionToken,
+        appointment,
+      });
+
+      const result = await service.consume('tok', 'CANCEL');
+      expect(result.status).toBe('CANCELLED');
+      expect(result.cancelReason).toBe('Cancelado pelo cliente via link');
+    });
+
+    it('rejects confirmation when the link is only for cancellation', async () => {
+      jwt.verifyAsync.mockResolvedValue({
+        appointmentId: 'appt-1',
+        kind: 'CANCEL',
+        nonce: 'n1',
+      });
+      setupTransaction({
+        record: {
+          tokenHash: hash('tok'),
+          kind: 'CANCEL',
+          consumedAt: null,
+          expiresAt: new Date(Date.now() + 60_000),
+        } as AppointmentActionToken,
+        appointment: { id: 'appt-1', status: 'PENDING' } as Appointment,
+      });
+
+      await expect(service.consume('tok', 'CONFIRM')).rejects.toThrow(BadRequestException);
     });
 
     it('throws BadRequestException for unsupported action kind', async () => {

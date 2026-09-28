@@ -1,60 +1,149 @@
-<main class="wrap">
+<main class="shell">
   @if (loading()) {
   <div class="loading"><app-spinner /></div>
   } @else if (loadError()) {
   <app-empty-state title="Link inválido ou expirado" [description]="loadError()" />
   } @else if (preview()) {
-  <section class="card">
-    <header>
-      <h1>
-        @if (preview()!.kind === 'CONFIRM') { Confirmar presença } @else { Cancelar agendamento }
-      </h1>
-      <p class="muted">{{ preview()!.appointment.companyName }}</p>
-    </header>
-
-    <dl>
-      <div>
-        <dt>Serviço</dt>
-        <dd>{{ preview()!.appointment.serviceName }}</dd>
+  <aside class="panel">
+    <div class="brand">
+      <div class="mark">
+        @if (preview()!.appointment.logoUrl && !logoFailed()) {
+        <img
+          [src]="preview()!.appointment.logoUrl"
+          [alt]="preview()!.appointment.companyName"
+          (error)="logoFailed.set(true)"
+        />
+        } @else {
+        <span>{{ initials() }}</span>
+        }
       </div>
-      <div>
-        <dt>Quando</dt>
-        <dd>{{ formatDate(preview()!.appointment.startsAt) }}</dd>
-      </div>
-      <div>
-        <dt>Cliente</dt>
-        <dd>{{ preview()!.appointment.customerName }}</dd>
-      </div>
-      <div>
-        <dt>Status atual</dt>
-        <dd>{{ statusLabel(preview()!.appointment.status) }}</dd>
-      </div>
-    </dl>
-
-    @if (result()) {
-    <p class="success" role="status">
-      @if (result()!.status === 'CONFIRMED') { Presença confirmada. Obrigado! } @else if
-      (result()!.status === 'CANCELLED') { Agendamento cancelado. } @else { Status atualizado para
-      {{ statusLabel(result()!.status) }}. }
-    </p>
-    } @else if (preview()!.alreadyConsumed) {
-    <p class="muted" role="status">Este link já foi utilizado anteriormente.</p>
-    } @else if (submitError()) {
-    <p class="error" role="alert">{{ submitError() }}</p>
-    } @else {
-    <div class="actions">
-      <button
-        type="button"
-        [class.primary]="preview()!.kind === 'CONFIRM'"
-        [class.danger]="preview()!.kind === 'CANCEL'"
-        (click)="submit()"
-        [disabled]="submitting()"
-      >
-        @if (submitting()) { Enviando... } @else if (preview()!.kind === 'CONFIRM') { Confirmar
-        presença } @else { Cancelar agendamento }
-      </button>
+      <h1>{{ preview()!.appointment.companyName }}</h1>
+      @if (phoneLabel(); as phone) {
+      <p>{{ phone }}</p>
+      }
     </div>
-    }
+    <p class="footer">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <rect x="3" y="5" width="18" height="16" rx="3"></rect>
+        <path d="M8 14l2.5 2.5L16 11"></path>
+      </svg>
+      Agendamento por agendarhorario.com
+    </p>
+  </aside>
+
+  <section class="stage">
+    <p class="wordmark">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <rect x="3" y="5" width="18" height="16" rx="3"></rect>
+        <path d="M8 14l2.5 2.5L16 11"></path>
+      </svg>
+      agendarhorario.com
+    </p>
+
+    <div class="sheet">
+      @if (phase() === 'confirmed') {
+      <div class="icon done" aria-hidden="true">
+        <svg viewBox="0 0 24 24">
+          <polyline points="4 12 9 17 20 6"></polyline>
+        </svg>
+      </div>
+      <h2>Agendamento confirmado!</h2>
+      <p class="lead">Você vai receber um lembrete perto do horário marcado.</p>
+      } @else if (phase() === 'cancelled') {
+      <h2>Agendamento cancelado</h2>
+      <p class="lead">A {{ preview()!.appointment.companyName }} foi avisada.</p>
+      } @else if (phase() === 'used') {
+      <h2>Link já utilizado</h2>
+      <p class="lead">Este link já foi usado anteriormente.</p>
+      } @else if (phase() === 'cancel') {
+      <div class="icon pending" aria-hidden="true">
+        <svg viewBox="0 0 24 24">
+          <rect x="3" y="5" width="18" height="16" rx="2"></rect>
+          <path d="M3 10h18"></path>
+          <path d="M8 3v4"></path>
+          <path d="M16 3v4"></path>
+        </svg>
+      </div>
+      <h2>Cancelar agendamento</h2>
+      <p class="lead">
+        Olá, {{ preview()!.appointment.customerName }}. Confirme se deseja cancelar este horário.
+      </p>
+      } @else {
+      <div class="icon pending" aria-hidden="true">
+        <svg viewBox="0 0 24 24">
+          <rect x="3" y="5" width="18" height="16" rx="2"></rect>
+          <path d="M3 10h18"></path>
+          <path d="M8 3v4"></path>
+          <path d="M16 3v4"></path>
+        </svg>
+      </div>
+      <h2>Confirmar agendamento</h2>
+      <p class="lead">{{ intro() }}</p>
+      }
+
+      <article class="card">
+        <div class="company">
+          <div class="mini">{{ initials() }}</div>
+          <div>
+            <strong>{{ preview()!.appointment.companyName }}</strong>
+            @if (phoneLabel(); as phone) {
+            <span>{{ phone }}</span>
+            }
+          </div>
+        </div>
+        <dl>
+          <div>
+            <dt>Serviço</dt>
+            <dd>{{ preview()!.appointment.serviceName }}</dd>
+          </div>
+          <div>
+            <dt>Data</dt>
+            <dd>{{ dateLabel() }}</dd>
+          </div>
+          <div>
+            <dt>Horário</dt>
+            <dd>{{ timeLabel() }}</dd>
+          </div>
+          <div>
+            <dt>Valor</dt>
+            <dd>{{ priceLabel() }}</dd>
+          </div>
+        </dl>
+      </article>
+
+      @if (submitError()) {
+      <p class="error" role="alert">{{ submitError() }}</p>
+      } @if (phase() === 'confirm') {
+      <div class="actions">
+        <button type="button" class="primary" (click)="submit('CONFIRM')" [disabled]="submitting()">
+          {{ submitting() ? 'Confirmando...' : 'Confirmar agendamento' }}
+        </button>
+        <button type="button" class="text" (click)="submit('CANCEL')" [disabled]="submitting()">
+          Cancelar agendamento
+        </button>
+      </div>
+      <p class="expiry">{{ expiryLabel() }}</p>
+      } @else if (phase() === 'cancel') {
+      <div class="actions">
+        <button type="button" class="danger" (click)="submit('CANCEL')" [disabled]="submitting()">
+          {{ submitting() ? 'Cancelando...' : 'Cancelar agendamento' }}
+        </button>
+      </div>
+      <p class="expiry">{{ expiryLabel() }}</p>
+      } @else if (phase() === 'confirmed') {
+      <div class="actions">
+        <button type="button" class="calendar" (click)="downloadCalendar()">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="3" y="5" width="18" height="16" rx="2"></rect>
+            <path d="M3 10h18"></path>
+            <path d="M8 3v4"></path>
+            <path d="M16 3v4"></path>
+          </svg>
+          Adicionar ao calendário
+        </button>
+      </div>
+      }
+    </div>
   </section>
   }
 </main>

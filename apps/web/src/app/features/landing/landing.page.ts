@@ -41,7 +41,7 @@ export class LandingPageComponent {
     return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   }
 
-  signupLink(code: string): string[] | string {
+  registrationLink(): string[] | string {
     const user = this.auth.user();
     if (user?.role === 'OWNER' || user?.role === 'STAFF') {
       return ['/dashboard/assinatura'];
@@ -52,28 +52,20 @@ export class LandingPageComponent {
     return ['/registrar-empresa'];
   }
 
-  startSignup(code: string): void {
+  signupQuery(code: string): { plan: string } | null {
     const user = this.auth.user();
-    if (user?.role === 'OWNER' || user?.role === 'STAFF') {
-      void this.router.navigate(['/dashboard/assinatura'], { queryParams: { plan: code } });
-      return;
-    }
-    if (this.auth.isAuthenticated()) {
-      void this.router.navigate([this.userHome()]);
-      return;
-    }
-    void this.router.navigate(['/registrar-empresa'], { queryParams: { plan: code } });
+    if (user && user.role !== 'OWNER' && user.role !== 'STAFF') return null;
+    return { plan: code };
   }
 
   submitLead(event: Event, source: 'hero' | 'final'): void {
     event.preventDefault();
-    const email = String(new FormData(event.target as HTMLFormElement).get('email') ?? '');
-    if (!isLandingLeadEmail(email)) {
+    const email = String(new FormData(event.target as HTMLFormElement).get('email') ?? '').trim();
+    if (email && !isLandingLeadEmail(email)) {
       this.leadError.set(source);
       return;
     }
     this.leadError.set(null);
-    const trimmed = email.trim();
     const user = this.auth.user();
     if (user?.role === 'OWNER' || user?.role === 'STAFF') {
       void this.router.navigate(['/dashboard/assinatura']);
@@ -83,6 +75,8 @@ export class LandingPageComponent {
       void this.router.navigate([this.userHome()]);
       return;
     }
-    void this.router.navigate(['/registrar-empresa'], { queryParams: { email: trimmed } });
+    void this.router.navigate(['/registrar-empresa'], {
+      queryParams: email ? { email } : undefined,
+    });
   }
 }

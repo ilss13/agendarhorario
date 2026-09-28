@@ -11,6 +11,8 @@ import { AppointmentActionToken } from './appointment-action-token.entity';
 import { AppointmentActionController } from './appointment-action.controller';
 import { Appointment } from './appointment.entity';
 import { AppointmentsService } from './appointments.service';
+import { CompanyAppointmentsController } from './company-appointments.controller';
+import { CompanyAppointmentsService } from './company-appointments.service';
 
 @Module({
   imports: [
@@ -26,8 +28,8 @@ import { AppointmentsService } from './appointments.service';
     AvailabilityModule,
     VerificationModule,
   ],
-  controllers: [AppointmentActionController],
-  providers: [AppointmentsService],
+  controllers: [AppointmentActionController, CompanyAppointmentsController],
+  providers: [AppointmentsService, CompanyAppointmentsService],
   exports: [AppointmentsService],
 })
 export class AppointmentsModule {}

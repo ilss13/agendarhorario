@@ -173,7 +173,8 @@ Entidades principais (todas com `id` UUID, `createdAt`, `updatedAt`, `deletedAt`
 - `POST /public/companies/:slug/appointments` — cria agendamento _pendente_ (exige `verificationToken` se cliente não logado)
 - `POST /public/verification/request` — solicita OTP email/SMS
 - `POST /public/verification/confirm` — confirma OTP → retorna `verificationToken` (JWT curto, 15min)
-- `GET /public/appointments/action/:token` — confirma ou cancela via link (one-shot)
+- `GET /public/appointments/action/:token` — pré-visualiza o link (serviço, valor, duração, telefone, expiração)
+- `POST /public/appointments/action/:token` — body `{ kind: CONFIRM | CANCEL }`. Link de confirmação aceita os dois; link de cancelamento só cancela. One-shot.
 
 **Auth & cliente logado** (`/auth`, `/me`):
 
@@ -185,7 +186,7 @@ Entidades principais (todas com `id` UUID, `createdAt`, `updatedAt`, `deletedAt`
 - `GET/PATCH /company` — dados da empresa + preferências de notificação (`email` toggles + `secondaryChannel: SMS|WHATSAPP|NONE`)
 - CRUD `/company/services`
 - CRUD `/company/business-hours`, `/company/business-exceptions`
-- `GET /company/appointments?range=day|week|month&date=...`
+- `GET /company/appointments?date=AAAA-MM-DD` — agenda do dia da empresa. `CONFIRMED` indica que o cliente confirmou o horário (selo verde no dashboard)
 - `GET /company/customers`, `GET /company/customers/:id`
 - `PATCH /company/appointments/:id/status` (confirma, conclui, no-show, cancela)
 - `GET /company/billing/subscription` — plano, status, uso ({used, limit, resetAt})
@@ -367,10 +368,12 @@ Toda lista com **> 10 itens potenciais** deve ter busca; toda lista paginada dev
 
 ### 4.3 Confirmação/cancelamento via link
 
-- Cada notificação inclui URLs `/a/:token?action=confirm|cancel`
-- `AppointmentActionToken` armazena hash do token, expira em 24h após envio
-- Endpoint `GET /public/appointments/action/:token` valida e mostra tela de confirmação (cliente clica botão → `POST`)
+- Cada notificação inclui URLs `/a/:token` de confirmação e de cancelamento
+- `AppointmentActionToken` armazena hash do token (TTL configurável, padrão 72h)
+- `GET /public/appointments/action/:token` mostra a tela de confirmação; o cliente confirma ou cancela com `POST` `{ kind }`
+- Na mesma tela de confirmação, o cliente também pode cancelar. Um link só de cancelamento não confirma
 - Token é one-shot: marca `consumedAt`
+- No dashboard, a agenda do dia marca horários `CONFIRMED` com selo verde
 
 ### 4.4 Remarcação pelo cliente logado
 

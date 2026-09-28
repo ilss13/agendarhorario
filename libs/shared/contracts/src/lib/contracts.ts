@@ -8,6 +8,7 @@ export * from './public-company';
 export * from './availability';
 export * from './verification';
 export * from './appointment';
+export * from './company-appointments';
 export * from './action-token';
 export * from './me';
 export * from './billing';

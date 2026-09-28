@@ -72,32 +72,22 @@ describe('LandingPageComponent', () => {
     plans.mockReturnValue(of([]));
     current.set(user('STAFF'));
     const staff = setup();
-    const staffRouter = jest.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
-    expect(staff.signupLink('medio')).toEqual(['/dashboard/assinatura']);
+    expect(staff.registrationLink()).toEqual(['/dashboard/assinatura']);
+    expect(staff.signupQuery('medio')).toEqual({ plan: 'medio' });
     expect(staff.userHome()).toBe('/dashboard');
-    staff.startSignup('medio');
-    expect(staffRouter).toHaveBeenCalledWith(['/dashboard/assinatura'], {
-      queryParams: { plan: 'medio' },
-    });
 
     current.set(user('CUSTOMER'));
     const customer = setup();
-    const customerRouter = jest.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
-    expect(customer.signupLink('basico')).toBe('/me/agendamentos');
-    customer.startSignup('basico');
-    expect(customerRouter).toHaveBeenCalledWith(['/me/agendamentos']);
+    expect(customer.registrationLink()).toBe('/me/agendamentos');
+    expect(customer.signupQuery('basico')).toBeNull();
 
     current.set(null);
     const guest = setup();
-    const guestRouter = jest.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
-    expect(guest.signupLink('basico')).toEqual(['/registrar-empresa']);
-    guest.startSignup('grande');
-    expect(guestRouter).toHaveBeenCalledWith(['/registrar-empresa'], {
-      queryParams: { plan: 'grande' },
-    });
+    expect(guest.registrationLink()).toEqual(['/registrar-empresa']);
+    expect(guest.signupQuery('grande')).toEqual({ plan: 'grande' });
   });
 
-  it('sends a valid lead email to company registration and rejects a blank one', () => {
+  it('sends a valid lead email to company registration and rejects a malformed one', () => {
     plans.mockReturnValue(of([]));
     const page = setup();
     const navigate = jest.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
@@ -114,6 +104,11 @@ describe('LandingPageComponent', () => {
     expect(navigate).toHaveBeenCalledWith(['/registrar-empresa'], {
       queryParams: { email: 'ana@studio.com' },
     });
+
+    input.value = '';
+    page.submitLead(event, 'hero');
+    expect(page.leadError()).toBeNull();
+    expect(navigate).toHaveBeenCalledWith(['/registrar-empresa'], { queryParams: undefined });
 
     input.value = 'sem-arroba';
     page.submitLead(event, 'final');

@@ -1,62 +1,406 @@
 @use '../../../styles/ui' as ui;
 
 :host {
-  @include ui.canvas-host;
+  @include ui.booking-host;
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
 }
-.wrap {
-  max-width: 480px;
-  margin: 0 auto;
-  padding: 2.5rem 1rem;
+
+.shell {
+  display: flex;
+  min-height: 100dvh;
 }
+
 .loading {
-  @include ui.loading-center(4rem 0);
+  @include ui.loading-center(4rem 1rem);
+  width: 100%;
 }
-.card {
-  background: #fff;
-  padding: 1.75rem;
-  border-radius: 0.75rem;
-  border: 1px solid #e5e7eb;
-  display: grid;
-  gap: 1.25rem;
+
+.panel {
+  position: relative;
+  box-sizing: border-box;
+  width: 440px;
+  flex-shrink: 0;
+  padding: 56px 48px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+  background: ui.$bk-brand;
+  color: ui.$color-surface;
 }
-header h1 {
-  margin: 0 0 0.25rem;
-  font-size: 1.25rem;
+
+.panel::after {
+  content: '';
+  position: absolute;
+  right: -90px;
+  bottom: -70px;
+  width: 340px;
+  height: 340px;
+  border-radius: 48px;
+  background: rgb(255 255 255 / 10%);
 }
-.muted {
-  color: #6b7280;
+
+.brand,
+.footer {
+  position: relative;
+  z-index: 1;
+}
+
+.mark {
+  width: 64px;
+  height: 64px;
+  border-radius: 999px;
+  background: ui.$bk-primary;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.mark img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.brand h1 {
+  margin: 24px 0 0;
+  max-width: 300px;
+  font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
+  font-size: 28px;
+  line-height: 36px;
+  font-weight: 600;
+}
+
+.brand p,
+.footer {
+  margin: 8px 0 0;
+  max-width: 300px;
+  color: ui.$bk-soft;
+  font-size: 16px;
+  line-height: 24px;
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   margin: 0;
+  font-size: 12px;
+  line-height: 16px;
 }
+
+.footer svg,
+.wordmark svg,
+.calendar svg,
+.icon svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.footer svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  fill: ui.$bk-accent;
+  stroke: ui.$bk-brand;
+  stroke-width: 2.4;
+}
+
+.stage {
+  flex: 1;
+  box-sizing: border-box;
+  padding: 56px 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.wordmark {
+  display: none;
+}
+
+.sheet {
+  width: 100%;
+  max-width: 440px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon svg {
+  width: 32px;
+  height: 32px;
+  stroke-width: 2;
+}
+
+.icon.pending {
+  background: ui.$color-surface;
+  border: 1.5px solid ui.$bk-accent;
+  color: ui.$bk-primary;
+}
+
+.icon.done {
+  background: ui.$bk-primary;
+  color: ui.$color-surface;
+}
+
+.icon.done svg {
+  stroke-width: 3;
+}
+
+h2 {
+  margin: 22px 0 0;
+  font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
+  font-size: 24px;
+  line-height: 32px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.lead {
+  margin: 8px 0 0;
+  color: ui.$bk-muted;
+  font-size: 15px;
+  line-height: 22px;
+  text-align: center;
+}
+
+.card {
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 28px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: ui.$color-surface;
+  border: 1px solid ui.$bk-border;
+  border-radius: 14px;
+}
+
+.company {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mini {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: 999px;
+  background: ui.$bk-brand;
+  color: ui.$color-surface;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.company strong,
+.company span {
+  display: block;
+}
+
+.company strong {
+  font-size: 15px;
+  line-height: 20px;
+}
+
+.company span {
+  color: ui.$bk-muted;
+  font-size: 13px;
+  line-height: 18px;
+}
+
 dl {
-  @include ui.definition-list;
+  margin: 0;
+  padding-top: 16px;
+  border-top: 1px solid #e5edee;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
+
+dl div {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+
 dt {
-  color: #6b7280;
+  color: ui.$bk-muted;
+  font-size: 13px;
+  line-height: 18px;
 }
+
+dd {
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  text-align: right;
+}
+
 .actions {
-  @include ui.actions-end;
+  width: 100%;
+  margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
-button {
-  padding: 0.7rem 1.25rem;
+
+.primary,
+.danger,
+.calendar,
+.text {
+  box-sizing: border-box;
+  width: 100%;
   border: 0;
-  border-radius: 0.5rem;
+  background: none;
   cursor: pointer;
   font-weight: 600;
-  color: #fff;
-  background: #111827;
 }
-button.primary {
-  background: #16a34a;
+
+.primary,
+.danger,
+.calendar {
+  padding: 14px 0;
+  border-radius: 10px;
+  font-size: 15px;
+  line-height: 20px;
+  text-align: center;
 }
-button.danger {
-  background: #dc2626;
+
+.primary {
+  background: ui.$bk-primary;
+  color: ui.$color-surface;
 }
-button:disabled {
+
+.danger {
+  background: ui.$bk-danger;
+  color: ui.$color-surface;
+}
+
+.calendar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1.5px solid ui.$bk-brand;
+  color: ui.$bk-brand;
+}
+
+.calendar svg {
+  width: 17px;
+  height: 17px;
+  stroke: ui.$bk-brand;
+  stroke-width: 2;
+}
+
+.text {
+  padding: 6px 0;
+  color: ui.$bk-primary;
+  font-size: 14px;
+}
+
+.primary:disabled,
+.danger:disabled,
+.text:disabled {
   @include ui.disabled-control;
 }
-.success {
-  @include ui.success-text;
+
+.expiry {
+  margin: 12px 0 0;
+  color: ui.$bk-muted;
+  font-size: 12px;
+  line-height: 16px;
+  text-align: center;
 }
+
 .error {
   @include ui.error-plain;
+  width: 100%;
+  margin: 16px 0 0;
+}
+
+@media (max-width: 900px) {
+  .shell {
+    flex-direction: column;
+  }
+
+  .panel {
+    display: none;
+  }
+
+  .stage {
+    padding: 8px 24px 32px;
+    align-items: stretch;
+  }
+
+  .wordmark {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin: 16px 0 0;
+    color: ui.$bk-muted;
+    font-size: 12px;
+    line-height: 16px;
+  }
+
+  .wordmark svg {
+    width: 16px;
+    height: 16px;
+    fill: ui.$bk-brand;
+    stroke: ui.$bk-accent;
+    stroke-width: 2.2;
+  }
+
+  .icon {
+    width: 68px;
+    height: 68px;
+    margin-top: 8px;
+  }
+
+  .icon.pending {
+    background: ui.$bk-canvas;
+  }
+
+  .icon svg {
+    width: 30px;
+    height: 30px;
+  }
+
+  h2 {
+    font-size: 22px;
+    line-height: 28px;
+    margin-top: 20px;
+  }
+
+  .lead {
+    font-size: 14px;
+    line-height: 20px;
+  }
+
+  .card {
+    padding: 20px;
+    gap: 14px;
+  }
 }

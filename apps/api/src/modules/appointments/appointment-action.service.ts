@@ -62,6 +62,7 @@ export class AppointmentActionService {
     appointment: Appointment;
     kind: AppointmentActionKind;
     consumed: boolean;
+    expiresAt: Date;
   }> {
     const payload = await this.decode(token);
     const record = await this.findActiveRecord(token, payload.kind);
@@ -70,10 +71,15 @@ export class AppointmentActionService {
       relations: { service: true, customer: true, company: true },
     });
     if (!appointment) throw new NotFoundException('Agendamento não encontrado');
-    return { appointment, kind: payload.kind, consumed: !!record.consumedAt };
+    return {
+      appointment,
+      kind: payload.kind,
+      consumed: !!record.consumedAt,
+      expiresAt: record.expiresAt,
+    };
   }
 
-  async consume(token: string): Promise<Appointment> {
+  async consume(token: string, requestedKind?: AppointmentActionKind): Promise<Appointment> {
     const payload = await this.decode(token);
     return this.dataSource.transaction(async (manager) => {
       const tokenRepo = manager.getRepository(AppointmentActionToken);
@@ -92,12 +98,16 @@ export class AppointmentActionService {
       });
       if (!appointment) throw new NotFoundException('Agendamento não encontrado');
 
-      if (payload.kind === 'CONFIRM') {
+      const action = requestedKind ?? payload.kind;
+      if (action === 'CONFIRM' && payload.kind !== 'CONFIRM') {
+        throw new BadRequestException('Este link não permite confirmar o agendamento');
+      }
+      if (action === 'CONFIRM') {
         if (appointment.status === 'CANCELLED') {
           throw new BadRequestException('Agendamento já foi cancelado');
         }
         appointment.status = 'CONFIRMED';
-      } else if (payload.kind === 'CANCEL') {
+      } else if (action === 'CANCEL') {
         if (appointment.status === 'CANCELLED') {
           // idempotente
         } else {
