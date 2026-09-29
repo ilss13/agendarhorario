@@ -15,3 +15,17 @@ export const appointmentDayRange = (
     end: day.endOf('day').toUTC().toJSDate(),
   };
 };
+
+export const appointmentMonthRange = (
+  month: string,
+  zone: string = APP_TIMEZONE,
+): { start: Date; end: Date } => {
+  const start = DateTime.fromISO(`${month}-01`, { zone });
+  if (!start.isValid || start.toFormat('yyyy-MM') !== month) {
+    throw new BadRequestException('Mês inválido');
+  }
+  return {
+    start: start.startOf('month').toUTC().toJSDate(),
+    end: start.endOf('month').toUTC().toJSDate(),
+  };
+};

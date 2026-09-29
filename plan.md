@@ -122,6 +122,8 @@ Fluxo padrão:
 **Cadastro de empresa**: cria usuário no Firebase Auth + registro `Company` + `User` (papel `OWNER`) na nossa DB.
 **Custom claims** no Firebase: `companyId`, `role` (`OWNER`/`STAFF`/`CUSTOMER`) — definidos via Admin SDK, lidos no `verifySessionCookie`.
 
+**Redefinição de senha**: `POST /auth/password/forgot` gera o link no Firebase Admin e envia um e-mail para `/redefinir-senha`. A resposta é a mesma quando o e-mail não existe. `POST /auth/password/reset` confirma o código do link e grava a nova senha no Identity Toolkit.
+
 Segurança adicional:
 
 - Rate limit em endpoints de auth (5 tentativas / 15min)
@@ -179,6 +181,8 @@ Entidades principais (todas com `id` UUID, `createdAt`, `updatedAt`, `deletedAt`
 **Auth & cliente logado** (`/auth`, `/me`):
 
 - `POST /auth/register-customer`, `POST /auth/register-company`, `POST /auth/login`, `POST /auth/logout`, `POST /auth/refresh`
+- `POST /auth/password/forgot` — pede redefinição; `Public` + throttle; não revela se o e-mail existe; envia link para `/redefinir-senha`
+- `POST /auth/password/reset` — confirma o código do link e define a nova senha; `Public` + throttle
 - `GET /me`, `GET /me/appointments`, `PATCH /me/appointments/:id/cancel`, `PATCH /me/appointments/:id/reschedule`
 
 **Empresa logada** (`/company`, role OWNER/STAFF, tenant-scoped):
@@ -186,7 +190,7 @@ Entidades principais (todas com `id` UUID, `createdAt`, `updatedAt`, `deletedAt`
 - `GET/PATCH /company` — dados da empresa + preferências de notificação (`email` toggles + `secondaryChannel: SMS|WHATSAPP|NONE`)
 - CRUD `/company/services`
 - CRUD `/company/business-hours`, `/company/business-exceptions`
-- `GET /company/appointments?date=AAAA-MM-DD` — agenda do dia da empresa. `CONFIRMED` indica que o cliente confirmou o horário (selo verde no dashboard)
+- `GET /company/appointments?date=AAAA-MM-DD` — agenda do dia da empresa. `CONFIRMED` indica que o cliente confirmou o horário (selo verde no dashboard). `GET /company/appointments?month=AAAA-MM` devolve o mês inteiro (um dos dois parâmetros, nunca os dois)
 - `GET /company/customers`, `GET /company/customers/:id`
 - `PATCH /company/appointments/:id/status` (confirma, conclui, no-show, cancela)
 - `GET /company/billing/subscription` — plano, status, uso ({used, limit, resetAt})

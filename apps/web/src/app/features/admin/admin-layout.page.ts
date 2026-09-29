@@ -1,8 +1,10 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
-import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { filter } from 'rxjs';
 import { CompaniesApi } from '@agendarhorario/web-data-access';
 import type { CompanyDto } from '@agendarhorario/contracts';
 import { AuthService } from '../../core/auth/auth.service';
+import { isMoreSection } from './more/more.logic';
 
 @Component({
   selector: 'app-admin-layout',
@@ -18,21 +20,26 @@ export class AdminLayoutPageComponent {
   private readonly router = inject(Router);
 
   readonly company = signal<CompanyDto | null>(null);
-  readonly drawerOpen = signal(false);
+  readonly moreActive = signal(false);
 
   constructor() {
     this.companies.get().subscribe({
       next: (c) => this.company.set(c),
       error: () => this.company.set(null),
     });
+    this.router.events.pipe(filter((event) => event instanceof NavigationEnd)).subscribe(() => {
+      this.syncMore();
+    });
+    this.syncMore();
   }
 
-  toggleDrawer(): void {
-    this.drawerOpen.update((v) => !v);
+  initial(value: string | null | undefined): string {
+    const trimmed = value?.trim() ?? '';
+    return trimmed ? trimmed.charAt(0).toLocaleUpperCase('pt-BR') : '·';
   }
 
-  closeDrawer(): void {
-    this.drawerOpen.set(false);
+  private syncMore(): void {
+    this.moreActive.set(isMoreSection(this.router.url));
   }
 
   onLogout(): void {

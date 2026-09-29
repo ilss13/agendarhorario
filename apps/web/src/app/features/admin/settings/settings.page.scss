@@ -1,35 +1,621 @@
 @use '../../../../styles/ui' as ui;
 
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+  max-width: 860px;
+  font-family: ui.$font-sans;
+  color: ui.$dash-ink;
+}
+
+.heading {
+  @include ui.dash-heading;
+}
+
+.lead {
+  margin: 0;
+  font-size: 16px;
+  line-height: 24px;
+  color: ui.$dash-muted;
+}
+
+.mobile-copy {
+  display: none;
+}
+
 .loading {
   @include ui.loading-center;
 }
-form {
-  @include ui.panel(1.25rem);
+
+.card {
+  background: ui.$dash-surface;
+  border: 1px solid ui.$dash-border;
+  border-radius: ui.$dash-radius-md;
 }
-.grid {
-  @include ui.two-col;
+
+.kicker {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: ui.$dash-muted;
 }
-fieldset.toggles {
-  border: 1px solid #e5e7eb;
-  border-radius: 0.5rem;
-  padding: 1rem;
-  display: grid;
-  gap: 0.5rem;
-}
-fieldset.toggles label {
+
+.link-card {
   display: flex;
-  gap: 0.5rem;
   align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 24px 26px;
 }
+
+.link {
+  font-size: 15px;
+  font-weight: 600;
+  color: ui.$dash-teal-dark;
+  word-break: break-all;
+}
+
+.ghost,
+.primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.ghost {
+  background: transparent;
+  color: ui.$dash-navy;
+  border: 1px solid ui.$dash-border;
+  white-space: nowrap;
+}
+
+.primary {
+  border: 0;
+  background: ui.$dash-teal-dark;
+  color: #fff;
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+}
+
+.form-card {
+  padding: 28px 30px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.grid app-form-field {
+  display: block;
+  min-width: 0;
+}
+
+.span-2 {
+  grid-column: 1 / -1;
+}
+
+:host ::ng-deep app-form-field {
+  .label {
+    margin-bottom: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: ui.$dash-muted;
+  }
+
+  input,
+  select {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1px solid ui.$dash-border;
+    border-radius: 8px;
+    font: inherit;
+    font-size: 15px;
+    color: ui.$dash-ink;
+    background: ui.$dash-surface;
+  }
+
+  input:focus,
+  select:focus {
+    outline: none;
+    border-color: ui.$dash-teal;
+    box-shadow: 0 0 0 3px rgb(15 158 158 / 18%);
+  }
+
+  .hint {
+    margin-top: 6px;
+    font-size: 12px;
+    color: ui.$dash-muted;
+  }
+
+  .error {
+    color: ui.$bk-danger;
+    font-size: 12px;
+  }
+}
+
+.timezone ::ng-deep select {
+  max-width: 320px;
+}
+
+.notifications {
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 1px solid ui.$dash-canvas;
+}
+
+.notifications h2,
+.identity h2 {
+  margin: 0 0 14px;
+  font-family: ui.$font-display;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.identity h2 {
+  font-size: 18px;
+  margin-bottom: 0;
+}
+
+.check,
+.channels label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+}
+
+.check {
+  margin-bottom: 14px;
+}
+
+.check small {
+  font-size: 12px;
+  color: ui.$dash-muted;
+}
+
+.check input,
+.channels input {
+  width: 17px;
+  height: 17px;
+  accent-color: ui.$dash-teal-dark;
+}
+
+.channel-label {
+  margin-bottom: 10px;
+}
+
+.channels {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.exclusive {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: ui.$dash-muted;
+}
+
 .actions {
-  @include ui.actions-end;
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 26px;
 }
-.actions button {
-  @include ui.primary-action;
-}
-.success {
-  @include ui.success-text;
-}
+
+.success,
 .error {
-  @include ui.error-plain;
+  margin: 16px 0 0;
+  font-size: 13px;
+}
+
+.success {
+  color: ui.$color-success;
+}
+
+.error {
+  color: ui.$bk-danger;
+}
+
+.identity {
+  padding: 28px 30px;
+}
+
+.identity .lead {
+  margin-top: 6px;
+  font-size: 14px;
+}
+
+.identity-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 20px 28px;
+  margin-top: 22px;
+  align-items: start;
+}
+
+.logo-block {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.colors {
+  grid-column: 1;
+  grid-row: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.preview {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+}
+
+.reset {
+  grid-column: 1;
+  grid-row: 3;
+  color: ui.$dash-muted;
+}
+
+.save-visual {
+  grid-column: 2;
+  grid-row: 3;
+}
+
+.drop {
+  border: 1.5px dashed ui.$dash-border;
+  border-radius: ui.$dash-radius-md;
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+  color: ui.$dash-muted;
+}
+
+.drop p {
+  margin: 0;
+  font-size: 13px;
+}
+
+.file-btn {
+  position: relative;
+  cursor: pointer;
+}
+
+.file-btn input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.logo-file {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  border: 1px solid ui.$dash-border;
+  border-radius: ui.$dash-radius-md;
+  padding: 14px 16px;
+}
+
+.logo-thumb,
+.preview-mark {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  overflow: hidden;
+  background: ui.$dash-canvas;
+}
+
+.logo-thumb {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+}
+
+.logo-file strong,
+.logo-file span {
+  display: block;
+}
+
+.logo-file strong {
+  font-size: 13px;
+}
+
+.logo-file span,
+.preview-service span,
+.preview-hero span {
+  font-size: 12px;
+  color: ui.$dash-muted;
+}
+
+.remove {
+  margin-left: auto;
+  border: 0;
+  background: transparent;
+  color: ui.$bk-danger;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.swatch {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid ui.$dash-border;
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+
+.swatch input {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  flex-shrink: 0;
+}
+
+.swatch span {
+  font-size: 13px;
+  color: ui.$dash-muted;
+}
+
+.preview .kicker {
+  font-size: 12px;
+  margin-bottom: 10px;
+}
+
+.preview-frame {
+  border: 1px solid ui.$dash-border;
+  border-radius: ui.$dash-radius-md;
+  overflow: hidden;
+}
+
+.preview-hero {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 22px 20px;
+}
+
+.preview-mark {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: rgb(255 255 255 / 90%);
+  font-family: ui.$font-display;
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.preview-hero strong {
+  display: block;
+  font-family: ui.$font-display;
+  font-size: 15px;
+  color: #fff;
+}
+
+.preview-hero span {
+  color: rgb(255 255 255 / 80%);
+}
+
+.preview-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px;
+  background: ui.$dash-surface;
+}
+
+.preview-service {
+  border: 1px solid ui.$dash-canvas;
+  border-radius: 8px;
+  padding: 12px 14px;
+}
+
+.preview-service strong {
+  display: block;
+  font-size: 13px;
+}
+
+.preview-cta {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+@media (max-width: 900px) {
+  :host {
+    gap: 18px;
+    max-width: none;
+  }
+
+  .heading,
+  .desktop-copy,
+  .slug-field ::ng-deep .hint {
+    display: none;
+  }
+
+  .mobile-copy {
+    display: inline;
+  }
+
+  .lead.mobile-copy,
+  .drop .mobile-copy {
+    display: block;
+  }
+
+  .link-card,
+  .identity {
+    padding: 18px 20px;
+  }
+
+  .link-card {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .kicker,
+  :host ::ng-deep app-form-field .label {
+    font-size: 11px;
+  }
+
+  .link {
+    margin-bottom: 12px;
+    font-size: 13px;
+  }
+
+  .copy,
+  .actions .primary,
+  .reset,
+  .save-visual {
+    width: 100%;
+  }
+
+  .form-card {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    padding: 0;
+    background: transparent;
+    border: 0;
+  }
+
+  .grid,
+  .notifications {
+    background: ui.$dash-surface;
+    border: 1px solid ui.$dash-border;
+    border-radius: ui.$dash-radius-md;
+    padding: 20px;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .notifications {
+    margin: 0;
+    border-top: 0;
+  }
+
+  .notifications h2,
+  .identity h2 {
+    font-size: 15px;
+  }
+
+  .timezone ::ng-deep select {
+    max-width: none;
+  }
+
+  .actions {
+    margin: 0;
+  }
+
+  .identity-layout {
+    grid-template-columns: 1fr;
+    margin-top: 16px;
+    gap: 16px;
+  }
+
+  .logo-block,
+  .colors,
+  .reset,
+  .preview,
+  .save-visual {
+    grid-column: 1;
+    grid-row: auto;
+  }
+
+  .logo-block {
+    order: 1;
+  }
+
+  .colors {
+    order: 2;
+    flex-direction: row;
+    gap: 12px;
+  }
+
+  .colors > div {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .reset {
+    order: 3;
+  }
+
+  .preview {
+    order: 4;
+  }
+
+  .save-visual {
+    order: 5;
+    margin-top: 0;
+  }
+
+  .swatch {
+    gap: 8px;
+    padding: 7px 9px;
+  }
+
+  .swatch input {
+    width: 28px;
+    height: 28px;
+  }
+
+  .swatch span {
+    font-size: 12px;
+  }
+
+  .preview-hero {
+    padding: 18px 16px;
+  }
+
+  .preview-mark {
+    width: 34px;
+    height: 34px;
+    font-size: 14px;
+  }
 }

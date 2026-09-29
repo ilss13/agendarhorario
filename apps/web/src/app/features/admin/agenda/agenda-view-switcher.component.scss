@@ -1,0 +1,73 @@
+@use '../../../../styles/ui' as ui;
+
+:host {
+  display: block;
+}
+
+.switcher {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  width: fit-content;
+  max-width: 100%;
+  background: ui.$dash-surface;
+  border: 1px solid ui.$dash-border;
+  border-radius: 999px;
+  padding: 4px;
+}
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 16px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: ui.$dash-muted;
+  font-family: ui.$font-sans;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 1;
+    color: ui.$dash-muted;
+    cursor: default;
+  }
+
+  &[aria-current='page'] {
+    background: ui.$dash-navy;
+    color: #fff;
+  }
+}
+
+.short {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .switcher {
+    width: 100%;
+    gap: 4px;
+  }
+
+  .tab {
+    flex: 1;
+    justify-content: center;
+    gap: 5px;
+    padding: 9px 4px;
+    font-size: 12px;
+  }
+
+  .long {
+    display: none;
+  }
+
+  .short {
+    display: inline;
+  }
+}

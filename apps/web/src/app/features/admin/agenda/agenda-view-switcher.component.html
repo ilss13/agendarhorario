@@ -1,0 +1,90 @@
+<nav class="switcher" aria-label="Visualização da agenda">
+  <a
+    routerLink="/dashboard/agenda"
+    class="tab"
+    [attr.aria-current]="current === 'week' ? 'page' : null"
+    aria-label="Ver agenda semanal"
+  >
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M8 6h12M8 12h12M8 18h12"
+        stroke="currentColor"
+        stroke-width="1.8"
+        stroke-linecap="round"
+      ></path>
+      <path
+        d="M4 6h.01M4 12h.01M4 18h.01"
+        stroke="currentColor"
+        stroke-width="1.8"
+        stroke-linecap="round"
+      ></path>
+    </svg>
+    <span class="long">Ver agenda semanal</span>
+    <span class="short">Semana</span>
+  </a>
+  <a
+    routerLink="/dashboard/agenda/mes"
+    class="tab"
+    [attr.aria-current]="current === 'month' ? 'page' : null"
+    aria-label="Ver agenda completa"
+  >
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <rect
+        x="3"
+        y="3"
+        width="7.5"
+        height="7.5"
+        rx="1.5"
+        stroke="currentColor"
+        stroke-width="1.8"
+      ></rect>
+      <rect
+        x="13.5"
+        y="3"
+        width="7.5"
+        height="7.5"
+        rx="1.5"
+        stroke="currentColor"
+        stroke-width="1.8"
+      ></rect>
+      <rect
+        x="3"
+        y="13.5"
+        width="7.5"
+        height="7.5"
+        rx="1.5"
+        stroke="currentColor"
+        stroke-width="1.8"
+      ></rect>
+      <rect
+        x="13.5"
+        y="13.5"
+        width="7.5"
+        height="7.5"
+        rx="1.5"
+        stroke="currentColor"
+        stroke-width="1.8"
+      ></rect>
+    </svg>
+    <span class="long">Ver agenda completa</span>
+    <span class="short">Mês</span>
+  </a>
+  <a
+    routerLink="/dashboard/agenda/historico"
+    class="tab"
+    [attr.aria-current]="current === 'history' ? 'page' : null"
+    aria-label="Histórico de atendimentos"
+  >
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.8"></circle>
+      <path
+        d="M12 7.5V12l3 2"
+        stroke="currentColor"
+        stroke-width="1.8"
+        stroke-linecap="round"
+      ></path>
+    </svg>
+    <span class="long">Histórico de atendimentos</span>
+    <span class="short">Histórico</span>
+  </a>
+</nav>

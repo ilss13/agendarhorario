@@ -2,11 +2,15 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { Observable, catchError, of, switchMap, tap, throwError } from 'rxjs';
 import type {
+  ForgotPasswordRequest,
+  ForgotPasswordResponse,
   GoogleLoginRequest,
   LoginRequest,
   MeResponse,
   RegisterCompanyRequest,
   RegisterCustomerRequest,
+  ResetPasswordRequest,
+  ResetPasswordResponse,
 } from '@agendarhorario/contracts';
 import { WEB_ENV } from '@agendarhorario/web-data-access';
 
@@ -57,6 +61,20 @@ export class AuthService {
     return this.http.post<MeResponse>(`${this.env.apiBaseUrl}/auth/register-customer`, input).pipe(
       tap((me) => this.userSignal.set(me)),
       tap({ finalize: () => this.loadingSignal.set(false) }),
+    );
+  }
+
+  requestPasswordReset(input: ForgotPasswordRequest): Observable<ForgotPasswordResponse> {
+    return this.http.post<ForgotPasswordResponse>(
+      `${this.env.apiBaseUrl}/auth/password/forgot`,
+      input,
+    );
+  }
+
+  resetPassword(input: ResetPasswordRequest): Observable<ResetPasswordResponse> {
+    return this.http.post<ResetPasswordResponse>(
+      `${this.env.apiBaseUrl}/auth/password/reset`,
+      input,
     );
   }
 

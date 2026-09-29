@@ -1,22 +1,21 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal, viewChild } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import {
   ConfirmDialogComponent,
   EmptyStateComponent,
-  PageHeaderComponent,
   SearchInputComponent,
   SpinnerComponent,
 } from '@agendarhorario/web-ui';
 import { ServicesApi } from '@agendarhorario/web-data-access';
 import type { ServiceDto } from '@agendarhorario/contracts';
 import type { ApiError } from '../../../core/http/error.interceptor';
+import { serviceListMeta } from './services-list.logic';
 
 @Component({
   selector: 'app-services-list-page',
   standalone: true,
   imports: [
     RouterLink,
-    PageHeaderComponent,
     SearchInputComponent,
     EmptyStateComponent,
     SpinnerComponent,
@@ -29,6 +28,7 @@ import type { ApiError } from '../../../core/http/error.interceptor';
 export class ServicesListPageComponent {
   private readonly api = inject(ServicesApi);
   private readonly router = inject(Router);
+  private readonly searchInput = viewChild(SearchInputComponent);
 
   readonly items = signal<ServiceDto[]>([]);
   readonly loading = signal(false);
@@ -61,12 +61,21 @@ export class ServicesListPageComponent {
   }
 
   clearSearch(): void {
+    const search = this.searchInput();
+    if (search) {
+      search.clear();
+      return;
+    }
     this.query.set('');
     this.reload();
   }
 
   goNew(): void {
     void this.router.navigate(['/dashboard/servicos/novo']);
+  }
+
+  meta(item: ServiceDto): string {
+    return serviceListMeta(item.durationMinutes, item.price) ?? '—';
   }
 
   askRemove(item: ServiceDto): void {

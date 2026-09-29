@@ -1,11 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import {
-  EmptyStateComponent,
-  FormFieldComponent,
-  PageHeaderComponent,
-  SpinnerComponent,
-} from '@agendarhorario/web-ui';
+import { EmptyStateComponent, FormFieldComponent, SpinnerComponent } from '@agendarhorario/web-ui';
 import { BusinessHoursApi } from '@agendarhorario/web-data-access';
 import { DAY_LABELS_PT_BR, toMinutes } from '@agendarhorario/contracts';
 import type { BusinessHourDto } from '@agendarhorario/contracts';
@@ -20,13 +15,7 @@ interface HourRow {
 @Component({
   selector: 'app-business-hours-page',
   standalone: true,
-  imports: [
-    ReactiveFormsModule,
-    PageHeaderComponent,
-    FormFieldComponent,
-    EmptyStateComponent,
-    SpinnerComponent,
-  ],
+  imports: [ReactiveFormsModule, FormFieldComponent, EmptyStateComponent, SpinnerComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './business-hours.page.html',
   styleUrl: './business-hours.page.scss',
@@ -72,6 +61,24 @@ export class BusinessHoursPageComponent {
 
   rowsForDay(day: number): { group: FormGroup; index: number }[] {
     return this.rowsByDay().get(day) ?? [];
+  }
+
+  isOpen(day: number): boolean {
+    return this.rowsForDay(day).length > 0;
+  }
+
+  toggleDay(day: number): void {
+    if (!this.isOpen(day)) {
+      this.addRow(day);
+      return;
+    }
+    const indexes = this.rowsForDay(day)
+      .map((row) => row.index)
+      .sort((a, b) => b - a);
+    for (const index of indexes) {
+      this.hoursArray.removeAt(index);
+    }
+    this.hoursRevision.update((n) => n + 1);
   }
 
   rowError(group: FormGroup, name: string): string | null {

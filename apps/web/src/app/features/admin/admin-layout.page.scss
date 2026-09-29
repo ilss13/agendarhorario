@@ -1,108 +1,240 @@
 @use '../../../styles/ui' as ui;
 
 :host {
-  @include ui.canvas-host;
-}
-.shell {
-  display: grid;
-  grid-template-columns: 240px 1fr;
+  display: block;
   min-height: 100dvh;
+  background: ui.$dash-canvas;
+  color: ui.$dash-ink;
+  font-family: ui.$font-sans;
 }
-.menu-toggle {
-  display: none;
-  position: fixed;
-  top: 1rem;
-  left: 1rem;
-  z-index: 30;
-  border: 0;
-  background: #fff;
-  padding: 0.5rem 0.75rem;
-  border-radius: 0.5rem;
-  font-size: 1.1rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+
+.shell {
+  display: flex;
+  min-height: 100dvh;
+  background: ui.$dash-canvas;
 }
+
 .sidebar {
-  background: #ffffff;
-  border-right: 1px solid #e5e7eb;
-  padding: 1.5rem 1rem;
+  width: 250px;
+  flex-shrink: 0;
+  background: ui.$dash-surface;
+  border-right: 1px solid ui.$dash-border;
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  justify-content: space-between;
+  padding: 28px 18px;
 }
+
 .brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 2px 8px 26px;
+}
+
+.mark {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: ui.$dash-navy;
   display: grid;
-  line-height: 1.3;
+  place-items: center;
+  flex-shrink: 0;
+  font-family: ui.$font-display;
+  font-weight: 700;
+  font-size: 16px;
+  color: #fff;
 }
-.brand small {
-  color: #6b7280;
-  font-size: 0.78rem;
+
+.brand-name {
+  font-family: ui.$font-display;
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 1.2;
 }
-nav {
-  display: grid;
-  gap: 0.25rem;
+
+.brand-slug {
+  font-size: 12px;
+  color: ui.$dash-muted;
 }
-nav a {
-  padding: 0.55rem 0.75rem;
-  border-radius: 0.5rem;
+
+.sidebar nav {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.sidebar nav a {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 10px 12px;
+  border-radius: 10px;
   text-decoration: none;
-  color: #111827;
-  font-size: 0.95rem;
+  font-size: 14px;
+  font-weight: 600;
+  color: ui.$dash-ink;
 }
-nav a:hover {
-  background: #f3f4f6;
+
+.sidebar nav a.active {
+  color: #fff;
+  background: ui.$dash-navy;
 }
-nav a.active {
-  background: #eff6ff;
-  color: #1d4ed8;
+
+.sidebar-bottom {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 8px;
+  font-size: 14px;
   font-weight: 600;
 }
-.user {
-  margin-top: auto;
+
+.avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  background: ui.$dash-canvas;
+  border: 1px solid ui.$dash-border;
   display: grid;
-  gap: 0.5rem;
-  padding-top: 1rem;
-  border-top: 1px solid #e5e7eb;
-  font-size: 0.9rem;
-  color: #4b5563;
+  place-items: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: ui.$dash-navy;
+  flex-shrink: 0;
 }
-.user button {
+
+.logout {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   background: transparent;
-  border: 1px solid #d1d5db;
-  padding: 0.4rem 0.75rem;
-  border-radius: 0.5rem;
+  border: 1px solid ui.$dash-border;
+  border-radius: 10px;
+  padding: 9px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: ui.$dash-muted;
   cursor: pointer;
 }
-.backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(15, 23, 42, 0.4);
-  z-index: 15;
+
+.powered {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 8px 0;
+  border-top: 1px solid ui.$dash-canvas;
+  margin-top: 2px;
+  font-size: 11px;
+  color: ui.$dash-muted;
 }
+
+.powered strong {
+  color: ui.$dash-ink;
+  font-weight: 600;
+}
+
+.powered-mark {
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  background: ui.$dash-navy;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.topbar,
+.tabbar {
+  display: none;
+}
+
 .content {
-  padding: 2rem 1.5rem;
-  max-width: 1080px;
-  width: 100%;
-  margin: 0 auto;
+  flex: 1;
+  min-width: 0;
+  padding: 40px 48px 64px;
+  max-width: 1180px;
 }
-@media (max-width: 768px) {
+
+@media (max-width: 900px) {
   .shell {
-    grid-template-columns: 1fr;
+    flex-direction: column;
   }
+
   .sidebar {
-    position: fixed;
-    inset: 0 auto 0 0;
-    z-index: 20;
-    width: 260px;
-    transform: translateX(-100%);
-    transition: transform 0.2s ease;
+    display: none;
   }
-  .sidebar[data-open='true'] {
-    transform: translateX(0);
+
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: ui.$dash-surface;
+    border-bottom: 1px solid ui.$dash-border;
+    padding: 14px 18px;
   }
-  .menu-toggle {
-    display: inline-block;
+
+  .brand.compact {
+    padding: 0;
+    gap: 9px;
   }
+
+  .brand.compact .mark {
+    width: 30px;
+    height: 30px;
+    border-radius: 9px;
+    font-size: 14px;
+  }
+
+  .brand.compact .brand-name {
+    font-size: 15px;
+  }
+
   .content {
-    padding: 4rem 1rem 2rem;
+    padding: 20px 16px 110px;
+    max-width: none;
+  }
+
+  .tabbar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 9;
+    display: flex;
+    justify-content: space-around;
+    background: ui.$dash-surface;
+    border-top: 1px solid ui.$dash-border;
+    padding: 6px 4px calc(10px + env(safe-area-inset-bottom));
+  }
+
+  .tabbar a,
+  .tabbar button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding: 6px 12px;
+    border: 0;
+    background: transparent;
+    text-decoration: none;
+    color: ui.$dash-muted;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .tabbar a.active,
+  .tabbar button.active {
+    color: ui.$dash-navy;
   }
 }

@@ -1,0 +1,82 @@
+<div class="heading">
+  <h1>Agenda</h1>
+  <p class="desktop-lead">Acompanhe os atendimentos de hoje e dos próximos dias.</p>
+  <p class="mobile-lead">Hoje e os próximos dias.</p>
+</div>
+
+<app-agenda-view-switcher current="week" />
+
+@if (loading()) {
+<div class="loading"><app-spinner /></div>
+} @else if (loadError()) {
+<app-empty-state
+  title="Não foi possível carregar a agenda"
+  [description]="loadError()"
+  actionLabel="Tentar novamente"
+  (action)="load()"
+/>
+} @else {
+<section class="summary" aria-label="Resumo de hoje">
+  <article>
+    <span class="label">Hoje</span>
+    <strong>{{ stats().total }} <span class="suffix">atendimentos</span></strong>
+  </article>
+  <article>
+    <span class="label long">Aguardando confirmação</span>
+    <span class="label short">Pendentes</span>
+    <strong class="teal">{{ stats().pending }}</strong>
+  </article>
+  <article class="next">
+    <span class="label">Próximo atendimento</span>
+    @if (stats().next; as next) {
+    <p>{{ next.time }} · {{ next.client }}</p>
+    } @else {
+    <p class="quiet">Nenhum atendimento restante hoje</p>
+    }
+  </article>
+</section>
+
+<div class="chips" role="group" aria-label="Dias da semana">
+  @for (day of days(); track day.iso) {
+  <button
+    type="button"
+    class="chip"
+    [class.selected]="day.iso === selected()"
+    [class.closed]="!day.open"
+    [attr.aria-pressed]="day.iso === selected()"
+    [attr.aria-label]="dayLabelFor(day)"
+    (click)="select(day.iso)"
+  >
+    <span class="chip-label">{{ day.label }}</span>
+    <span class="chip-num">{{ day.day }}</span>
+    <span class="chip-dot" aria-hidden="true"></span>
+  </button>
+  }
+</div>
+
+<section class="timeline" [attr.aria-label]="dayLabel()">
+  <h2>{{ dayLabel() }}</h2>
+  @if (selectedItems().length === 0) {
+  <p class="empty">{{ emptyMessage() }}</p>
+  } @else {
+  <ul>
+    @for (item of selectedItems(); track item.id) {
+    <li [attr.data-tone]="badge(item).tone">
+      <div class="when">
+        <strong>{{ clock(item.startsAt) }}</strong>
+        <span>até {{ clock(item.endsAt) }}</span>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <strong class="time-mobile">{{ clock(item.startsAt) }}</strong>
+          <strong class="name">{{ item.customerName }}</strong>
+          <span class="badge">{{ badge(item).label }}</span>
+        </div>
+        <p>{{ item.serviceName }} @if (phone(item.customerPhone); as phone) { · {{ phone }} }</p>
+      </div>
+    </li>
+    }
+  </ul>
+  }
+</section>
+}

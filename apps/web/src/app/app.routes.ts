@@ -20,6 +20,18 @@ export const appRoutes: Route[] = [
     loadComponent: () => import('./features/auth/login.page').then((m) => m.LoginPageComponent),
   },
   {
+    path: 'esqueci-senha',
+    canActivate: [guestGuard],
+    loadComponent: () =>
+      import('./features/auth/forgot-password.page').then((m) => m.ForgotPasswordPageComponent),
+  },
+  {
+    path: 'redefinir-senha',
+    canActivate: [guestGuard],
+    loadComponent: () =>
+      import('./features/auth/reset-password.page').then((m) => m.ResetPasswordPageComponent),
+  },
+  {
     path: 'registrar-empresa',
     canActivate: [guestGuard],
     loadComponent: () =>
@@ -57,7 +69,24 @@ export const appRoutes: Route[] = [
       {
         path: 'agenda',
         loadComponent: () =>
+          import('./features/admin/agenda/agenda-week.page').then((m) => m.AgendaWeekPageComponent),
+      },
+      {
+        path: 'agenda/mes',
+        loadComponent: () =>
           import('./features/admin/agenda/agenda.page').then((m) => m.AgendaPageComponent),
+      },
+      {
+        path: 'agenda/historico',
+        loadComponent: () =>
+          import('./features/admin/agenda/agenda-history.page').then(
+            (m) => m.AgendaHistoryPageComponent,
+          ),
+      },
+      {
+        path: 'agenda/:date',
+        loadComponent: () =>
+          import('./features/admin/agenda/agenda-day.page').then((m) => m.AgendaDayPageComponent),
       },
       {
         path: 'empresa',
@@ -91,6 +120,16 @@ export const appRoutes: Route[] = [
           import('./features/admin/hours/business-hours.page').then(
             (m) => m.BusinessHoursPageComponent,
           ),
+      },
+      {
+        path: 'clientes',
+        loadComponent: () =>
+          import('./features/admin/customers/customers.page').then((m) => m.CustomersPageComponent),
+      },
+      {
+        path: 'mais',
+        loadComponent: () =>
+          import('./features/admin/more/more.page').then((m) => m.MorePageComponent),
       },
       {
         path: 'excecoes',

@@ -1,6 +1,60 @@
 // Mixins compartilhados pelos componentes do app.
 // Cada componente inclui o que precisa no próprio SCSS (encapsulamento do Angular).
 
+$dash-ink: #0b2530;
+$dash-muted: #4c6672;
+$dash-border: #8fb0b7;
+$dash-navy: #185280;
+$dash-teal: #0f9e9e;
+$dash-teal-dark: #09424b;
+$dash-surface: #ffffff;
+$dash-canvas: #f2f7f8;
+$dash-radius-sm: 8px;
+$dash-radius-md: 14px;
+$font-display: 'Outfit', 'Plus Jakarta Sans', system-ui, sans-serif;
+$font-sans: 'Plus Jakarta Sans', system-ui, sans-serif;
+
+@mixin dash-heading {
+  h1 {
+    margin: 0 0 6px;
+    font-family: $font-display;
+    font-size: 28px;
+    line-height: 36px;
+    font-weight: 600;
+    color: $dash-ink;
+  }
+
+  p {
+    margin: 0;
+    font-size: 16px;
+    line-height: 24px;
+    color: $dash-muted;
+  }
+}
+
+@mixin dash-primary-button {
+  border: 0;
+  border-radius: $dash-radius-sm;
+  background: $dash-teal-dark;
+  color: #fff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $dash-teal;
+    outline-offset: 2px;
+  }
+}
+
 $color-muted: #6b7280;
 $color-primary: #2563eb;
 $color-danger: #dc2626;
@@ -280,4 +334,126 @@ $bk-radius-control: 10px;
 @mixin booking-section-label {
   margin: 0 0 8px;
   @include booking-kicker;
+}
+
+@mixin auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+@mixin auth-field {
+  display: grid;
+  gap: 6px;
+}
+
+@mixin auth-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: $bk-ink;
+}
+
+@mixin auth-control {
+  width: 100%;
+  padding: 11px 14px;
+  border: 1px solid $bk-border;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 15px;
+  color: $bk-ink;
+  background: $color-surface;
+
+  &::placeholder {
+    color: $bk-muted;
+    opacity: 0.55;
+  }
+
+  &:focus {
+    outline: none;
+    border-color: $bk-accent;
+    box-shadow: 0 0 0 3px rgb(15 158 158 / 18%);
+  }
+
+  &[aria-invalid='true'] {
+    border-color: $bk-danger;
+  }
+}
+
+@mixin auth-error {
+  color: $bk-danger;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+@mixin auth-hint {
+  color: $bk-muted;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+@mixin auth-banner {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: $bk-danger-bg;
+  color: $bk-danger;
+  font-size: 13px;
+}
+
+@mixin auth-success {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #e7f6ef;
+  color: $color-success;
+  font-size: 13px;
+}
+
+@mixin auth-primary-button {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  margin-top: 4px;
+  padding: 13px;
+  text-align: center;
+  text-decoration: none;
+  border: 0;
+  border-radius: 8px;
+  background: $bk-primary;
+  color: #fff;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    background: #07363d;
+  }
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $bk-accent;
+    outline-offset: 2px;
+  }
+}
+
+@mixin auth-fields-compact {
+  form {
+    gap: 14px;
+  }
+
+  input[type='text'],
+  input[type='email'],
+  input[type='password'] {
+    padding: 12px 14px;
+  }
+
+  .btn-primary {
+    margin-top: 2px;
+    padding: 14px;
+  }
 }

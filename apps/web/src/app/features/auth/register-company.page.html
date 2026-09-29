@@ -1,77 +1,103 @@
-<main class="auth-wrap">
-  <section class="auth-card">
-    <h1>Cadastrar empresa</h1>
-    <p class="muted">Crie a conta da empresa e o usuário administrador.</p>
-
-    <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
-      <fieldset>
-        <legend>Empresa</legend>
-
-        <label class="field">
-          <span>Nome</span>
-          <input type="text" formControlName="companyName" maxlength="120" />
-          @if (error('companyName')) {
-          <small class="error">{{ error('companyName') }}</small>
-          }
-        </label>
-
-        <label class="field">
-          <span>Slug (URL pública: /p/SEU-SLUG)</span>
-          <input
-            type="text"
-            formControlName="slug"
-            autocomplete="off"
-            placeholder="minha-empresa"
-          />
-          @if (error('slug')) {
-          <small class="error">{{ error('slug') }}</small>
-          }
-        </label>
-      </fieldset>
-
-      <fieldset>
-        <legend>Administrador</legend>
-
-        <label class="field">
-          <span>Seu nome</span>
-          <input type="text" formControlName="ownerName" maxlength="120" />
-          @if (error('ownerName')) {
-          <small class="error">{{ error('ownerName') }}</small>
-          }
-        </label>
-
-        <label class="field">
-          <span>Email</span>
-          <input type="email" formControlName="email" autocomplete="email" />
-          @if (error('email')) {
-          <small class="error">{{ error('email') }}</small>
-          }
-        </label>
-
-        <label class="field">
-          <span>Senha</span>
-          <input type="password" formControlName="password" autocomplete="new-password" />
-          @if (error('password')) {
-          <small class="error">{{ error('password') }}</small>
-          }
-          <small class="hint">
-            Mínimo 8 caracteres, com 1 maiúscula, 1 minúscula e 1 número.
-          </small>
-        </label>
-      </fieldset>
-
-      @if (serverError()) {
-      <p class="error" role="alert">{{ serverError() }}</p>
+<app-auth-shell
+  title="Crie sua conta"
+  lead="Cadastre a empresa e o usuário administrador."
+  footLead="Já tem conta?"
+  footLabel="Entrar"
+  footLink="/login"
+>
+  <form
+    [formGroup]="form"
+    (ngSubmit)="onSubmit()"
+    novalidate
+    aria-describedby="register-form-error"
+  >
+    <div class="field">
+      <label for="company-name">Nome da empresa</label>
+      <input
+        id="company-name"
+        type="text"
+        formControlName="companyName"
+        maxlength="120"
+        autocomplete="organization"
+        placeholder="Minha empresa"
+        [attr.aria-invalid]="error('companyName') !== null"
+      />
+      @if (error('companyName')) {
+      <small class="error">{{ error('companyName') }}</small>
       }
+    </div>
 
-      <button type="submit" [disabled]="form.invalid || submitting()">
-        {{ submitting() ? 'Cadastrando...' : 'Cadastrar empresa' }}
-      </button>
-    </form>
+    <div class="field">
+      <label for="company-slug">Endereço público</label>
+      <input
+        id="company-slug"
+        type="text"
+        formControlName="slug"
+        autocomplete="off"
+        placeholder="minha-empresa"
+        [attr.aria-invalid]="error('slug') !== null"
+      />
+      @if (error('slug')) {
+      <small class="error">{{ error('slug') }}</small>
+      } @else {
+      <small class="hint">Seus clientes acessam em /p/seu-endereco</small>
+      }
+    </div>
 
-    <p class="muted footer">
-      Já tem conta?
-      <a routerLink="/login">Entrar</a>
-    </p>
-  </section>
-</main>
+    <div class="field">
+      <label for="owner-name">Seu nome</label>
+      <input
+        id="owner-name"
+        type="text"
+        formControlName="ownerName"
+        maxlength="120"
+        autocomplete="name"
+        placeholder="Ana Souza"
+        [attr.aria-invalid]="error('ownerName') !== null"
+      />
+      @if (error('ownerName')) {
+      <small class="error">{{ error('ownerName') }}</small>
+      }
+    </div>
+
+    <div class="field">
+      <label for="owner-email">E-mail</label>
+      <input
+        id="owner-email"
+        type="email"
+        formControlName="email"
+        autocomplete="email"
+        placeholder="voce@email.com"
+        [attr.aria-invalid]="error('email') !== null"
+      />
+      @if (error('email')) {
+      <small class="error">{{ error('email') }}</small>
+      }
+    </div>
+
+    <div class="field">
+      <label for="owner-password">Senha</label>
+      <input
+        id="owner-password"
+        type="password"
+        formControlName="password"
+        autocomplete="new-password"
+        placeholder="••••••••"
+        [attr.aria-invalid]="error('password') !== null"
+      />
+      @if (error('password')) {
+      <small class="error">{{ error('password') }}</small>
+      } @else {
+      <small class="hint">Mínimo 8 caracteres, com 1 maiúscula, 1 minúscula e 1 número.</small>
+      }
+    </div>
+
+    @if (serverError()) {
+    <p id="register-form-error" class="banner" role="alert">{{ serverError() }}</p>
+    }
+
+    <button class="btn-primary" type="submit" [disabled]="form.invalid || submitting()">
+      {{ submitting() ? 'Cadastrando...' : 'Cadastrar empresa' }}
+    </button>
+  </form>
+</app-auth-shell>

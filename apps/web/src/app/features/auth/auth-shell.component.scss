@@ -1,0 +1,201 @@
+@use '../../../styles/ui' as ui;
+
+:host {
+  display: block;
+  min-height: 100dvh;
+  color: ui.$bk-ink;
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+}
+
+.shell {
+  position: relative;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background: ui.$bk-canvas;
+}
+
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.blob-top {
+  top: -220px;
+  right: -220px;
+  width: 620px;
+  height: 620px;
+  background: radial-gradient(circle at 30% 30%, rgb(15 158 158 / 22%), rgb(24 82 128 / 30%));
+}
+
+.blob-bottom {
+  bottom: -260px;
+  left: -180px;
+  width: 520px;
+  height: 520px;
+  background: radial-gradient(circle at 60% 60%, rgb(24 82 128 / 12%), rgb(15 158 158 / 10%));
+}
+
+.top,
+.wrap,
+.foot {
+  position: relative;
+  z-index: 1;
+}
+
+.top {
+  padding: 32px 40px;
+}
+
+.brand {
+  display: inline-flex;
+}
+
+.brand img {
+  height: 34px;
+  width: auto;
+  display: block;
+}
+
+.wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 20px 80px;
+}
+
+.card {
+  width: 420px;
+  max-width: 100%;
+  background: ui.$color-surface;
+  border: 1px solid ui.$bk-border;
+  border-radius: ui.$bk-radius;
+  box-shadow: 0 20px 45px -15px rgb(11 37 48 / 18%);
+  overflow: hidden;
+}
+
+.card-body {
+  padding: 34px 34px 28px;
+}
+
+h1 {
+  margin: 0 0 26px;
+  font-family: 'Outfit', 'Plus Jakarta Sans', system-ui, sans-serif;
+  font-size: 22px;
+  line-height: 28px;
+  font-weight: 700;
+  color: ui.$bk-ink;
+}
+
+.card-body:has(.lead) h1 {
+  margin-bottom: 8px;
+}
+
+.lead {
+  margin: 0 0 22px;
+  font-size: 14px;
+  line-height: 20px;
+  color: ui.$bk-muted;
+}
+
+.card-foot {
+  background: ui.$bk-canvas;
+  padding: 16px 34px;
+  text-align: center;
+  font-size: 13px;
+  color: ui.$bk-muted;
+}
+
+.card-foot a,
+.foot a {
+  color: ui.$bk-primary;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.card-foot a:hover,
+.foot a:hover,
+.brand:focus-visible {
+  color: ui.$bk-brand;
+}
+
+.foot {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 0 40px 24px;
+  font-size: 12px;
+  color: ui.$bk-muted;
+}
+
+.card-foot a:focus-visible,
+.foot a:focus-visible,
+.brand:focus-visible {
+  outline: 2px solid ui.$bk-accent;
+  outline-offset: 2px;
+}
+
+@media (max-width: 640px) {
+  .blob-top {
+    top: -160px;
+    right: -160px;
+    width: 340px;
+    height: 340px;
+  }
+
+  .blob-bottom {
+    bottom: -180px;
+    left: -140px;
+    width: 320px;
+    height: 320px;
+  }
+
+  .top {
+    padding: 26px 20px 8px;
+  }
+
+  .brand img {
+    height: 26px;
+  }
+
+  .wrap {
+    padding: 20px 18px 40px;
+  }
+
+  .card {
+    width: 100%;
+    box-shadow: 0 20px 40px -18px rgb(11 37 48 / 18%);
+  }
+
+  .card-body {
+    padding: 26px 24px 22px;
+  }
+
+  h1 {
+    margin-bottom: 22px;
+    font-size: 20px;
+    line-height: 26px;
+  }
+
+  .card-body:has(.lead) h1 {
+    margin-bottom: 6px;
+  }
+
+  .lead {
+    margin-bottom: 18px;
+  }
+
+  .card-foot {
+    padding: 15px 24px;
+  }
+
+  .foot {
+    gap: 16px;
+    padding: 0 20px 22px;
+    font-size: 11px;
+  }
+}

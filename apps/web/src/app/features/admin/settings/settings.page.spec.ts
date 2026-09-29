@@ -1,8 +1,9 @@
-import { TestBed } from '@angular/core/testing';
+import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import type { CompanyDto } from '@agendarhorario/contracts';
 import { CompaniesApi } from '@agendarhorario/web-data-access';
+import { DEFAULT_BRAND_ACCENT, DEFAULT_BRAND_PRIMARY } from './settings.logic';
 import { SettingsPageComponent } from './settings.page';
 
 const company: CompanyDto = {
@@ -71,4 +72,47 @@ describe('SettingsPageComponent', () => {
     page.onSubmit();
     expect(page.serverError()).toBe('Não foi possível salvar');
   });
+
+  it('copies the public link and restores the label', fakeAsync(() => {
+    get.mockReturnValue(of(company));
+    const writeText = jest.fn().mockResolvedValue(undefined);
+    Object.assign(navigator, { clipboard: { writeText } });
+    const page = setup();
+    expect(page.bookingLabel()).toContain('/p/salao');
+    expect(page.form.controls.notificationPrefs.controls.email.disabled).toBe(true);
+
+    page.copyLink();
+    expect(writeText).toHaveBeenCalledWith(expect.stringContaining('/p/salao'));
+    expect(page.copyLabel()).toBe('Copiado!');
+    tick(1800);
+    expect(page.copyLabel()).toBe('Copiar link');
+  }));
+
+  it('previews a png logo, rejects other files, and restores brand colors', () => {
+    get.mockReturnValue(of(company));
+    const page = setup();
+    const createObjectURL = jest.fn().mockReturnValue('blob:logo');
+    const revokeObjectURL = jest.fn();
+    Object.assign(URL, { createObjectURL, revokeObjectURL });
+
+    page.onLogoSelected(fileEvent(new File(['x'], 'foto.jpg', { type: 'image/jpeg' })));
+    expect(page.logoError()).toBe('Envie um arquivo PNG ou SVG');
+    expect(page.hasLogo()).toBe(false);
+
+    page.onLogoSelected(fileEvent(new File(['x'], 'logo.png', { type: 'image/png' })));
+    expect(page.hasLogo()).toBe(true);
+    expect(page.logoLabel()).toBe('logo.png');
+
+    page.primaryColor.set('#112233');
+    page.resetColors();
+    expect(page.primaryColor()).toBe(DEFAULT_BRAND_PRIMARY);
+    expect(page.accentColor()).toBe(DEFAULT_BRAND_ACCENT);
+
+    page.removeLogo();
+    expect(page.hasLogo()).toBe(false);
+    expect(revokeObjectURL).toHaveBeenCalledWith('blob:logo');
+  });
 });
+
+const fileEvent = (file: File): Event =>
+  ({ target: { files: [file], value: 'logo.png' } }) as unknown as Event;

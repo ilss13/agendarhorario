@@ -79,6 +79,18 @@ describe('AuthService', () => {
     expect(auth.loading()).toBe(false);
   });
 
+  it('requests a reset email and confirms the new password', () => {
+    auth.requestPasswordReset({ email: me.email }).subscribe();
+    const forgot = http.expectOne('http://api.test/api/auth/password/forgot');
+    expect(forgot.request.body).toEqual({ email: me.email });
+    forgot.flush({ sent: true });
+
+    auth.resetPassword({ oobCode: 'a'.repeat(12), password: 'Senha123' }).subscribe();
+    const reset = http.expectOne('http://api.test/api/auth/password/reset');
+    expect(reset.request.body).toEqual({ oobCode: 'a'.repeat(12), password: 'Senha123' });
+    reset.flush({ reset: true });
+  });
+
   it('clears the user on logout, including when the request fails', () => {
     auth.login({ email: me.email, password: 'Senha123' }).subscribe();
     http.expectOne('http://api.test/api/auth/login').flush(me);

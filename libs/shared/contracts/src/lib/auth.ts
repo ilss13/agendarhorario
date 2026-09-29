@@ -17,6 +17,27 @@ export const googleLoginRequestSchema = z.object({
 });
 export type GoogleLoginRequest = z.infer<typeof googleLoginRequestSchema>;
 
+export const forgotPasswordRequestSchema = z.object({
+  email: emailSchema,
+});
+export type ForgotPasswordRequest = z.infer<typeof forgotPasswordRequestSchema>;
+
+export const forgotPasswordResponseSchema = z.object({
+  sent: z.literal(true),
+});
+export type ForgotPasswordResponse = z.infer<typeof forgotPasswordResponseSchema>;
+
+export const resetPasswordRequestSchema = z.object({
+  oobCode: z.string().trim().min(10, 'Link inválido'),
+  password: passwordSchema,
+});
+export type ResetPasswordRequest = z.infer<typeof resetPasswordRequestSchema>;
+
+export const resetPasswordResponseSchema = z.object({
+  reset: z.literal(true),
+});
+export type ResetPasswordResponse = z.infer<typeof resetPasswordResponseSchema>;
+
 export const registerCompanyRequestSchema = z.object({
   company: z.object({
     name: z.string().trim().min(2, 'Nome da empresa é obrigatório').max(120),

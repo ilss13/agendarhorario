@@ -1,7 +1,7 @@
-<app-page-header
-  title="Empresa"
-  subtitle="Atualize os dados da sua empresa e as preferências de notificação."
-/>
+<header class="heading">
+  <h1>Empresa</h1>
+  <p>Atualize os dados da sua empresa e as preferências de notificação.</p>
+</header>
 
 @if (loading() && !loadedOnce()) {
 <div class="loading"><app-spinner /></div>
@@ -13,39 +13,76 @@
   (action)="load()"
 />
 } @else {
-<form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+<section class="card link-card" aria-label="Link de agendamento público">
+  <div>
+    <div class="kicker">Link de agendamento público</div>
+    <div class="link">{{ bookingLabel() }}</div>
+  </div>
+  <button type="button" class="ghost copy" (click)="copyLink()">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <rect
+        x="9"
+        y="9"
+        width="12"
+        height="12"
+        rx="2"
+        stroke="currentColor"
+        stroke-width="1.8"
+      ></rect>
+      <path
+        d="M5 15H4a1 1 0 01-1-1V4a1 1 0 011-1h10a1 1 0 011 1v1"
+        stroke="currentColor"
+        stroke-width="1.8"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      ></path>
+    </svg>
+    {{ copyLabel() }}
+  </button>
+</section>
+
+<form class="card form-card" [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
   <div class="grid">
-    <app-form-field label="Nome da empresa" [required]="true" [errorMessage]="error('name')">
-      <input type="text" formControlName="name" maxlength="120" />
+    <app-form-field class="span-2" label="Nome da empresa" [errorMessage]="error('name')">
+      <input id="emp-nome" type="text" formControlName="name" maxlength="120" />
     </app-form-field>
 
     <app-form-field
+      class="slug-field"
       label="Slug público"
-      hint="Usado em /p/SEU-SLUG"
-      [required]="true"
+      [hint]="slugHint()"
       [errorMessage]="error('slug')"
     >
-      <input type="text" formControlName="slug" />
+      <input id="emp-slug" type="text" formControlName="slug" />
     </app-form-field>
 
     <app-form-field label="Telefone" [errorMessage]="error('phone')">
-      <input type="tel" formControlName="phone" placeholder="+5511999999999" />
+      <input id="emp-tel" type="tel" formControlName="phone" placeholder="+55 11 99999-9999" />
     </app-form-field>
 
-    <app-form-field label="Fuso horário" [errorMessage]="error('timezone')">
-      <input type="text" formControlName="timezone" />
+    <app-form-field class="span-2 timezone" label="Fuso horário" [errorMessage]="error('timezone')">
+      <select id="emp-fuso" formControlName="timezone">
+        @for (zone of timezones(); track zone) {
+        <option [value]="zone">{{ zone }}</option>
+        }
+      </select>
     </app-form-field>
   </div>
 
-  <fieldset class="toggles" formGroupName="notificationPrefs">
-    <legend>Notificações</legend>
-    <label>
+  <div class="notifications" formGroupName="notificationPrefs">
+    <h2>Notificações</h2>
+    <label class="check">
       <input type="checkbox" formControlName="email" />
-      <span>Enviar por e-mail</span>
-      <small>Sempre disponível em todos os planos.</small>
+      <span class="desktop-copy">Enviar por e-mail</span>
+      <span class="mobile-copy">E-mail (sempre ativo)</span>
+      <small class="desktop-copy">sempre disponível em todos os planos</small>
     </label>
-    <div class="channel-group" role="radiogroup" aria-label="Canal secundário">
-      <strong>Canal secundário (escolha um)</strong>
+
+    <div class="kicker channel-label" id="channel-label">
+      <span class="desktop-copy">Canal secundário (escolha um)</span>
+      <span class="mobile-copy">Canal secundário</span>
+    </div>
+    <div class="channels" role="radiogroup" aria-labelledby="channel-label">
       <label>
         <input type="radio" formControlName="secondaryChannel" value="NONE" />
         <span>Apenas e-mail</span>
@@ -58,9 +95,9 @@
         <input type="radio" formControlName="secondaryChannel" value="WHATSAPP" />
         <span>WhatsApp</span>
       </label>
-      <small class="hint">SMS e WhatsApp são exclusivos: só um pode ficar ativo.</small>
     </div>
-  </fieldset>
+    <p class="exclusive desktop-copy">SMS e WhatsApp são exclusivos: só um pode ficar ativo.</p>
+  </div>
 
   @if (success()) {
   <p class="success" role="status">Alterações salvas.</p>
@@ -69,9 +106,126 @@
   }
 
   <div class="actions">
-    <button type="submit" [disabled]="form.invalid || submitting()">
+    <button class="primary" type="submit" [disabled]="form.invalid || submitting()">
       {{ submitting() ? 'Salvando...' : 'Salvar alterações' }}
     </button>
   </div>
 </form>
+
+<section class="card identity" aria-label="Identidade visual">
+  <h2 class="desktop-copy">Identidade visual da página de agendamento</h2>
+  <h2 class="mobile-copy">Identidade visual</h2>
+  <p class="lead desktop-copy">É isso que o cliente vê ao acessar {{ bookingLabel() }}.</p>
+  <p class="lead mobile-copy">O que o cliente vê ao acessar seu link.</p>
+
+  <div class="identity-layout">
+    <div class="logo-block">
+      <div class="kicker">Logo da empresa</div>
+      @if (!hasLogo()) {
+      <div class="drop">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <rect
+            x="3"
+            y="3"
+            width="18"
+            height="18"
+            rx="2"
+            stroke="currentColor"
+            stroke-width="1.6"
+          ></rect>
+          <circle cx="8.5" cy="8.5" r="1.5" stroke="currentColor" stroke-width="1.6"></circle>
+          <path
+            d="M21 15l-5-5L5 21"
+            stroke="currentColor"
+            stroke-width="1.6"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          ></path>
+        </svg>
+        <p class="desktop-copy">PNG ou SVG, fundo transparente recomendado</p>
+        <p class="mobile-copy">PNG ou SVG, fundo transparente</p>
+        <label class="ghost file-btn">
+          Enviar logo
+          <input
+            type="file"
+            accept=".png,.svg,image/png,image/svg+xml"
+            (change)="onLogoSelected($event)"
+          />
+        </label>
+      </div>
+      } @else {
+      <div class="logo-file">
+        <div class="logo-thumb">
+          @if (previewLogoUrl(); as logo) {
+          <img [src]="logo" alt="" />
+          }
+        </div>
+        <div>
+          <strong>{{ logoLabel() }}</strong>
+          <span>Enviado</span>
+        </div>
+        <button type="button" class="remove" (click)="removeLogo()">Remover</button>
+      </div>
+      } @if (logoError()) {
+      <p class="error" role="alert">{{ logoError() }}</p>
+      }
+    </div>
+
+    <div class="colors">
+      <div>
+        <label class="kicker" for="emp-cor1">Cor primária</label>
+        <div class="swatch">
+          <input
+            id="emp-cor1"
+            type="color"
+            [value]="primaryColor()"
+            (input)="onPrimaryColor($event)"
+          />
+          <span>{{ primaryColor() }}</span>
+        </div>
+      </div>
+      <div>
+        <label class="kicker" for="emp-cor2">Cor de destaque</label>
+        <div class="swatch">
+          <input
+            id="emp-cor2"
+            type="color"
+            [value]="accentColor()"
+            (input)="onAccentColor($event)"
+          />
+          <span>{{ accentColor() }}</span>
+        </div>
+      </div>
+    </div>
+
+    <button type="button" class="ghost reset" (click)="resetColors()">Restaurar padrão</button>
+    <button type="button" class="primary save-visual">Salvar identidade visual</button>
+
+    <div class="preview">
+      <div class="kicker">Pré-visualização</div>
+      <div class="preview-frame">
+        <div class="preview-hero" [style.background]="primaryColor()">
+          <div class="preview-mark">
+            @if (previewLogoUrl(); as logo) {
+            <img [src]="logo" alt="" />
+            } @else {
+            <span [style.color]="primaryColor()">{{ initial(form.controls.name.value) }}</span>
+            }
+          </div>
+          <div>
+            <strong>{{ form.controls.name.value || 'Sua empresa' }}</strong>
+            <span>Agendamento online</span>
+          </div>
+        </div>
+        <div class="preview-body">
+          <div class="preview-service">
+            <strong>Sombrancelha</strong>
+            <span>30 min · R$ 50,00</span>
+          </div>
+          <span class="preview-cta" [style.background]="accentColor()">Agendar horário</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 }

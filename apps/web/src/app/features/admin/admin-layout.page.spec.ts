@@ -39,14 +39,14 @@ describe('AdminLayoutPageComponent', () => {
     logout.mockReset();
   });
 
-  it('loads the company and toggles the drawer', () => {
+  it('loads the company and keeps the more tab off the primary routes', () => {
     get.mockReturnValue(of(company));
     const page = setup();
     expect(page.company()).toEqual(company);
-    page.toggleDrawer();
-    expect(page.drawerOpen()).toBe(true);
-    page.closeDrawer();
-    expect(page.drawerOpen()).toBe(false);
+    expect(page.moreActive()).toBe(false);
+    expect(page.initial(' igor ')).toBe('I');
+    expect(page.initial('  ')).toBe('·');
+    expect(page.initial(null)).toBe('·');
   });
 
   it('clears the company when loading fails and still logs out', () => {

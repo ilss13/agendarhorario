@@ -1,15 +1,16 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
 import { ApiError } from '../../core/http/error.interceptor';
 import { firstError, passwordStrengthValidator, slugValidator } from '../../core/forms/form-error';
 import { isLandingLeadEmail } from '../landing/landing.lead';
+import { AuthShellComponent } from './auth-shell.component';
 
 @Component({
   selector: 'app-register-company-page',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, AuthShellComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './register-company.page.html',
   styleUrl: './register-company.page.scss',

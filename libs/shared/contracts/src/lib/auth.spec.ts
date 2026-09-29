@@ -1,7 +1,9 @@
 import {
+  forgotPasswordRequestSchema,
   googleLoginRequestSchema,
   loginRequestSchema,
   registerCompanyRequestSchema,
+  resetPasswordRequestSchema,
   userRoleSchema,
 } from './auth';
 
@@ -49,6 +51,23 @@ describe('auth contracts', () => {
       owner: { name: 'Owner', email: 'o@a.com', password: 'StrongPass1' },
     });
     expect(result.success).toBe(true);
+  });
+
+  it('forgotPasswordRequestSchema lowercases the email and rejects an empty one', () => {
+    const valid = forgotPasswordRequestSchema.safeParse({ email: ' Ana@Studio.com ' });
+    expect(valid.success).toBe(true);
+    if (valid.success) expect(valid.data.email).toBe('ana@studio.com');
+    expect(forgotPasswordRequestSchema.safeParse({ email: 'nao-e-email' }).success).toBe(false);
+  });
+
+  it('resetPasswordRequestSchema requires a code and a strong password', () => {
+    expect(
+      resetPasswordRequestSchema.safeParse({ oobCode: 'a'.repeat(12), password: 'Senha123' })
+        .success,
+    ).toBe(true);
+    expect(
+      resetPasswordRequestSchema.safeParse({ oobCode: 'curto', password: 'fraca' }).success,
+    ).toBe(false);
   });
 
   it('userRoleSchema rejects unknown role', () => {

@@ -1,53 +1,43 @@
 @use '../../../styles/ui' as ui;
 
-.auth-wrap {
-  @include ui.auth-screen;
+:host {
+  display: block;
 }
-.auth-card {
-  @include ui.auth-card(520px);
-}
-h1 {
-  @include ui.heading-tight;
-}
-.muted {
-  @include ui.muted-lead;
-}
+
 form {
-  @include ui.form-stack;
+  @include ui.auth-form;
 }
-fieldset {
-  border: 1px solid #e5e7eb;
-  border-radius: 0.75rem;
-  padding: 1rem;
-  display: grid;
-  gap: 0.75rem;
-}
-legend {
-  padding: 0 0.4rem;
-  font-weight: 600;
-}
+
 .field {
-  @include ui.field;
+  @include ui.auth-field;
 }
-.field span {
-  @include ui.field-label;
+
+label {
+  @include ui.auth-label;
 }
-input {
-  @include ui.control;
+
+input[type='text'],
+input[type='email'],
+input[type='password'] {
+  @include ui.auth-control;
 }
+
 .error {
-  @include ui.error-text;
+  @include ui.auth-error;
 }
+
 .hint {
-  @include ui.hint;
+  @include ui.auth-hint;
 }
-button[type='submit'] {
-  @include ui.submit-button;
+
+.banner {
+  @include ui.auth-banner;
 }
-.footer {
-  margin-top: 1.5rem;
-  text-align: center;
+
+.btn-primary {
+  @include ui.auth-primary-button;
 }
-a {
-  @include ui.link;
+
+@media (max-width: 640px) {
+  @include ui.auth-fields-compact;
 }

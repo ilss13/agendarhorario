@@ -1,38 +1,41 @@
-<app-page-header
-  title="Exceções / Feriados"
-  subtitle="Bloqueie datas específicas ou janelas parciais do atendimento."
-/>
+<header class="heading">
+  <h1>Exceções / Feriados</h1>
+  <p>Bloqueie datas específicas ou janelas parciais do atendimento.</p>
+</header>
 
 <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate class="form-card">
-  <div class="grid">
-    <app-form-field label="Data" [required]="true" [errorMessage]="error('date')">
-      <input type="date" formControlName="date" [min]="today" />
+  <div class="row">
+    <app-form-field class="date" label="Data" [errorMessage]="error('date')">
+      <input id="exc-data" type="date" formControlName="date" [min]="today" />
     </app-form-field>
 
-    <app-form-field label="Tipo">
-      <label class="checkbox">
-        <input type="checkbox" formControlName="fullDay" />
-        <span>Dia inteiro</span>
-      </label>
-    </app-form-field>
-
-    @if (!form.controls.fullDay.value) {
-    <app-form-field label="Início" [errorMessage]="error('startTime')">
-      <input type="time" formControlName="startTime" step="900" />
-    </app-form-field>
-    <app-form-field label="Fim" [errorMessage]="error('endTime')">
-      <input type="time" formControlName="endTime" step="900" />
-    </app-form-field>
-    }
-
-    <app-form-field label="Motivo (opcional)" [errorMessage]="error('reason')">
+    <app-form-field class="reason" label="Motivo (opcional)" [errorMessage]="error('reason')">
       <input
+        id="exc-motivo"
         type="text"
         formControlName="reason"
         maxlength="200"
         placeholder="Feriado, férias, evento..."
       />
     </app-form-field>
+
+    <label class="check">
+      <input type="checkbox" formControlName="fullDay" />
+      <span>Dia inteiro</span>
+    </label>
+
+    @if (!form.controls.fullDay.value) {
+    <app-form-field class="time" label="Início" [errorMessage]="error('startTime')">
+      <input type="time" formControlName="startTime" step="900" />
+    </app-form-field>
+    <app-form-field class="time" label="Fim" [errorMessage]="error('endTime')">
+      <input type="time" formControlName="endTime" step="900" />
+    </app-form-field>
+    }
+
+    <button type="submit" [disabled]="form.invalid || submitting()">
+      {{ submitting() ? 'Salvando...' : 'Adicionar exceção' }}
+    </button>
   </div>
 
   @if (formError()) {
@@ -40,46 +43,40 @@
   } @if (success()) {
   <p class="success" role="status">Exceção adicionada.</p>
   }
-
-  <div class="actions">
-    <button type="submit" [disabled]="form.invalid || submitting()">
-      {{ submitting() ? 'Salvando...' : 'Adicionar exceção' }}
-    </button>
-  </div>
 </form>
 
-<h2 class="section">Exceções cadastradas</h2>
+<section class="registered" aria-labelledby="exceptions-heading">
+  <h2 id="exceptions-heading">Exceções cadastradas</h2>
 
-@if (loading() && items().length === 0) {
-<div class="loading"><app-spinner /></div>
-} @else if (loadError()) {
-<app-empty-state
-  title="Não foi possível carregar"
-  [description]="loadError()"
-  actionLabel="Tentar novamente"
-  (action)="reload()"
-/>
-} @else if (items().length === 0) {
-<app-empty-state
-  title="Nenhuma exceção"
-  description="Cadastre feriados ou bloqueios pontuais usando o formulário acima."
-/>
-} @else {
-<ul class="list">
-  @for (item of items(); track item.id) {
-  <li>
-    <div>
-      <strong>{{ formatDate(item.date) }}</strong>
-      <small>
-        @if (item.fullDay) { Dia inteiro } @else { {{ item.startTime }}–{{ item.endTime }} } @if
-        (item.reason) { · {{ item.reason }} }
-      </small>
-    </div>
-    <button type="button" class="delete" (click)="askRemove(item)">Remover</button>
-  </li>
+  @if (loading() && items().length === 0) {
+  <div class="loading"><app-spinner /></div>
+  } @else if (loadError()) {
+  <app-empty-state
+    title="Não foi possível carregar"
+    [description]="loadError()"
+    actionLabel="Tentar novamente"
+    (action)="reload()"
+  />
+  } @else if (items().length === 0) {
+  <div class="empty">
+    <strong>Nenhuma exceção</strong>
+    <p class="desktop-copy">Cadastre feriados ou bloqueios pontuais usando o formulário acima.</p>
+    <p class="mobile-copy">Cadastre feriados ou bloqueios pontuais acima.</p>
+  </div>
+  } @else {
+  <ul class="list">
+    @for (item of items(); track item.id) {
+    <li>
+      <div>
+        <div class="when">{{ formatDate(item.date) }}</div>
+        <div class="meta">{{ detail(item) }}</div>
+      </div>
+      <button type="button" class="remove" (click)="askRemove(item)">Remover</button>
+    </li>
+    }
+  </ul>
   }
-</ul>
-}
+</section>
 
 <app-confirm-dialog
   [open]="!!toRemove()"

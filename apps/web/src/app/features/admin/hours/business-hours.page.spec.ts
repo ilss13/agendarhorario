@@ -84,6 +84,21 @@ describe('BusinessHoursPageComponent', () => {
     expect(page.rowsForDay(3)).toEqual([]);
   });
 
+  it('opens a closed day with the default interval and closes every interval', () => {
+    api.list.mockReturnValue(of([hour(1, '09:00', '12:00'), hour(1, '14:00', '18:00')]));
+    const page = setup();
+    expect(page.isOpen(2)).toBe(false);
+    page.toggleDay(2);
+    expect(page.rowsForDay(2)[0].group.value).toMatchObject({
+      startTime: '09:00',
+      endTime: '18:00',
+    });
+
+    page.toggleDay(1);
+    expect(page.isOpen(1)).toBe(false);
+    expect(page.rowsForDay(2)).toHaveLength(1);
+  });
+
   it('ignores an incomplete range while validating order', () => {
     api.list.mockReturnValue(of([hour(2, '09:00', '18:00')]));
     const page = setup();

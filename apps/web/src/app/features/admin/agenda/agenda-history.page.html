@@ -1,0 +1,161 @@
+<div class="heading">
+  <h1>Histórico de atendimentos</h1>
+  <p class="desktop-lead">
+    Atendimentos já realizados, cancelados ou em que o cliente não compareceu. Clique em um
+    atendimento para ver os detalhes.
+  </p>
+  <p class="mobile-lead">Toque em um atendimento para ver os detalhes.</p>
+</div>
+
+<app-agenda-view-switcher current="history" />
+
+<div class="month-nav">
+  <button type="button" (click)="shift(-1)" aria-label="Mês anterior">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M15 18l-6-6 6-6"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      ></path>
+    </svg>
+  </button>
+  <strong>{{ monthLabel() }}</strong>
+  <button type="button" (click)="shift(1)" aria-label="Próximo mês" [disabled]="!canGoForward()">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M9 18l6-6-6-6"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      ></path>
+    </svg>
+  </button>
+</div>
+
+@if (loading()) {
+<div class="loading"><app-spinner /></div>
+} @else if (loadError()) {
+<app-empty-state
+  title="Não foi possível carregar o histórico"
+  [description]="loadError()"
+  actionLabel="Tentar novamente"
+  (action)="load()"
+/>
+} @else {
+<section class="summary" aria-label="Resumo do histórico">
+  <article>
+    <span class="label long">Atendimentos no mês</span>
+    <span class="label short">No mês</span>
+    <strong>{{ summary().total }}</strong>
+  </article>
+  <article>
+    <span class="label">Concluídos</span>
+    <strong class="teal">{{ summary().completed }}</strong>
+  </article>
+  <article class="extra">
+    <span class="label">Cancelados</span>
+    <strong class="danger">{{ summary().cancelled }}</strong>
+  </article>
+  <article class="extra">
+    <span class="label">Não compareceu</span>
+    <strong>{{ summary().noShow }}</strong>
+  </article>
+</section>
+
+@if (groups().length === 0) {
+<div class="empty">
+  <strong>Nenhum atendimento em {{ monthLabel() }}</strong>
+  <p>Use as setas acima para navegar entre os meses.</p>
+</div>
+} @else {
+<div class="groups">
+  @for (group of groups(); track group.iso) {
+  <section>
+    <h2>{{ group.label }}</h2>
+    <div class="list">
+      @for (item of group.items; track item.id) {
+      <button
+        type="button"
+        class="card"
+        [attr.aria-label]="'Ver detalhes do atendimento de ' + item.customerName"
+        (click)="open(item)"
+      >
+        <span class="avatar" aria-hidden="true">{{ initial(item.customerName) }}</span>
+        <span class="who">
+          <strong>{{ item.customerName }}</strong>
+          <span>{{ item.serviceName }} · {{ clock(item.startsAt) }}</span>
+        </span>
+        <span class="badge" [attr.data-status]="item.status">{{ badge(item).label }}</span>
+        <svg
+          class="chevron"
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          aria-hidden="true"
+        >
+          <path
+            d="M9 18l6-6-6-6"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          ></path>
+        </svg>
+      </button>
+      }
+    </div>
+  </section>
+  }
+</div>
+} } @if (detail(); as item) {
+<div class="backdrop" (click)="close()">
+  <div
+    class="sheet"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="history-detail-title"
+    (click)="$event.stopPropagation()"
+  >
+    <span class="handle" aria-hidden="true"></span>
+    <div class="sheet-head">
+      <div>
+        <h2 id="history-detail-title">{{ item.customerName }}</h2>
+        <span class="badge" [attr.data-status]="item.status">{{ badge(item).label }}</span>
+      </div>
+      <button type="button" aria-label="Fechar" (click)="close()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path
+            d="M6 6l12 12M18 6L6 18"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+          ></path>
+        </svg>
+      </button>
+    </div>
+    <dl>
+      <div>
+        <dt>Serviço</dt>
+        <dd>{{ item.serviceName }}</dd>
+      </div>
+      <div>
+        <dt>Data</dt>
+        <dd>{{ when(item) }}</dd>
+      </div>
+      <div>
+        <dt>Horário</dt>
+        <dd>{{ clock(item.startsAt) }}</dd>
+      </div>
+      <div>
+        <dt>Telefone</dt>
+        <dd>{{ phone(item.customerPhone) }}</dd>
+      </div>
+    </dl>
+    <button type="button" class="close" (click)="close()">Fechar</button>
+  </div>
+</div>
+}

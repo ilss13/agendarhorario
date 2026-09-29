@@ -39,4 +39,19 @@ describe('CompanyAppointmentsApi', () => {
     req.flush({ message: 'Data inválida' }, { status: 400, statusText: 'Bad Request' });
     expect(failed).toBe(true);
   });
+
+  it('requests the company agenda for a month', () => {
+    api.listMonth('2026-09').subscribe();
+    const req = http.expectOne('http://api.test/api/company/appointments?month=2026-09');
+    expect(req.request.method).toBe('GET');
+    req.flush({ month: '2026-09', items: [] });
+  });
+
+  it('surfaces a failed month agenda request', () => {
+    let failed = false;
+    api.listMonth('2026-13').subscribe({ error: () => (failed = true) });
+    const req = http.expectOne('http://api.test/api/company/appointments?month=2026-13');
+    req.flush({ message: 'Mês inválido' }, { status: 400, statusText: 'Bad Request' });
+    expect(failed).toBe(true);
+  });
 });

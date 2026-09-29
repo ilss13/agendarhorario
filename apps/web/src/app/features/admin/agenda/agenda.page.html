@@ -1,12 +1,67 @@
-<app-page-header
-  title="Agenda"
-  subtitle="Horários confirmados pelo cliente aparecem com o selo verde."
-/>
+<div class="heading">
+  <div>
+    <h1>
+      <span class="desktop-title">Agenda completa — {{ monthLabel() }}</span>
+      <span class="mobile-title">Agenda completa</span>
+    </h1>
+    <p class="desktop-lead">Clique em qualquer dia para ver os atendimentos em lista.</p>
+    <p class="mobile-lead">{{ monthLabel() }} · toque em um dia para ver os atendimentos.</p>
+  </div>
+  <div class="month-nav">
+    <button type="button" (click)="shift(-1)" aria-label="Mês anterior">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path
+          d="M15 6l-6 6 6 6"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        ></path>
+      </svg>
+    </button>
+    <button type="button" (click)="shift(1)" aria-label="Próximo mês">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path
+          d="M9 6l6 6-6 6"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        ></path>
+      </svg>
+    </button>
+  </div>
+</div>
 
-<label class="date">
-  Dia
-  <input type="date" [value]="date()" (change)="onDateInput($event)" />
-</label>
+<app-agenda-view-switcher current="month" />
+
+<section class="summary" aria-label="Resumo do mês">
+  <article>
+    <span class="label long">Agendamentos no mês</span>
+    <span class="label short">No mês</span>
+    <strong>{{ summary().total }}</strong>
+  </article>
+  <article>
+    <span class="label">Confirmados</span>
+    <strong class="teal">{{ summary().confirmed }}</strong>
+  </article>
+  <article>
+    <span class="label long">Aguardando confirmação</span>
+    <span class="label short">Aguardando</span>
+    <strong>{{ summary().pending }}</strong>
+  </article>
+  <article>
+    <span class="label long">Dias abertos no mês</span>
+    <span class="label short">Dias abertos</span>
+    <strong>{{ summary().openDays }}</strong>
+  </article>
+</section>
+
+<ul class="legend">
+  <li><span class="swatch today"></span>Hoje</li>
+  <li><span class="swatch open"></span>Dia aberto</li>
+  <li class="desktop-only"><span class="swatch closed"></span>Fechado / fora do mês</li>
+</ul>
 
 @if (loading()) {
 <div class="loading"><app-spinner /></div>
@@ -17,27 +72,37 @@
   actionLabel="Tentar novamente"
   (action)="load()"
 />
-} @else if (items().length === 0) {
-<app-empty-state
-  title="Nenhum horário neste dia"
-  description="Quando alguém agendar, o horário aparece aqui."
-/>
 } @else {
-<ul>
-  @for (item of items(); track item.id) {
-  <li>
-    <div class="when">
-      <strong>{{ clock(item.startsAt) }}</strong>
-      <span>até {{ clock(item.endsAt) }}</span>
+<div class="calendar">
+  <div class="weekdays">
+    @for (day of weekdays; track day.long) {
+    <div>
+      <span class="long">{{ day.long }}</span>
+      <span class="short">{{ day.short }}</span>
     </div>
-    <div class="card">
-      <div class="who">
-        <strong>{{ item.customerName }}</strong>
-        <span class="badge" [attr.data-tone]="badge(item).tone">{{ badge(item).label }}</span>
-      </div>
-      <p>{{ item.serviceName }} @if (phone(item.customerPhone); as phone) { · {{ phone }} }</p>
-    </div>
-  </li>
-  }
-</ul>
+    }
+  </div>
+  <div class="days">
+    @for (cell of cells(); track cell.iso) {
+    <button
+      type="button"
+      class="day"
+      [class.outside]="!cell.inMonth"
+      [class.today]="cell.isToday"
+      [attr.aria-label]="dayLabel(cell)"
+      (click)="openDay(cell.iso)"
+    >
+      <span class="num">{{ cell.day }}</span>
+      @if (cell.inMonth && count(cell.iso) > 0) { @if (cell.isToday) {
+      <span class="count">{{ count(cell.iso) }} agend.</span>
+      <span class="dot navy" aria-hidden="true"></span>
+      } @else {
+      <span class="open-mark"
+        ><span class="dot" aria-hidden="true"></span><span class="open-text">Aberto</span></span
+      >
+      } }
+    </button>
+    }
+  </div>
+</div>
 }

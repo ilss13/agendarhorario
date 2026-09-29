@@ -19,6 +19,8 @@ describe('AuthController', () => {
   const loginWithGoogle = jest.fn();
   const logout = jest.fn();
   const me = jest.fn();
+  const requestPasswordReset = jest.fn();
+  const resetPassword = jest.fn();
   const configGet = jest.fn();
 
   const authService = {
@@ -28,6 +30,8 @@ describe('AuthController', () => {
     loginWithGoogle,
     logout,
     me,
+    requestPasswordReset,
+    resetPassword,
   } as unknown as AuthService;
   const config = { get: configGet } as unknown as ConfigService;
   const controller = new AuthController(authService, config);

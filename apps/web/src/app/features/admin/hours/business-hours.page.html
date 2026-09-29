@@ -1,7 +1,11 @@
-<app-page-header
-  title="Horários de atendimento"
-  subtitle="Defina os intervalos de funcionamento por dia da semana."
-/>
+<header class="heading">
+  <h1>
+    <span class="desktop-copy">Horários de atendimento</span>
+    <span class="mobile-copy">Horários</span>
+  </h1>
+  <p class="desktop-copy">Defina os intervalos de funcionamento por dia da semana.</p>
+  <p class="mobile-copy">Funcionamento por dia da semana.</p>
+</header>
 
 @if (loading() && !loadedOnce()) {
 <div class="loading"><app-spinner /></div>
@@ -17,17 +21,44 @@
   <div class="days">
     @for (day of DAY_KEYS; track day) {
     <section class="day">
-      <header>
-        <h3>{{ dayLabels[day] }}</h3>
-        <button type="button" class="link" (click)="addRow(day)">+ Adicionar intervalo</button>
+      <header [class.open]="isOpen(day)">
+        <div class="day-name">
+          <button
+            type="button"
+            class="switch"
+            role="switch"
+            [attr.aria-checked]="isOpen(day)"
+            [attr.aria-label]="'Alternar ' + dayLabels[day]"
+            (click)="toggleDay(day)"
+          >
+            <span></span>
+          </button>
+          <span>{{ dayLabels[day] }}</span>
+        </div>
+        <button
+          type="button"
+          class="add"
+          (click)="addRow(day)"
+          [attr.aria-label]="'Adicionar intervalo em ' + dayLabels[day]"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path
+              d="M12 5v14M5 12h14"
+              stroke="currentColor"
+              stroke-width="2.2"
+              stroke-linecap="round"
+            ></path>
+          </svg>
+          <span class="add-label">Adicionar intervalo</span>
+        </button>
       </header>
 
       @if (rowsForDay(day).length === 0) {
-      <p class="muted">Fechado neste dia.</p>
+      <p class="closed">Fechado neste dia.</p>
       } @else {
-      <ul>
+      <div class="intervals">
         @for (row of rowsForDay(day); track row.index) {
-        <li [formGroup]="row.group">
+        <div class="interval" [formGroup]="row.group">
           <app-form-field label="Início" [errorMessage]="rowError(row.group, 'startTime')">
             <input type="time" formControlName="startTime" step="900" />
           </app-form-field>
@@ -40,11 +71,26 @@
             (click)="removeRow(row.index)"
             aria-label="Remover intervalo"
           >
-            Remover
+            <svg
+              class="remove-icon"
+              width="15"
+              height="15"
+              viewBox="0 0 24 24"
+              fill="none"
+              aria-hidden="true"
+            >
+              <path
+                d="M6 6l12 12M18 6L6 18"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+              ></path>
+            </svg>
+            <span class="remove-label">Remover</span>
           </button>
-        </li>
+        </div>
         }
-      </ul>
+      </div>
       }
     </section>
     }

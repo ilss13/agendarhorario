@@ -1,9 +1,12 @@
-<app-page-header title="Assinatura" subtitle="Gerencie seu plano, uso do mês e faturas." />
+<header class="heading">
+  <h1>Assinatura</h1>
+  <p>Gerencie seu plano, uso do mês e faturas.</p>
+</header>
 
 @if (loading() && !summary()) {
 <div class="loading"><app-spinner /></div>
 @if (confirmingReturn()) {
-<p class="muted confirming">Confirmando sua assinatura com o Stripe...</p>
+<p class="confirming">Confirmando sua assinatura com o Stripe...</p>
 } } @else if (loadError()) {
 <app-empty-state
   title="Não foi possível carregar"
@@ -16,61 +19,78 @@
   @if (summary()?.hasSubscription && summary()?.plan) {
   <header class="plan">
     <div>
-      <small class="muted">Plano atual</small>
+      <div class="kicker">Plano atual</div>
       <h2>{{ summary()!.plan!.name }}</h2>
-      <small class="muted">
-        R$ {{ summary()!.plan!.priceBrl.toFixed(2) }}/mês · {{
-        summary()!.plan!.monthlyAppointmentLimit }} agendamentos/mês
-      </small>
+      <p class="meta">
+        <span class="desktop-copy">
+          {{ money(summary()!.plan!.priceBrl) }}/mês · {{ summary()!.plan!.monthlyAppointmentLimit
+          }} agendamentos/mês
+        </span>
+        <span class="mobile-copy">
+          {{ money(summary()!.plan!.priceBrl) }}/mês · {{ summary()!.plan!.monthlyAppointmentLimit
+          }}/mês
+        </span>
+      </p>
     </div>
-    <span class="status" [attr.data-state]="statusTone()"> {{ statusLabel() }} </span>
+    <span class="status" [attr.data-state]="statusTone()">{{ statusLabel() }}</span>
   </header>
 
   <div class="usage">
     <div class="usage-header">
       <span>Uso do ciclo</span>
-      <strong>{{ summary()!.usage.used }} / {{ summary()!.usage.limit }}</strong>
+      <span>{{ summary()!.usage.used }} / {{ summary()!.usage.limit }}</span>
     </div>
     <div class="bar" [attr.data-level]="usageLevel()">
       <div class="fill" [style.width.%]="usagePercent()"></div>
     </div>
     @if (summary()!.usage.resetAt) {
-    <small class="muted"> Renova em {{ formatDate(summary()!.usage.resetAt!) }} </small>
+    <p class="renewal">
+      <span class="desktop-copy">Renova em {{ formatDate(summary()!.usage.resetAt!) }}</span>
+      <span class="mobile-copy">Renova em {{ formatDay(summary()!.usage.resetAt!) }}</span>
+    </p>
     }
   </div>
 
   @if (summary()!.trialEndsAt) {
-  <p class="trial-banner">
-    Teste grátis até {{ formatDate(summary()!.trialEndsAt!) }}. Depois cobramos o plano escolhido, a
-    menos que você cancele.
+  <p class="notice trial">
+    <span class="desktop-copy">
+      Teste grátis até {{ formatDate(summary()!.trialEndsAt!) }}. Depois cobramos o plano escolhido,
+      a menos que você cancele.
+    </span>
+    <span class="mobile-copy">
+      Teste grátis até {{ formatDay(summary()!.trialEndsAt!) }}. Depois cobramos o plano escolhido,
+      a menos que você cancele.
+    </span>
   </p>
   } @if (summary()!.state === 'OVER_LIMIT') {
-  <p class="warning">
+  <p class="notice warn">
     Você atingiu o limite deste ciclo. Faça upgrade para continuar recebendo agendamentos
     imediatamente.
   </p>
   } @else if (summary()!.state === 'SUSPENDED') {
-  <p class="error">
+  <p class="notice alert">
     Sua assinatura está com problemas de pagamento. Atualize o método para reativar.
   </p>
   }
 
   <div class="actions">
-    <button type="button" class="secondary" (click)="openPortal()">
-      Atualizar método de pagamento
+    <button type="button" class="ghost pay" (click)="openPortal()">
+      <span class="desktop-copy">Atualizar método de pagamento</span>
+      <span class="mobile-copy">Atualizar pagamento</span>
     </button>
-    <button type="button" class="primary" (click)="openPlanModal()">Trocar plano</button>
+    <button type="button" class="primary change" (click)="openPlanModal()">Trocar plano</button>
     @if (!summary()!.cancelAtPeriodEnd) {
-    <button type="button" class="danger" (click)="confirmingCancel.set(true)">
+    <button type="button" class="danger cancel" (click)="confirmingCancel.set(true)">
       Cancelar assinatura
     </button>
     } @else {
-    <span class="muted"> Será cancelada em {{ formatDate(summary()!.currentPeriodEnd!) }} </span>
+    <span class="scheduled">Será cancelada em {{ formatDate(summary()!.currentPeriodEnd!) }}</span>
     }
   </div>
   } @else {
+  <div class="kicker">Plano atual</div>
   <h2>Você ainda não tem um plano ativo</h2>
-  <p class="muted">
+  <p class="meta">
     Escolha um plano para liberar agendamentos públicos. Na primeira contratação você ganha {{
     summary()?.trialDays ?? 14 }} dias grátis — a cobrança só começa depois do teste.
   </p>
@@ -80,76 +100,94 @@
   }
 </section>
 
-<h3 class="section">Faturas</h3>
-@if (invoices().length === 0) {
-<app-empty-state
-  title="Nenhuma fatura ainda"
-  description="As faturas aparecerão aqui após a primeira cobrança."
-/>
-} @else {
-<ul class="invoice-list">
-  @for (i of invoices(); track i.id) {
-  <li>
-    <div>
-      <strong>{{ i.number ?? '—' }}</strong>
-      <small>{{ formatDate(i.createdAt) }}</small>
-    </div>
-    <div class="amount">R$ {{ i.amountTotal.toFixed(2) }}</div>
-    <span class="badge badge-{{ i.status }}">{{ invoiceLabel(i.status) }}</span>
-    <div class="links">
-      @if (i.hostedInvoiceUrl) {
-      <a [href]="i.hostedInvoiceUrl" target="_blank" rel="noopener">Pagar / ver</a>
-      } @if (i.pdfUrl) {
-      <a [href]="i.pdfUrl" target="_blank" rel="noopener">PDF</a>
-      }
-    </div>
-  </li>
+<section class="invoices" aria-labelledby="invoices-title">
+  <h2 id="invoices-title">Faturas</h2>
+  @if (invoices().length === 0) {
+  <div class="empty">
+    <strong>Nenhuma fatura ainda</strong>
+    <p class="desktop-copy">As faturas aparecerão aqui após a primeira cobrança.</p>
+    <p class="mobile-copy">Aparecem aqui após a primeira cobrança.</p>
+  </div>
+  } @else {
+  <ul class="invoice-list">
+    @for (invoice of invoices(); track invoice.id) {
+    <li>
+      <div>
+        <strong>{{ invoice.number ?? '—' }}</strong>
+        <small>{{ formatDate(invoice.createdAt) }}</small>
+      </div>
+      <div class="amount">{{ money(invoice.amountTotal) }}</div>
+      <span class="badge" [attr.data-status]="invoice.status"
+        >{{ invoiceLabel(invoice.status) }}</span
+      >
+      <div class="links">
+        @if (invoice.hostedInvoiceUrl) {
+        <a [href]="invoice.hostedInvoiceUrl" target="_blank" rel="noopener">Pagar / ver</a>
+        } @if (invoice.pdfUrl) {
+        <a [href]="invoice.pdfUrl" target="_blank" rel="noopener">PDF</a>
+        }
+      </div>
+    </li>
+    }
+  </ul>
   }
-</ul>
-} } @if (planModalOpen()) {
-<div class="modal-backdrop" (click)="planModalOpen.set(false)">
-  <div class="modal" (click)="$event.stopPropagation()">
-    <header>
-      <h2>
-        {{ summary()?.trialEligible ? 'Comece com ' + (summary()?.trialDays ?? 14) + ' dias grátis'
-        : 'Escolha um plano' }}
-      </h2>
-      <button type="button" class="close" (click)="planModalOpen.set(false)">×</button>
+</section>
+} @if (planModalOpen()) {
+<div class="backdrop" (click)="planModalOpen.set(false)">
+  <div
+    class="sheet"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="plans-title"
+    (click)="$event.stopPropagation()"
+  >
+    <span class="handle" aria-hidden="true"></span>
+    <header class="sheet-head">
+      <h2 id="plans-title">Escolha um plano</h2>
+      <button type="button" aria-label="Fechar" (click)="planModalOpen.set(false)">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path
+            d="M6 6l12 12M18 6L6 18"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+          ></path>
+        </svg>
+      </button>
     </header>
     @if (loadingPlans()) {
-    <p class="muted">Carregando planos...</p>
+    <p class="meta">Carregando planos...</p>
     } @else if (plans().length === 0) {
-    <p class="muted">Nenhum plano disponível no momento. Tente novamente em instantes.</p>
+    <p class="meta">Nenhum plano disponível no momento. Tente novamente em instantes.</p>
     } @else {
     <ul class="plan-grid">
-      @for (p of plans(); track p.id) {
-      <li
-        [class.current]="p.code === summary()?.plan?.code"
-        [class.recommended]="p.code === 'medio'"
-      >
-        @if (p.code === 'medio') {
-        <span class="recommended-badge">Mais escolhido</span>
-        }
-        <strong>{{ p.name }}</strong>
-        <span class="price">R$ {{ p.priceBrl.toFixed(2) }}<small>/mês</small></span>
-        @if (summary()?.trialEligible && p.trialDays > 0) {
-        <span class="trial-note">{{ p.trialDays }} dias grátis</span>
-        }
-        <span class="limit">{{ p.monthlyAppointmentLimit }} agendamentos</span>
+      @for (plan of plans(); track plan.id) {
+      <li [class.featured]="featured(plan)" [class.current]="currentPlan(plan)">
+        <div class="offer">
+          @if (featured(plan)) {
+          <span class="featured-badge">Mais escolhido</span>
+          }
+          <div class="name">{{ plan.name }}</div>
+          <div class="price">{{ money(plan.priceBrl) }} <small>/mês</small></div>
+          @if (summary()?.trialEligible && plan.trialDays > 0) {
+          <div class="trial-note">{{ plan.trialDays }} dias grátis</div>
+          }
+          <div class="quota">{{ plan.monthlyAppointmentLimit }} agendamentos</div>
+        </div>
         <button
           type="button"
-          class="primary"
-          [disabled]="submitting() || p.code === summary()?.plan?.code"
-          (click)="onSelectPlan(p)"
+          [class.current]="currentPlan(plan)"
+          [disabled]="submitting() || currentPlan(plan)"
+          (click)="onSelectPlan(plan)"
         >
-          {{ summary()?.hasSubscription ? p.code === summary()?.plan?.code ? 'Plano atual' : 'Trocar
-          para este' : summary()?.trialEligible ? 'Começar teste grátis' : 'Assinar' }}
+          <span class="desktop-copy">{{ planLabel(plan, false) }}</span>
+          <span class="mobile-copy">{{ planLabel(plan, true) }}</span>
         </button>
       </li>
       }
     </ul>
     } @if (actionError()) {
-    <p class="error">{{ actionError() }}</p>
+    <p class="notice alert">{{ actionError() }}</p>
     }
   </div>
 </div>

@@ -34,6 +34,14 @@ export class FirebaseIdentityToolkitClient {
     }
   }
 
+  async resetPassword(oobCode: string, newPassword: string): Promise<void> {
+    try {
+      await axios.post(`${BASE_URL}:resetPassword?key=${this.apiKey}`, { oobCode, newPassword });
+    } catch (err) {
+      throw this.mapError(err, 'Não foi possível redefinir a senha');
+    }
+  }
+
   async signUpWithPassword(email: string, password: string): Promise<SignUpResponse> {
     try {
       const { data } = await axios.post<SignUpResponse>(`${BASE_URL}:signUp?key=${this.apiKey}`, {
@@ -68,5 +76,7 @@ const mapFirebaseAuthCode = (code: string | undefined): string | null => {
   if (code.startsWith('TOO_MANY_ATTEMPTS'))
     return 'Muitas tentativas. Tente novamente em instantes.';
   if (code.startsWith('WEAK_PASSWORD')) return 'Senha muito fraca';
+  if (code.startsWith('EXPIRED_OOB_CODE')) return 'Este link expirou. Peça um novo.';
+  if (code.startsWith('INVALID_OOB_CODE')) return 'Este link é inválido. Peça um novo.';
   return null;
 };

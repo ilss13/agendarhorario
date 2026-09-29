@@ -1,107 +1,330 @@
 @use '../../../../styles/ui' as ui;
 
-.date {
-  display: grid;
-  gap: 0.35rem;
-  margin: 0 0 1.25rem;
-  max-width: 220px;
-  color: ui.$color-muted;
-  font-size: 0.85rem;
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  font-family: ui.$font-sans;
+  color: ui.$dash-ink;
+}
+
+h1 {
+  margin: 0 0 6px;
+  font-family: ui.$font-display;
+  font-size: 28px;
+  line-height: 36px;
   font-weight: 600;
 }
 
-.date input {
-  padding: 0.55rem 0.7rem;
-  border: 1px solid ui.$color-border;
-  border-radius: ui.$radius;
-  font: inherit;
-  color: #111827;
+.heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.desktop-lead,
+.mobile-lead {
+  margin: 0;
+  font-size: 16px;
+  line-height: 24px;
+  color: ui.$dash-muted;
+}
+
+.mobile-title,
+.mobile-lead,
+.label.short,
+.weekdays .short,
+.days .dot.navy {
+  display: none;
+}
+
+.month-nav {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.month-nav button {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border: 1px solid ui.$dash-border;
+  border-radius: 10px;
+  background: ui.$dash-surface;
+  color: ui.$dash-ink;
+  cursor: pointer;
+}
+
+.summary {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.summary article {
+  flex: 1;
+  min-width: 150px;
+  background: ui.$dash-surface;
+  border: 1px solid ui.$dash-border;
+  border-radius: ui.$dash-radius-md;
+  padding: 18px 20px;
+}
+
+.label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: ui.$dash-muted;
+}
+
+.summary strong {
+  font-family: ui.$font-display;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.summary strong.teal {
+  color: ui.$dash-teal-dark;
+}
+
+.legend {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 12px;
+  color: ui.$dash-muted;
+}
+
+.legend li {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.swatch {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  display: inline-block;
+}
+
+.swatch.today {
+  background: ui.$dash-navy;
+}
+
+.swatch.open {
+  background: ui.$dash-teal;
+}
+
+.swatch.closed {
+  background: ui.$dash-border;
 }
 
 .loading {
   @include ui.loading-center(2rem 0);
 }
 
-ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
+.calendar {
   display: grid;
-  gap: 0.75rem;
 }
 
-li {
+.weekdays,
+.days {
   display: grid;
-  grid-template-columns: 72px 1fr;
-  gap: 0.85rem;
-  align-items: start;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 1px;
+  background: ui.$dash-border;
+  border: 1px solid ui.$dash-border;
+  overflow: hidden;
 }
 
-.when {
-  display: grid;
-  padding-top: 0.85rem;
+.weekdays {
+  border-radius: ui.$dash-radius-md ui.$dash-radius-md 0 0;
 }
 
-.when strong {
-  font-size: 0.95rem;
+.days {
+  border-top: 0;
+  border-radius: 0 0 ui.$dash-radius-md ui.$dash-radius-md;
 }
 
-.when span,
-.card p {
-  color: ui.$color-muted;
-  font-size: 0.8rem;
-}
-
-.card {
-  background: #fff;
-  border: 1px solid ui.$color-border;
-  border-radius: ui.$radius-card;
-  padding: 0.9rem 1rem;
-}
-
-.who {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.who strong {
-  font-size: 1rem;
-}
-
-.card p {
-  margin: 0.2rem 0 0;
-}
-
-.badge {
+.weekdays div {
+  background: ui.$dash-canvas;
+  padding: 10px;
+  text-align: center;
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.02em;
   text-transform: uppercase;
-  padding: 3px 10px;
+  color: ui.$dash-muted;
+}
+
+.day {
+  min-height: 92px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  border: 0;
+  background: ui.$dash-surface;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.day.outside {
+  background: ui.$dash-canvas;
+}
+
+.day.outside .num {
+  color: ui.$dash-muted;
+}
+
+.num {
+  font-size: 13px;
+  color: ui.$dash-ink;
+}
+
+.day.today {
+  background: rgba(24, 82, 128, 0.08);
+  box-shadow: inset 0 0 0 1.5px ui.$dash-navy;
+}
+
+.day.today .num {
+  font-weight: 700;
+  color: ui.$dash-navy;
+}
+
+.open-mark,
+.count {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: ui.$dash-teal-dark;
+}
+
+.count {
+  font-weight: 600;
+  color: #fff;
+  background: ui.$dash-navy;
   border-radius: 999px;
-  background: #f3f4f6;
-  color: ui.$color-muted;
+  padding: 2px 8px;
+  width: fit-content;
 }
 
-.badge[data-tone='confirmed'] {
-  background: #d1fae5;
-  color: #047857;
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: ui.$dash-teal;
+  display: inline-block;
+  flex-shrink: 0;
 }
 
-.badge[data-tone='danger'] {
-  background: #fee2e2;
-  color: #b91c1c;
-}
-
-@media (max-width: 640px) {
-  li {
-    grid-template-columns: 1fr;
-    gap: 0.25rem;
+@media (max-width: 900px) {
+  :host {
+    gap: 18px;
   }
 
-  .when {
-    padding-top: 0;
+  h1 {
+    margin-bottom: 4px;
+    font-size: 22px;
+    line-height: 28px;
+  }
+
+  .desktop-title,
+  .desktop-lead,
+  .label.long,
+  .legend .desktop-only,
+  .weekdays .long,
+  .open-text,
+  .count {
+    display: none;
+  }
+
+  .mobile-title,
+  .mobile-lead,
+  .label.short,
+  .weekdays .short {
+    display: inline;
+  }
+
+  .mobile-lead {
+    font-size: 13px;
+    line-height: 18px;
+  }
+
+  .summary {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .summary article {
+    min-width: 0;
+    padding: 14px 16px;
+  }
+
+  .label {
+    font-size: 10px;
+    margin-bottom: 4px;
+  }
+
+  .summary strong {
+    font-size: 20px;
+  }
+
+  .legend {
+    gap: 16px;
+    font-size: 11px;
+  }
+
+  .swatch {
+    width: 8px;
+    height: 8px;
+  }
+
+  .weekdays div {
+    padding: 7px 2px;
+    font-size: 10px;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+
+  .day {
+    min-height: 46px;
+    padding: 5px;
+    align-items: center;
+    gap: 3px;
+  }
+
+  .num {
+    font-size: 12px;
+  }
+
+  .days .dot,
+  .days .dot.navy {
+    display: inline-block;
+    width: 5px;
+    height: 5px;
+  }
+
+  .days .dot.navy {
+    background: ui.$dash-navy;
+  }
+
+  .open-mark {
+    gap: 0;
   }
 }

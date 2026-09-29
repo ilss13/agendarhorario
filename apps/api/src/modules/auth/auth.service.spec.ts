@@ -10,6 +10,7 @@ import type {
 import { FirebaseAdminService } from '../../shared/infra/firebase/firebase-admin.service';
 import { FirebaseIdentityToolkitClient } from '../../shared/infra/firebase/firebase-identity-toolkit.client';
 import { Company } from '../companies/company.entity';
+import type { EmailProvider } from '../notifications/notification.types';
 import { User } from '../users/user.entity';
 import { AuthService } from './auth.service';
 import type { AuthenticatedUser } from './auth.types';
@@ -23,6 +24,9 @@ describe('AuthService', () => {
   const verifySessionCookie = jest.fn();
   const revokeRefreshTokens = jest.fn();
   const deleteUser = jest.fn();
+  const generatePasswordResetLink = jest.fn();
+  const resetPassword = jest.fn();
+  const sendEmail = jest.fn();
   const usersFindOne = jest.fn();
   const usersSave = jest.fn();
   const usersCreate = jest.fn();
@@ -38,11 +42,13 @@ describe('AuthService', () => {
       verifySessionCookie,
       revokeRefreshTokens,
       deleteUser,
+      generatePasswordResetLink,
     },
   } as unknown as FirebaseAdminService;
   const identity = {
     signInWithPassword,
     signUpWithPassword,
+    resetPassword,
   } as unknown as FirebaseIdentityToolkitClient;
   const config = { get: configGet } as unknown as ConfigService;
   const dataSource = { transaction } as unknown as DataSource;
@@ -52,6 +58,7 @@ describe('AuthService', () => {
     create: usersCreate,
   } as unknown as Repository<User>;
   const companies = { findOne: companiesFindOne } as unknown as Repository<Company>;
+  const email = { send: sendEmail } as unknown as EmailProvider;
 
   let service: AuthService;
 
@@ -78,7 +85,7 @@ describe('AuthService', () => {
     createSessionCookie.mockResolvedValue('session-cookie');
     usersCreate.mockImplementation((row: Partial<User>) => row);
     usersSave.mockImplementation(async (row: User) => row);
-    service = new AuthService(firebase, identity, config, dataSource, users, companies);
+    service = new AuthService(firebase, identity, config, dataSource, users, companies, email);
   });
 
   describe('login', () => {
@@ -324,6 +331,60 @@ describe('AuthService', () => {
 
       await expect(service.registerCustomer(input)).rejects.toThrow('db');
       expect(deleteUser).toHaveBeenCalledWith('fb-c');
+    });
+  });
+
+  describe('requestPasswordReset', () => {
+    it('sends an app link when the account exists', async () => {
+      usersFindOne.mockResolvedValue(baseUser());
+      generatePasswordResetLink.mockResolvedValue(
+        'https://proj.firebaseapp.com/__/auth/action?mode=resetPassword&oobCode=abc123&apiKey=secret',
+      );
+      sendEmail.mockResolvedValue(undefined);
+
+      await expect(service.requestPasswordReset('owner@ex.com')).resolves.toEqual({ sent: true });
+      expect(sendEmail).toHaveBeenCalledWith(
+        expect.objectContaining({
+          to: 'owner@ex.com',
+          text: expect.stringContaining('http://localhost:4200/redefinir-senha?oobCode=abc123'),
+        }),
+      );
+    });
+
+    it('does not reveal a missing account', async () => {
+      usersFindOne.mockResolvedValue(null);
+      await expect(service.requestPasswordReset('missing@ex.com')).resolves.toEqual({ sent: true });
+      expect(generatePasswordResetLink).not.toHaveBeenCalled();
+    });
+
+    it('stays silent when Firebase has no user and fails when the email cannot be sent', async () => {
+      usersFindOne.mockResolvedValue(baseUser());
+      generatePasswordResetLink.mockRejectedValue({ code: 'auth/user-not-found' });
+      await expect(service.requestPasswordReset('owner@ex.com')).resolves.toEqual({ sent: true });
+
+      generatePasswordResetLink.mockRejectedValue(new Error('smtp'));
+      await expect(service.requestPasswordReset('owner@ex.com')).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+  });
+
+  describe('resetPassword', () => {
+    it('confirms the new password with the reset code', async () => {
+      resetPassword.mockResolvedValue(undefined);
+      await expect(
+        service.resetPassword({ oobCode: 'a'.repeat(12), password: 'Senha123' }),
+      ).resolves.toEqual({ reset: true });
+      expect(resetPassword).toHaveBeenCalledWith('a'.repeat(12), 'Senha123');
+    });
+
+    it('propagates an invalid reset code', async () => {
+      resetPassword.mockRejectedValue(
+        new UnauthorizedException('Este link é inválido. Peça um novo.'),
+      );
+      await expect(
+        service.resetPassword({ oobCode: 'a'.repeat(12), password: 'Senha123' }),
+      ).rejects.toThrow(UnauthorizedException);
     });
   });
 

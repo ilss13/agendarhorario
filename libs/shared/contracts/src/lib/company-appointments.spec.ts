@@ -16,8 +16,17 @@ describe('company appointment contracts', () => {
     ).toBe(true);
   });
 
+  it('accepts a month query without a day', () => {
+    expect(companyAppointmentsQuerySchema.safeParse({ month: '2026-09' }).success).toBe(true);
+  });
+
   it('rejects a date that is not AAAA-MM-DD and an unknown status', () => {
     expect(companyAppointmentsQuerySchema.safeParse({ date: '23/09/2026' }).success).toBe(false);
+    expect(companyAppointmentsQuerySchema.safeParse({}).success).toBe(false);
+    expect(
+      companyAppointmentsQuerySchema.safeParse({ date: '2026-09-23', month: '2026-09' }).success,
+    ).toBe(false);
+    expect(companyAppointmentsQuerySchema.safeParse({ month: '2026-13' }).success).toBe(false);
     expect(
       companyAppointmentSchema.safeParse({
         id: '11111111-1111-4111-8111-111111111111',

@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { provideRouter, Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import type { CompanyAppointmentDto } from '@agendarhorario/contracts';
 import { CompanyAppointmentsApi } from '@agendarhorario/web-data-access';
@@ -7,49 +8,49 @@ import { AgendaPageComponent } from './agenda.page';
 const confirmed: CompanyAppointmentDto = {
   id: '11111111-1111-4111-8111-111111111111',
   customerName: 'Camila',
-  customerPhone: '+5511999999999',
+  customerPhone: null,
   serviceName: 'Corte',
-  startsAt: '2026-09-23T13:00:00.000Z',
-  endsAt: '2026-09-23T13:45:00.000Z',
+  startsAt: '2026-09-21T13:00:00.000Z',
+  endsAt: '2026-09-21T14:00:00.000Z',
   status: 'CONFIRMED',
 };
 
 describe('AgendaPageComponent', () => {
-  const api = { list: jest.fn() };
+  const api = { listMonth: jest.fn() };
 
   const setup = (): AgendaPageComponent => {
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({
       imports: [AgendaPageComponent],
-      providers: [{ provide: CompanyAppointmentsApi, useValue: api }],
+      providers: [provideRouter([]), { provide: CompanyAppointmentsApi, useValue: api }],
     });
     return TestBed.createComponent(AgendaPageComponent).componentInstance;
   };
 
-  beforeEach(() => api.list.mockReset());
+  beforeEach(() => api.listMonth.mockReset());
 
-  it('loads the day and labels a client confirmation in green', () => {
-    api.list.mockReturnValue(of({ date: '2026-09-23', items: [confirmed] }));
+  it('loads the visible month and opens a day from the calendar', () => {
+    api.listMonth.mockReturnValue(of({ month: '2026-09', items: [confirmed] }));
     const page = setup();
-    expect(page.items()).toEqual([confirmed]);
-    expect(page.badge(confirmed)).toEqual({ label: 'Confirmado', tone: 'confirmed' });
-    expect(page.clock(confirmed.startsAt)).toBe('10:00');
-    expect(page.phone(confirmed.customerPhone)).toContain('99999');
+    expect(api.listMonth).toHaveBeenCalledWith(page.month());
+    expect(page.summary().confirmed).toBe(1);
+    expect(page.cells().length).toBeGreaterThan(27);
+    const navigate = jest.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    page.openDay('2026-09-21');
+    expect(navigate).toHaveBeenCalledWith(['/dashboard/agenda', '2026-09-21']);
+    page.shift(1);
+    expect(api.listMonth).toHaveBeenCalledTimes(2);
   });
 
-  it('clears the list when the agenda request fails and ignores a bad date', () => {
-    api.list.mockReturnValue(throwError(() => ({})));
+  it('clears the month when the request fails and ignores a bad shift', () => {
+    api.listMonth.mockReturnValue(throwError(() => ({})));
     const page = setup();
     expect(page.loadError()).toBe('Não foi possível carregar a agenda');
     expect(page.items()).toEqual([]);
-    page.onDate('amanha');
-    page.onDateInput(new Event('change'));
-    expect(api.list).toHaveBeenCalledTimes(1);
-
-    api.list.mockReturnValue(of({ date: '2026-09-24', items: [] }));
-    page.onDate('2026-09-24');
-    expect(page.date()).toBe('2026-09-24');
-    expect(page.phone(null)).toBeNull();
-    expect(page.badge({ ...confirmed, status: 'PENDING' }).tone).toBe('pending');
+    const month = page.month();
+    page.shift(1.5);
+    expect(page.month()).toBe(month);
+    expect(api.listMonth).toHaveBeenCalledTimes(1);
+    expect(page.count('2026-09-21')).toBe(0);
   });
 });

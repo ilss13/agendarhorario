@@ -1,0 +1,45 @@
+<a class="back" routerLink="/dashboard/agenda/mes">Voltar ao mês</a>
+
+<app-page-header
+  title="Agenda do dia"
+  subtitle="Horários confirmados pelo cliente aparecem com o selo verde."
+/>
+
+<label class="date">
+  Dia
+  <input type="date" [value]="date()" (change)="onDateInput($event)" />
+</label>
+
+@if (loading()) {
+<div class="loading"><app-spinner /></div>
+} @else if (loadError()) {
+<app-empty-state
+  title="Não foi possível carregar a agenda"
+  [description]="loadError()"
+  actionLabel="Tentar novamente"
+  (action)="load()"
+/>
+} @else if (items().length === 0) {
+<app-empty-state
+  title="Nenhum horário neste dia"
+  description="Quando alguém agendar, o horário aparece aqui."
+/>
+} @else {
+<ul>
+  @for (item of items(); track item.id) {
+  <li>
+    <div class="when">
+      <strong>{{ clock(item.startsAt) }}</strong>
+      <span>até {{ clock(item.endsAt) }}</span>
+    </div>
+    <div class="card">
+      <div class="who">
+        <strong>{{ item.customerName }}</strong>
+        <span class="badge" [attr.data-tone]="badge(item).tone">{{ badge(item).label }}</span>
+      </div>
+      <p>{{ item.serviceName }} @if (phone(item.customerPhone); as phone) { · {{ phone }} }</p>
+    </div>
+  </li>
+  }
+</ul>
+}

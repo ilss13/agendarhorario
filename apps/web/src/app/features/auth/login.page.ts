@@ -7,11 +7,12 @@ import { FirebaseClientService } from '../../core/auth/firebase-client.service';
 import { defaultRouteForUser } from '../../core/auth/redirect-after-login';
 import { ApiError } from '../../core/http/error.interceptor';
 import { firstError } from '../../core/forms/form-error';
+import { AuthShellComponent } from './auth-shell.component';
 
 @Component({
   selector: 'app-login-page',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, AuthShellComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './login.page.html',
   styleUrl: './login.page.scss',

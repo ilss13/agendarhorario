@@ -1,0 +1,24 @@
+@use '../../../../styles/ui' as ui;
+
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  font-family: ui.$font-sans;
+  color: ui.$dash-ink;
+}
+
+.heading h1 {
+  margin: 0 0 4px;
+  font-family: ui.$font-display;
+  font-size: 22px;
+  line-height: 28px;
+  font-weight: 600;
+}
+
+.heading p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 18px;
+  color: ui.$dash-muted;
+}

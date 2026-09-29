@@ -1,73 +1,321 @@
 @use '../../../../styles/ui' as ui;
 
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  max-width: 860px;
+  font-family: ui.$font-sans;
+  color: ui.$dash-ink;
+}
+
+.heading {
+  @include ui.dash-heading;
+}
+
+.mobile-copy,
+.remove-icon {
+  display: none;
+}
+
+.loading {
+  @include ui.loading-center;
+}
+
 form {
-  display: grid;
-  gap: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
 }
+
 .days {
-  display: grid;
-  gap: 0.75rem;
+  background: ui.$dash-surface;
+  border: 1px solid ui.$dash-border;
+  border-radius: ui.$dash-radius-md;
+  overflow: hidden;
 }
+
 .day {
-  background: #fff;
-  border: 1px solid #e5e7eb;
-  border-radius: 0.75rem;
-  padding: 1rem;
+  padding: 20px 26px;
 }
+
+.day + .day {
+  border-top: 1px solid ui.$dash-canvas;
+}
+
 .day header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
+  gap: 16px;
 }
-.day h3 {
-  margin: 0;
-  font-size: 1rem;
+
+.day header.open {
+  margin-bottom: 16px;
 }
-.link {
-  background: transparent;
-  border: 0;
-  color: #2563eb;
-  cursor: pointer;
+
+.day-name {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 15px;
   font-weight: 600;
 }
-ul {
-  list-style: none;
-  margin: 0.75rem 0 0;
+
+.switch {
+  position: relative;
+  width: 38px;
+  height: 22px;
+  flex-shrink: 0;
+  border: 0;
+  border-radius: 999px;
   padding: 0;
-  display: grid;
-  gap: 0.5rem;
-}
-li {
-  display: grid;
-  grid-template-columns: 1fr 1fr auto;
-  align-items: end;
-  gap: 0.75rem;
-}
-@media (max-width: 540px) {
-  li {
-    grid-template-columns: 1fr;
+  background: ui.$dash-border;
+  cursor: pointer;
+
+  span {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 16px;
+    height: 16px;
+    border-radius: 999px;
+    background: #fff;
+    transition: left 0.15s;
+  }
+
+  &[aria-checked='true'] {
+    background: ui.$dash-teal-dark;
+
+    span {
+      left: 19px;
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid ui.$dash-teal;
+    outline-offset: 2px;
   }
 }
-.remove {
-  border: 0;
+
+.add {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   background: transparent;
-  color: #dc2626;
+  border: 0;
+  padding: 0;
+  color: ui.$dash-teal-dark;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
   cursor: pointer;
-  padding: 0.5rem 0;
+
+  &:focus-visible {
+    outline: 2px solid ui.$dash-teal;
+    outline-offset: 2px;
+  }
 }
-.muted {
-  color: #6b7280;
-  margin: 0.75rem 0 0;
+
+.intervals {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
+
+.interval {
+  display: flex;
+  align-items: flex-end;
+  gap: 14px;
+}
+
+.interval app-form-field {
+  display: block;
+}
+
+.closed {
+  margin: 0;
+  font-size: 14px;
+  color: ui.$dash-muted;
+}
+
+.remove {
+  background: transparent;
+  border: 0;
+  padding: 0 0 10px;
+  color: ui.$bk-danger;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 2px solid ui.$dash-teal;
+    outline-offset: 2px;
+  }
+}
+
+:host ::ng-deep app-form-field {
+  .field {
+    gap: 0;
+  }
+
+  .label {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: ui.$dash-muted;
+  }
+
+  input {
+    width: 140px;
+    padding: 9px 12px;
+    border: 1px solid ui.$dash-border;
+    border-radius: ui.$dash-radius-sm;
+    font: inherit;
+    font-size: 14px;
+    color: ui.$dash-ink;
+    background: ui.$dash-surface;
+  }
+
+  input:focus {
+    outline: none;
+    border-color: ui.$dash-teal;
+    box-shadow: 0 0 0 3px rgb(15 158 158 / 18%);
+  }
+
+  .error {
+    display: block;
+    margin-top: 4px;
+    color: ui.$bk-danger;
+    font-size: 12px;
+  }
+}
+
 .error {
-  @include ui.error-plain;
+  @include ui.auth-banner;
 }
+
 .success {
-  @include ui.success-text;
+  @include ui.auth-success;
 }
+
 .actions {
-  @include ui.actions-end;
+  display: flex;
+  justify-content: flex-end;
 }
+
 .actions button {
-  @include ui.primary-action;
+  @include ui.dash-primary-button;
+  padding: 12px 22px;
+}
+
+@media (max-width: 900px) {
+  :host {
+    gap: 18px;
+    max-width: none;
+  }
+
+  .heading {
+    h1 {
+      margin-bottom: 4px;
+      font-size: 22px;
+      line-height: 28px;
+    }
+
+    p {
+      font-size: 13px;
+      line-height: 18px;
+    }
+  }
+
+  .desktop-copy {
+    display: none;
+  }
+
+  .mobile-copy {
+    display: inline;
+  }
+
+  .heading .mobile-copy {
+    display: block;
+  }
+
+  form {
+    gap: 18px;
+  }
+
+  .day {
+    padding: 16px 18px;
+  }
+
+  .day header {
+    gap: 12px;
+  }
+
+  .day-name {
+    gap: 12px;
+    font-size: 14px;
+  }
+
+  .add {
+    width: 30px;
+    height: 30px;
+    justify-content: center;
+    background: ui.$dash-canvas;
+    border-radius: ui.$dash-radius-sm;
+  }
+
+  .add-label,
+  .remove-label {
+    display: none;
+  }
+
+  .interval {
+    gap: 10px;
+  }
+
+  .interval app-form-field {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .closed {
+    font-size: 13px;
+  }
+
+  .remove {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    flex-shrink: 0;
+    padding: 0;
+    border: 1px solid ui.$dash-border;
+    border-radius: ui.$dash-radius-sm;
+  }
+
+  .remove-icon {
+    display: block;
+  }
+
+  :host ::ng-deep app-form-field {
+    .label {
+      font-size: 10px;
+    }
+
+    input {
+      width: 100%;
+      padding: 9px 10px;
+    }
+  }
+
+  .actions button {
+    width: 100%;
+    padding: 14px;
+  }
 }

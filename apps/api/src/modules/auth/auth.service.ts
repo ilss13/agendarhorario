@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ConflictException,
+  Inject,
   Injectable,
   Logger,
   UnauthorizedException,
@@ -9,17 +10,22 @@ import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import type {
+  ForgotPasswordResponse,
   GoogleLoginRequest,
   LoginRequest,
   MeResponse,
   RegisterCompanyRequest,
   RegisterCustomerRequest,
+  ResetPasswordRequest,
+  ResetPasswordResponse,
 } from '@agendarhorario/contracts';
 import { FirebaseAdminService } from '../../shared/infra/firebase/firebase-admin.service';
 import { FirebaseIdentityToolkitClient } from '../../shared/infra/firebase/firebase-identity-toolkit.client';
 import { Company } from '../companies/company.entity';
+import { EMAIL_PROVIDER, type EmailProvider } from '../notifications/notification.types';
 import { User } from '../users/user.entity';
 import type { AuthenticatedUser } from './auth.types';
+import { buildPasswordResetUrl } from './password-reset-link';
 
 export interface SessionResult {
   sessionCookie: string;
@@ -37,6 +43,7 @@ export class AuthService {
     private readonly dataSource: DataSource,
     @InjectRepository(User) private readonly users: Repository<User>,
     @InjectRepository(Company) private readonly companies: Repository<Company>,
+    @Inject(EMAIL_PROVIDER) private readonly email: EmailProvider,
   ) {}
 
   async login(input: LoginRequest): Promise<{ session: SessionResult; me: MeResponse }> {
@@ -204,6 +211,38 @@ export class AuthService {
     }
   }
 
+  async requestPasswordReset(email: string): Promise<ForgotPasswordResponse> {
+    const user = await this.users.findOne({ where: { email } });
+    if (!user) return { sent: true };
+
+    try {
+      const firebaseLink = await this.firebase.auth.generatePasswordResetLink(user.email);
+      const link = buildPasswordResetUrl(firebaseLink, this.webOrigin());
+      await this.email.send({
+        to: user.email,
+        subject: 'Redefina sua senha',
+        text: [
+          'Recebemos um pedido para redefinir a senha da sua conta no Agendar Horário.',
+          '',
+          'Abra este link para criar uma nova senha:',
+          link,
+          '',
+          'Se você não pediu isso, ignore este e-mail.',
+        ].join('\n'),
+      });
+    } catch (err) {
+      if (isMissingFirebaseUser(err)) return { sent: true };
+      this.logger.error(`Falha ao enviar redefinição de senha: ${(err as Error).message}`);
+      throw new BadRequestException('Não foi possível enviar o e-mail de redefinição');
+    }
+    return { sent: true };
+  }
+
+  async resetPassword(input: ResetPasswordRequest): Promise<ResetPasswordResponse> {
+    await this.identity.resetPassword(input.oobCode, input.password);
+    return { reset: true };
+  }
+
   async logout(sessionCookie: string | undefined): Promise<void> {
     if (!sessionCookie) return;
     try {
@@ -226,6 +265,10 @@ export class AuthService {
     };
   }
 
+  private webOrigin(): string {
+    return this.config.get<string>('webOrigin') ?? 'http://localhost:4200';
+  }
+
   private async createSession(idToken: string, rememberMe = true): Promise<SessionResult> {
     const days = rememberMe ? this.config.get<number>('SESSION_COOKIE_MAX_AGE_DAYS', 5) : 1;
     const expiresInMs = days * 24 * 60 * 60 * 1000;
@@ -238,6 +281,11 @@ export class AuthService {
     return { sessionCookie, expiresInMs };
   }
 }
+
+const isMissingFirebaseUser = (err: unknown): boolean => {
+  const code = (err as { code?: string }).code ?? '';
+  return code === 'auth/user-not-found' || code === 'auth/email-not-found';
+};
 
 const toMeResponse = (user: User): MeResponse => ({
   id: user.id,

@@ -1,40 +1,228 @@
 <div class="shell">
-  <button
-    type="button"
-    class="menu-toggle"
-    (click)="toggleDrawer()"
-    [attr.aria-expanded]="drawerOpen()"
-    aria-controls="admin-nav"
-  >
-    ☰
-  </button>
-
-  <aside id="admin-nav" class="sidebar" [attr.data-open]="drawerOpen()" (click)="closeDrawer()">
-    <div class="brand">
-      <strong>{{ company()?.name ?? 'Agendar Horário' }}</strong>
-      @if (company()?.slug) {
-      <small>/p/{{ company()!.slug }}</small>
-      }
+  <aside id="admin-nav" class="sidebar">
+    <div class="sidebar-top">
+      <div class="brand">
+        <div class="mark" aria-hidden="true">{{ initial(company()?.name) }}</div>
+        <div>
+          <div class="brand-name">{{ company()?.name ?? 'Agendar Horário' }}</div>
+          @if (company()?.slug) {
+          <div class="brand-slug">/p/{{ company()!.slug }}</div>
+          }
+        </div>
+      </div>
+      <nav aria-label="Navegação principal">
+        <a routerLink="agenda" routerLinkActive="active">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <rect
+              x="3.5"
+              y="5"
+              width="17"
+              height="15.5"
+              rx="3"
+              stroke="currentColor"
+              stroke-width="1.8"
+            ></rect>
+            <path d="M3.5 9.8h17" stroke="currentColor" stroke-width="1.8"></path>
+            <path
+              d="M8 3v4M16 3v4"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+            ></path>
+          </svg>
+          Agenda
+        </a>
+        <a routerLink="empresa" routerLinkActive="active">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <rect
+              x="4"
+              y="3.5"
+              width="16"
+              height="17"
+              rx="2"
+              stroke="currentColor"
+              stroke-width="1.8"
+            ></rect>
+            <path
+              d="M9 21v-4.5h6V21M8 8h1M8 11.5h1M8 15h1M15 8h1M15 11.5h1"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+            ></path>
+          </svg>
+          Empresa
+        </a>
+        <a routerLink="servicos" routerLinkActive="active">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <circle cx="7" cy="7" r="2.6" stroke="currentColor" stroke-width="1.8"></circle>
+            <circle cx="7" cy="17" r="2.6" stroke="currentColor" stroke-width="1.8"></circle>
+            <path
+              d="M20 5.5L8.8 15M9.6 8.6L20 18.5"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+            ></path>
+          </svg>
+          Serviços
+        </a>
+        <a routerLink="horarios" routerLinkActive="active">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.8"></circle>
+            <path
+              d="M12 7.5V12l3 2"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+            ></path>
+          </svg>
+          Horários
+        </a>
+        <a routerLink="excecoes" routerLinkActive="active">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <rect
+              x="3.5"
+              y="5"
+              width="17"
+              height="15.5"
+              rx="3"
+              stroke="currentColor"
+              stroke-width="1.8"
+            ></rect>
+            <path
+              d="M3.5 9.8h17M9 14.3h6"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+            ></path>
+          </svg>
+          Exceções / Feriados
+        </a>
+        <a routerLink="assinatura" routerLinkActive="active">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <rect
+              x="3"
+              y="5.5"
+              width="18"
+              height="13"
+              rx="2.5"
+              stroke="currentColor"
+              stroke-width="1.8"
+            ></rect>
+            <path d="M3 9.8h18" stroke="currentColor" stroke-width="1.8"></path>
+          </svg>
+          Assinatura
+        </a>
+      </nav>
     </div>
-    <nav>
-      <a routerLink="agenda" routerLinkActive="active">Agenda</a>
-      <a routerLink="empresa" routerLinkActive="active">Empresa</a>
-      <a routerLink="servicos" routerLinkActive="active">Serviços</a>
-      <a routerLink="horarios" routerLinkActive="active">Horários</a>
-      <a routerLink="excecoes" routerLinkActive="active">Exceções / Feriados</a>
-      <a routerLink="assinatura" routerLinkActive="active">Assinatura</a>
-    </nav>
-    <div class="user">
-      <span>{{ auth.user()?.name }}</span>
-      <button type="button" (click)="onLogout()">Sair</button>
+    <div class="sidebar-bottom">
+      <div class="user">
+        <div class="avatar" aria-hidden="true">{{ initial(auth.user()?.name) }}</div>
+        <span>{{ auth.user()?.name }}</span>
+      </div>
+      <button type="button" class="logout" (click)="onLogout()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path
+            d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+          ></path>
+          <path
+            d="M16 17l5-5-5-5M21 12H9"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          ></path>
+        </svg>
+        Sair
+      </button>
+      <div class="powered">
+        <span class="powered-mark" aria-hidden="true">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none">
+            <rect
+              x="3.5"
+              y="5"
+              width="17"
+              height="15.5"
+              rx="3"
+              stroke="#fff"
+              stroke-width="2.4"
+            ></rect>
+            <path
+              d="M8.3 14.6l2 2 4.2-4.4"
+              stroke="#3fd6c6"
+              stroke-width="2.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            ></path>
+          </svg>
+        </span>
+        <span>Powered by <strong>agendarhorario.com</strong></span>
+      </div>
     </div>
   </aside>
 
-  @if (drawerOpen()) {
-  <div class="backdrop" (click)="closeDrawer()" aria-hidden="true"></div>
-  }
+  <header class="topbar">
+    <div class="brand compact">
+      <div class="mark" aria-hidden="true">{{ initial(company()?.name) }}</div>
+      <div class="brand-name">{{ company()?.name ?? 'Agendar Horário' }}</div>
+    </div>
+    <div class="avatar" aria-hidden="true">{{ initial(auth.user()?.name) }}</div>
+  </header>
 
   <main class="content">
     <router-outlet />
   </main>
+
+  <nav class="tabbar" aria-label="Navegação principal">
+    <a routerLink="agenda" routerLinkActive="active">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <rect
+          x="3.5"
+          y="5"
+          width="17"
+          height="15.5"
+          rx="3"
+          stroke="currentColor"
+          stroke-width="1.9"
+        ></rect>
+        <path d="M3.5 9.8h17" stroke="currentColor" stroke-width="1.9"></path>
+      </svg>
+      Agenda
+    </a>
+    <a routerLink="servicos" routerLinkActive="active">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <circle cx="7" cy="7" r="2.6" stroke="currentColor" stroke-width="1.9"></circle>
+        <circle cx="7" cy="17" r="2.6" stroke="currentColor" stroke-width="1.9"></circle>
+        <path
+          d="M20 5.5L8.8 15M9.6 8.6L20 18.5"
+          stroke="currentColor"
+          stroke-width="1.9"
+          stroke-linecap="round"
+        ></path>
+      </svg>
+      Serviços
+    </a>
+    <a routerLink="horarios" routerLinkActive="active">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.9"></circle>
+        <path
+          d="M12 7.5V12l3 2"
+          stroke="currentColor"
+          stroke-width="1.9"
+          stroke-linecap="round"
+        ></path>
+      </svg>
+      Horários
+    </a>
+    <a routerLink="mais" routerLinkActive="active" [class.active]="moreActive()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <circle cx="5" cy="12" r="1.4" fill="currentColor"></circle>
+        <circle cx="12" cy="12" r="1.4" fill="currentColor"></circle>
+        <circle cx="19" cy="12" r="1.4" fill="currentColor"></circle>
+      </svg>
+      Mais
+    </a>
+  </nav>
 </div>

@@ -1,0 +1,32 @@
+<div class="shell">
+  <div class="blob blob-top" aria-hidden="true"></div>
+  <div class="blob blob-bottom" aria-hidden="true"></div>
+
+  <header class="top">
+    <a class="brand" routerLink="/">
+      <img src="logo.png" alt="Agendar Horário" />
+    </a>
+  </header>
+
+  <main class="wrap">
+    <section class="card">
+      <div class="card-body">
+        <h1>{{ title() }}</h1>
+        @if (lead()) {
+          <p class="lead">{{ lead() }}</p>
+        }
+        <ng-content />
+      </div>
+
+      <div class="card-foot">
+        <span>{{ footLead() }} </span>
+        <a [routerLink]="footLink()">{{ footLabel() }}</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <span>© Agendar Horário</span>
+    <a routerLink="/">Início</a>
+  </footer>
+</div>

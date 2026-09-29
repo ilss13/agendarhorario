@@ -47,6 +47,30 @@ describe('FirebaseIdentityToolkitClient', () => {
     );
   });
 
+  it('resetPassword posts the code and the new password', async () => {
+    jest.mocked(axios.post).mockResolvedValue({ data: { email: 'a@b.com' } });
+
+    await expect(client.resetPassword('oob-code-1', 'Senha123')).resolves.toBeUndefined();
+    expect(axios.post).toHaveBeenCalledWith(
+      expect.stringContaining('resetPassword?key=web-api-key'),
+      { oobCode: 'oob-code-1', newPassword: 'Senha123' },
+    );
+  });
+
+  it('maps an expired reset code', async () => {
+    jest.mocked(axios.post).mockRejectedValue(axiosAuthError('EXPIRED_OOB_CODE'));
+
+    try {
+      await client.resetPassword('oob-code-1', 'Senha123');
+      fail('expected throw');
+    } catch (err) {
+      expect((err as HttpException).getResponse()).toEqual({
+        message: 'Este link expirou. Peça um novo.',
+        code: 'EXPIRED_OOB_CODE',
+      });
+    }
+  });
+
   it('signUpWithPassword returns identity toolkit payload on success', async () => {
     jest.mocked(axios.post).mockResolvedValue({ data: successBody });
 

@@ -63,4 +63,20 @@ describe('CompanyAppointmentsService', () => {
     await expect(service.listByDate('2026-02-31')).rejects.toThrow('Data inválida');
     expect(appointments.find).not.toHaveBeenCalled();
   });
+
+  it('lists the company month in start order', async () => {
+    appointments.find.mockResolvedValue([]);
+    await expect(service.listByMonth('2026-09')).resolves.toEqual({ month: '2026-09', items: [] });
+    expect(appointments.find).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ companyId: 'company-1' }),
+        order: { startsAt: 'ASC' },
+      }),
+    );
+  });
+
+  it('rejects an impossible month before querying', async () => {
+    await expect(service.listByMonth('2026-13')).rejects.toThrow('Mês inválido');
+    expect(appointments.find).not.toHaveBeenCalled();
+  });
 });

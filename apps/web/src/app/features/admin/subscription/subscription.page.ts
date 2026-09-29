@@ -3,23 +3,27 @@ import { ActivatedRoute, Router } from '@angular/router';
 import {
   ConfirmDialogComponent,
   EmptyStateComponent,
-  PageHeaderComponent,
   SpinnerComponent,
 } from '@agendarhorario/web-ui';
 import { BillingApi } from '@agendarhorario/web-data-access';
-import type {
-  InvoiceDto,
-  PlanCode,
-  PlanDto,
-  SubscriptionSummaryDto,
-} from '@agendarhorario/contracts';
-import { formatBrDateTime } from '@agendarhorario/utils';
+import type { InvoiceDto, PlanDto, SubscriptionSummaryDto } from '@agendarhorario/contracts';
 import type { ApiError } from '../../../core/http/error.interceptor';
+import {
+  formatBrl,
+  formatSubscriptionMoment,
+  invoiceStatusLabel,
+  isFeaturedPlan,
+  planActionLabel,
+  subscriptionStatusLabel,
+  subscriptionStatusTone,
+  usageLevel as usageBand,
+  usagePercent as usageRatio,
+} from './subscription.logic';
 
 @Component({
   selector: 'app-subscription-page',
   standalone: true,
-  imports: [PageHeaderComponent, EmptyStateComponent, SpinnerComponent, ConfirmDialogComponent],
+  imports: [EmptyStateComponent, SpinnerComponent, ConfirmDialogComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './subscription.page.html',
   styleUrl: './subscription.page.scss',
@@ -41,17 +45,11 @@ export class SubscriptionPageComponent {
   readonly confirmingReturn = signal(false);
 
   readonly usagePercent = computed(() => {
-    const s = this.summary();
-    if (!s?.usage?.limit) return 0;
-    return Math.min(100, Math.round((s.usage.used / s.usage.limit) * 100));
+    const usage = this.summary()?.usage;
+    return usage ? usageRatio(usage.used, usage.limit) : 0;
   });
 
-  readonly usageLevel = computed<'ok' | 'warn' | 'danger'>(() => {
-    const pct = this.usagePercent();
-    if (pct >= 90) return 'danger';
-    if (pct >= 70) return 'warn';
-    return 'ok';
-  });
+  readonly usageLevel = computed(() => usageBand(this.usagePercent()));
 
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -193,44 +191,48 @@ export class SubscriptionPageComponent {
   }
 
   formatDate(iso: string): string {
-    return formatBrDateTime(iso);
+    return formatSubscriptionMoment(iso, true);
+  }
+
+  formatDay(iso: string): string {
+    return formatSubscriptionMoment(iso, false);
+  }
+
+  money(value: number): string {
+    return formatBrl(value);
+  }
+
+  featured(plan: PlanDto): boolean {
+    return isFeaturedPlan(plan.code);
+  }
+
+  currentPlan(plan: PlanDto): boolean {
+    return plan.code === this.summary()?.plan?.code;
+  }
+
+  planLabel(plan: PlanDto, compact: boolean): string {
+    const summary = this.summary();
+    return planActionLabel({
+      hasSubscription: summary?.hasSubscription ?? false,
+      isCurrent: this.currentPlan(plan),
+      trialEligible: summary?.trialEligible ?? false,
+      compact,
+    });
   }
 
   stateLabel(state: SubscriptionSummaryDto['state']): string {
-    switch (state) {
-      case 'AVAILABLE':
-        return 'Ativa';
-      case 'OVER_LIMIT':
-        return 'Limite atingido';
-      case 'SUSPENDED':
-        return 'Suspensa';
-      case 'NO_SUBSCRIPTION':
-        return 'Sem plano';
-    }
+    return subscriptionStatusLabel(null, state);
   }
 
   statusLabel(): string {
-    if (this.summary()?.status === 'trialing') return 'Em teste';
-    return this.stateLabel(this.summary()?.state ?? 'NO_SUBSCRIPTION');
+    return subscriptionStatusLabel(this.summary()?.status, this.summary()?.state);
   }
 
   statusTone(): string {
-    if (this.summary()?.status === 'trialing') return 'TRIALING';
-    return this.summary()?.state ?? 'NO_SUBSCRIPTION';
+    return subscriptionStatusTone(this.summary()?.status, this.summary()?.state);
   }
 
   invoiceLabel(status: InvoiceDto['status']): string {
-    switch (status) {
-      case 'paid':
-        return 'Paga';
-      case 'open':
-        return 'Em aberto';
-      case 'draft':
-        return 'Rascunho';
-      case 'uncollectible':
-        return 'Não cobrável';
-      case 'void':
-        return 'Anulada';
-    }
+    return invoiceStatusLabel(status);
   }
 }

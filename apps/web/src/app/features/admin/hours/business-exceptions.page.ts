@@ -4,7 +4,6 @@ import {
   ConfirmDialogComponent,
   EmptyStateComponent,
   FormFieldComponent,
-  PageHeaderComponent,
   SpinnerComponent,
 } from '@agendarhorario/web-ui';
 import { BusinessExceptionsApi } from '@agendarhorario/web-data-access';
@@ -12,13 +11,13 @@ import { businessExceptionInputSchema, toMinutes } from '@agendarhorario/contrac
 import type { BusinessExceptionDto } from '@agendarhorario/contracts';
 import { firstError } from '../../../core/forms/form-error';
 import type { ApiError } from '../../../core/http/error.interceptor';
+import { exceptionDetail } from './business-exceptions.logic';
 
 @Component({
   selector: 'app-business-exceptions-page',
   standalone: true,
   imports: [
     ReactiveFormsModule,
-    PageHeaderComponent,
     FormFieldComponent,
     EmptyStateComponent,
     SpinnerComponent,
@@ -58,6 +57,10 @@ export class BusinessExceptionsPageComponent {
     if (!iso) return '';
     const [y, m, d] = iso.split('-');
     return `${d}/${m}/${y}`;
+  }
+
+  detail(item: BusinessExceptionDto): string {
+    return exceptionDetail(item) ?? '—';
   }
 
   error(name: 'date' | 'startTime' | 'endTime' | 'reason'): string | null {
