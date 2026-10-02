@@ -32,7 +32,7 @@ describe('loadConfig', () => {
     delete process.env['FIREBASE_SERVICE_ACCOUNT_JSON'];
     delete process.env['THROTTLE_TTL_MS'];
     delete process.env['THROTTLE_LIMIT'];
-    delete process.env['SENDGRID_API_KEY'];
+    delete process.env['RESEND_API_KEY'];
     delete process.env['EMAIL_FROM'];
     delete process.env['SMTP_HOST'];
     delete process.env['SMTP_PORT'];
@@ -123,7 +123,7 @@ describe('loadConfig', () => {
     process.env['FIREBASE_SERVICE_ACCOUNT_JSON'] = '{"type":"service_account"}';
     process.env['THROTTLE_TTL_MS'] = '1000';
     process.env['THROTTLE_LIMIT'] = '10';
-    process.env['SENDGRID_API_KEY'] = 'sg';
+    process.env['RESEND_API_KEY'] = 're_test';
     process.env['EMAIL_FROM'] = 'hi@example.com';
     process.env['SMTP_HOST'] = 'smtp';
     process.env['SMTP_PORT'] = '587';
@@ -176,7 +176,7 @@ describe('loadConfig', () => {
     });
     expect(cfg.throttle).toEqual({ ttlMs: 1000, limit: 10 });
     expect(cfg.notifications).toEqual({
-      sendgridApiKey: 'sg',
+      resendApiKey: 're_test',
       emailFrom: 'hi@example.com',
       smtpHost: 'smtp',
       smtpPort: 587,

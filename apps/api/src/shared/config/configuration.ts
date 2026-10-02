@@ -36,7 +36,7 @@ export interface AppConfig {
     limit: number;
   };
   notifications: {
-    sendgridApiKey?: string;
+    resendApiKey?: string;
     emailFrom: string;
     smtpHost?: string;
     smtpPort?: number;
@@ -104,7 +104,7 @@ export const loadConfig = (): AppConfig => ({
     limit: Number(process.env['THROTTLE_LIMIT'] ?? 120),
   },
   notifications: {
-    sendgridApiKey: process.env['SENDGRID_API_KEY'],
+    resendApiKey: process.env['RESEND_API_KEY'],
     emailFrom: process.env['EMAIL_FROM'] ?? 'no-reply@agendarhorario.com',
     smtpHost: process.env['SMTP_HOST'],
     smtpPort: process.env['SMTP_PORT'] ? Number(process.env['SMTP_PORT']) : undefined,

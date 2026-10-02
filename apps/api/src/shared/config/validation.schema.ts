@@ -31,7 +31,7 @@ export const envValidationSchema = Joi.object({
   THROTTLE_TTL_MS: Joi.number().default(60000),
   THROTTLE_LIMIT: Joi.number().default(120),
 
-  SENDGRID_API_KEY: Joi.string().allow('').optional(),
+  RESEND_API_KEY: Joi.string().allow('').optional(),
   EMAIL_FROM: Joi.string().email().default('no-reply@agendarhorario.com'),
   SMTP_HOST: Joi.string().optional(),
   SMTP_PORT: Joi.number().optional(),

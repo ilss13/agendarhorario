@@ -2,6 +2,7 @@ import { Global, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Appointment } from '../appointments/appointment.entity';
 import { Company } from '../companies/company.entity';
+import { User } from '../users/user.entity';
 import { BillingEvent } from './billing-event.entity';
 import { BillingPublicController, CompanyBillingController } from './billing.controller';
 import { BillingService } from './billing.service';
@@ -14,7 +15,15 @@ import { Subscription } from './subscription.entity';
 @Global()
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Plan, Subscription, Invoice, BillingEvent, Company, Appointment]),
+    TypeOrmModule.forFeature([
+      Plan,
+      Subscription,
+      Invoice,
+      BillingEvent,
+      Company,
+      Appointment,
+      User,
+    ]),
   ],
   controllers: [BillingPublicController, CompanyBillingController, StripeWebhookController],
   providers: [BillingService, StripeClient],

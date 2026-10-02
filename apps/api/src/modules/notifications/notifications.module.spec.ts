@@ -3,7 +3,7 @@ import { EMAIL_PROVIDER, SMS_PROVIDER } from './notification.types';
 import { NotificationsModule } from './notifications.module';
 import { NotificationsProcessor } from './notifications.processor';
 import { NotificationsService } from './notifications.service';
-import { SendgridEmailProvider } from './providers/sendgrid-email.provider';
+import { ResendEmailProvider } from './providers/resend-email.provider';
 import { TwilioSmsProvider } from './providers/twilio-sms.provider';
 import { TwilioWhatsAppProvider } from './providers/twilio-whatsapp.provider';
 
@@ -15,7 +15,7 @@ describe('NotificationsModule', () => {
     ) as unknown[];
     expect(providers).toEqual(
       expect.arrayContaining([
-        SendgridEmailProvider,
+        ResendEmailProvider,
         TwilioSmsProvider,
         TwilioWhatsAppProvider,
         NotificationsService,

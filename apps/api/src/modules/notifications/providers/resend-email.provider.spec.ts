@@ -1,16 +1,16 @@
 import type { ConfigService } from '@nestjs/config';
-import { SendgridEmailProvider } from './sendgrid-email.provider';
+import { ResendEmailProvider } from './resend-email.provider';
 
 const sendMock = jest.fn();
-const setApiKeyMock = jest.fn();
+const resendCtor = jest.fn().mockImplementation(() => ({
+  emails: { send: sendMock },
+}));
 const sendMailMock = jest.fn();
 const createTransportMock = jest.fn((_opts?: unknown) => ({ sendMail: sendMailMock }));
 
-jest.mock('@sendgrid/mail', () => ({
-  __esModule: true,
-  default: {
-    setApiKey: (key: string) => setApiKeyMock(key),
-    send: (msg: unknown) => sendMock(msg),
+jest.mock('resend', () => ({
+  Resend: function Resend(apiKey: string) {
+    return resendCtor(apiKey);
   },
 }));
 
@@ -29,19 +29,19 @@ function configStub(values: Record<string, string | number | undefined>): Config
   } as unknown as ConfigService;
 }
 
-describe('SendgridEmailProvider', () => {
+describe('ResendEmailProvider', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  it('sends via SendGrid when API key is configured', async () => {
-    const provider = new SendgridEmailProvider(
+  it('sends via Resend when API key is configured', async () => {
+    const provider = new ResendEmailProvider(
       configStub({
-        SENDGRID_API_KEY: 'sg-key',
+        RESEND_API_KEY: 're_test',
         EMAIL_FROM: 'from@example.com',
       }),
     );
-    sendMock.mockResolvedValue([{}]);
+    sendMock.mockResolvedValue({ data: { id: 'email_1' }, error: null });
 
     await provider.send({
       to: 'to@example.com',
@@ -50,47 +50,66 @@ describe('SendgridEmailProvider', () => {
       html: '<p>plain</p>',
     });
 
-    expect(setApiKeyMock).toHaveBeenCalledWith('sg-key');
+    expect(resendCtor).toHaveBeenCalledWith('re_test');
     expect(sendMock).toHaveBeenCalledWith(
       expect.objectContaining({
-        to: 'to@example.com',
+        to: ['to@example.com'],
         from: 'from@example.com',
         subject: 'Hello',
+        text: 'plain',
+        html: '<p>plain</p>',
       }),
     );
   });
 
   it('falls back to html from text when html is omitted', async () => {
-    const provider = new SendgridEmailProvider(
+    const provider = new ResendEmailProvider(
       configStub({
-        SENDGRID_API_KEY: 'sg-key',
+        RESEND_API_KEY: 're_test',
         EMAIL_FROM: 'from@example.com',
       }),
     );
-    sendMock.mockResolvedValue([{}]);
+    sendMock.mockResolvedValue({ data: { id: 'email_1' }, error: null });
 
     await provider.send({ to: 'to@example.com', subject: 'Hi', text: 'plain only' });
 
     expect(sendMock).toHaveBeenCalledWith(expect.objectContaining({ html: 'plain only' }));
   });
 
-  it('propagates SendGrid API errors', async () => {
-    const provider = new SendgridEmailProvider(
+  it('throws when Resend returns an error', async () => {
+    const provider = new ResendEmailProvider(
       configStub({
-        SENDGRID_API_KEY: 'sg-key',
+        RESEND_API_KEY: 're_test',
         EMAIL_FROM: 'from@example.com',
       }),
     );
-    sendMock.mockRejectedValue(new Error('sg api error'));
+    sendMock.mockResolvedValue({
+      data: null,
+      error: { message: 'domínio não verificado', name: 'validation_error' },
+    });
 
     await expect(provider.send({ to: 'to@example.com', subject: 'Hi', text: 'x' })).rejects.toThrow(
-      'sg api error',
+      'domínio não verificado',
     );
   });
 
-  it('sends via SMTP when SendGrid key is absent', async () => {
+  it('propagates Resend client exceptions', async () => {
+    const provider = new ResendEmailProvider(
+      configStub({
+        RESEND_API_KEY: 're_test',
+        EMAIL_FROM: 'from@example.com',
+      }),
+    );
+    sendMock.mockRejectedValue(new Error('rede indisponível'));
+
+    await expect(provider.send({ to: 'to@example.com', subject: 'Hi', text: 'x' })).rejects.toThrow(
+      'rede indisponível',
+    );
+  });
+
+  it('sends via SMTP when Resend key is absent', async () => {
     sendMailMock.mockResolvedValue({});
-    const provider = new SendgridEmailProvider(
+    const provider = new ResendEmailProvider(
       configStub({
         SMTP_HOST: 'localhost',
         SMTP_PORT: 1025,
@@ -105,6 +124,7 @@ describe('SendgridEmailProvider', () => {
       html: '<b>body</b>',
     });
 
+    expect(resendCtor).not.toHaveBeenCalled();
     expect(createTransportMock).toHaveBeenCalledWith({ host: 'localhost', port: 1025 });
     expect(sendMailMock).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -116,8 +136,7 @@ describe('SendgridEmailProvider', () => {
   });
 
   it('logs fallback when no email transport is configured', async () => {
-    const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
-    const provider = new SendgridEmailProvider(configStub({ EMAIL_FROM: 'from@example.com' }));
+    const provider = new ResendEmailProvider(configStub({ EMAIL_FROM: 'from@example.com' }));
     const loggerWarn = jest
       .spyOn((provider as unknown as { logger: { warn: (m: string) => void } }).logger, 'warn')
       .mockImplementation(() => undefined);
@@ -128,13 +147,12 @@ describe('SendgridEmailProvider', () => {
 
     expect(loggerWarn).toHaveBeenCalledWith(expect.stringContaining('[email-fallback]'));
     loggerWarn.mockRestore();
-    warn.mockRestore();
   });
 
   it('throws when EMAIL_FROM is missing', async () => {
-    const provider = new SendgridEmailProvider(
+    const provider = new ResendEmailProvider(
       configStub({
-        SENDGRID_API_KEY: 'sg-key',
+        RESEND_API_KEY: 're_test',
       }),
     );
 

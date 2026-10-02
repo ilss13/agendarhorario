@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  Inject,
   Injectable,
   Logger,
   NotFoundException,
@@ -19,11 +20,15 @@ import {
 } from '@agendarhorario/contracts';
 import { Appointment } from '../appointments/appointment.entity';
 import { Company } from '../companies/company.entity';
+import { EMAIL_PROVIDER, type EmailProvider } from '../notifications/notification.types';
+import { renderPlanSelected } from '../notifications/platform-emails';
+import { User } from '../users/user.entity';
 import { TenantContextService } from '../../shared/tenant/tenant-context.service';
 import { BillingEvent } from './billing-event.entity';
 import { Invoice } from './invoice.entity';
 import { PLAN_CATALOG } from './plan-catalog';
 import { Plan } from './plan.entity';
+import { shouldNotifyPlanSelection } from './plan-selection-notice';
 import { StripeClient } from './stripe.client';
 import { Subscription, SubscriptionStatus } from './subscription.entity';
 
@@ -55,6 +60,8 @@ export class BillingService implements OnModuleInit {
     private readonly stripeClient: StripeClient,
     private readonly tenant: TenantContextService,
     private readonly config: ConfigService,
+    @InjectRepository(User) private readonly users: Repository<User>,
+    @Inject(EMAIL_PROVIDER) private readonly email: EmailProvider,
   ) {}
 
   async onModuleInit(): Promise<void> {
@@ -343,6 +350,7 @@ export class BillingService implements OnModuleInit {
     const existing = await this.subscriptions.findOne({
       where: { stripeSubscriptionId: stripeSub.id },
     });
+    const previous = existing ? { planId: existing.planId, status: existing.status } : null;
     const period = this.subscriptionPeriod(stripeSub);
     const data = {
       companyId,
@@ -371,6 +379,7 @@ export class BillingService implements OnModuleInit {
             : stripeSub.id,
       },
     );
+    await this.notifyPlanSelection(companyId, plan, previous, stripeSub.status);
   }
 
   async upsertInvoiceFromStripe(stripeInvoice: Stripe.Invoice): Promise<void> {
@@ -414,6 +423,47 @@ export class BillingService implements OnModuleInit {
       await this.invoices.save(existing);
     } else {
       await this.invoices.save(this.invoices.create(data));
+    }
+  }
+
+  private webOrigin(): string {
+    return this.config.get<string>('webOrigin') ?? 'http://localhost:4200';
+  }
+
+  private async notifyPlanSelection(
+    companyId: string,
+    plan: Plan,
+    previous: { planId: string; status: string } | null,
+    nextStatus: string,
+  ): Promise<void> {
+    if (
+      !shouldNotifyPlanSelection({
+        previousPlanId: previous?.planId ?? null,
+        previousStatus: previous?.status ?? null,
+        nextPlanId: plan.id,
+        nextStatus,
+      })
+    ) {
+      return;
+    }
+
+    try {
+      const company = await this.companies.findOne({ where: { id: companyId } });
+      if (!company) return;
+      const owner = await this.users.findOne({ where: { companyId, role: 'OWNER' } });
+      const to = owner?.email ?? company.email;
+      if (!to) return;
+      const rendered = renderPlanSelected({
+        ownerName: owner?.name ?? company.name,
+        companyName: company.name,
+        planName: plan.name,
+        priceBrl: Number(plan.priceBrl),
+        monthlyAppointmentLimit: plan.monthlyAppointmentLimit,
+        subscriptionUrl: `${this.webOrigin()}/dashboard/assinatura`,
+      });
+      await this.email.send({ to, ...rendered });
+    } catch (err) {
+      this.logger.error(`Falha ao enviar e-mail do plano: ${(err as Error).message}`);
     }
   }
 

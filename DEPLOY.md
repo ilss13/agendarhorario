@@ -57,7 +57,7 @@ gcloud secrets create FIREBASE_SERVICE_ACCOUNT --data-file=secrets/firebase-serv
 gcloud secrets create STRIPE_SECRET_KEY --data-file=- <<< "sk_live_..."
 gcloud secrets create STRIPE_WEBHOOK_SECRET --data-file=- <<< "whsec_..."
 gcloud secrets create VERIFICATION_JWT_SECRET --data-file=- <<< "$(openssl rand -hex 32)"
-gcloud secrets create SENDGRID_API_KEY --data-file=- <<< "SG...."
+gcloud secrets create RESEND_API_KEY --data-file=- <<< "re_...."
 gcloud secrets create TWILIO_AUTH_TOKEN --data-file=- <<< "..."
 gcloud secrets create SENTRY_DSN --data-file=- <<< "https://<key>@o<org>.ingest.sentry.io/<project>"
 ```

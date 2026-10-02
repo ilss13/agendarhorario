@@ -23,6 +23,11 @@ import { FirebaseAdminService } from '../../shared/infra/firebase/firebase-admin
 import { FirebaseIdentityToolkitClient } from '../../shared/infra/firebase/firebase-identity-toolkit.client';
 import { Company } from '../companies/company.entity';
 import { EMAIL_PROVIDER, type EmailProvider } from '../notifications/notification.types';
+import {
+  renderCompanyWelcome,
+  renderCustomerWelcome,
+  type PlatformEmail,
+} from '../notifications/platform-emails';
 import { User } from '../users/user.entity';
 import type { AuthenticatedUser } from './auth.types';
 import { buildPasswordResetUrl } from './password-reset-link';
@@ -151,6 +156,14 @@ export class AuthService {
       });
 
       const session = await this.createSession(idToken);
+      await this.sendPlatformEmail(
+        input.owner.email,
+        renderCompanyWelcome({
+          ownerName: input.owner.name,
+          companyName: input.company.name,
+          plansUrl: `${this.webOrigin()}/dashboard/assinatura`,
+        }),
+      );
       return { session, me: toMeResponse(user) };
     } catch (err) {
       if (firebaseUid) {
@@ -196,6 +209,13 @@ export class AuthService {
       await this.firebase.auth.setCustomUserClaims(localId, { role: 'CUSTOMER' });
 
       const session = await this.createSession(idToken);
+      await this.sendPlatformEmail(
+        input.email,
+        renderCustomerWelcome({
+          name: input.name,
+          appointmentsUrl: `${this.webOrigin()}/me/agendamentos`,
+        }),
+      );
       return { session, me: toMeResponse(user) };
     } catch (err) {
       if (firebaseUid) {
@@ -267,6 +287,14 @@ export class AuthService {
 
   private webOrigin(): string {
     return this.config.get<string>('webOrigin') ?? 'http://localhost:4200';
+  }
+
+  private async sendPlatformEmail(to: string, message: PlatformEmail): Promise<void> {
+    try {
+      await this.email.send({ to, ...message });
+    } catch (err) {
+      this.logger.error(`Falha ao enviar e-mail: ${(err as Error).message}`);
+    }
   }
 
   private async createSession(idToken: string, rememberMe = true): Promise<SessionResult> {

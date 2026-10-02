@@ -83,6 +83,7 @@ describe('AuthService', () => {
       return undefined;
     });
     createSessionCookie.mockResolvedValue('session-cookie');
+    sendEmail.mockResolvedValue(undefined);
     usersCreate.mockImplementation((row: Partial<User>) => row);
     usersSave.mockImplementation(async (row: User) => row);
     service = new AuthService(firebase, identity, config, dataSource, users, companies, email);
@@ -257,6 +258,38 @@ describe('AuthService', () => {
         role: 'OWNER',
         companyId: 'c1',
       });
+      expect(sendEmail).toHaveBeenCalledWith(
+        expect.objectContaining({
+          to: 'owner@ex.com',
+          subject: 'Bem-vindo ao Agendar Horário',
+          text: expect.stringContaining('http://localhost:4200/dashboard/assinatura'),
+        }),
+      );
+    });
+
+    it('keeps the company when the welcome email fails', async () => {
+      companiesFindOne.mockResolvedValue(null);
+      usersFindOne.mockResolvedValue(null);
+      signUpWithPassword.mockResolvedValue({ idToken: 'id', localId: 'fb-new' });
+      sendEmail.mockRejectedValue(new Error('resend down'));
+      transaction.mockImplementation(
+        async (cb: (manager: { create: jest.Mock; save: jest.Mock }) => Promise<unknown>) => {
+          const manager = {
+            create: jest.fn((_Entity: unknown, data: Record<string, unknown>) => data),
+            save: jest.fn(async (entity: Record<string, unknown>) => ({
+              ...entity,
+              id: entity['slug'] ? 'c1' : 'u1',
+              companyId: entity['companyId'] ?? 'c1',
+            })),
+          };
+          return cb(manager);
+        },
+      );
+
+      await expect(service.registerCompany(input)).resolves.toMatchObject({
+        me: { role: 'OWNER' },
+      });
+      expect(deleteUser).not.toHaveBeenCalled();
     });
 
     it('throws ConflictException when slug is taken', async () => {
@@ -316,6 +349,29 @@ describe('AuthService', () => {
       const result = await service.registerCustomer(input);
       expect(result.me.role).toBe('CUSTOMER');
       expect(setCustomUserClaims).toHaveBeenCalledWith('fb-c', { role: 'CUSTOMER' });
+      expect(sendEmail).toHaveBeenCalledWith(
+        expect.objectContaining({
+          to: 'c@ex.com',
+          text: expect.stringContaining('http://localhost:4200/me/agendamentos'),
+        }),
+      );
+    });
+
+    it('keeps the customer when the welcome email fails', async () => {
+      usersFindOne.mockResolvedValue(null);
+      signUpWithPassword.mockResolvedValue({ idToken: 'id', localId: 'fb-c' });
+      sendEmail.mockRejectedValue(new Error('resend down'));
+      usersSave.mockResolvedValue({
+        ...baseUser(),
+        id: 'u2',
+        role: 'CUSTOMER',
+        companyId: null,
+      });
+
+      await expect(service.registerCustomer(input)).resolves.toMatchObject({
+        me: { role: 'CUSTOMER' },
+      });
+      expect(deleteUser).not.toHaveBeenCalled();
     });
 
     it('throws ConflictException when email exists', async () => {

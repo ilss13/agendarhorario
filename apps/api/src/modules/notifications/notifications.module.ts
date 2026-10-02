@@ -14,7 +14,7 @@ import { EMAIL_PROVIDER, SMS_PROVIDER } from './notification.types';
 import { NOTIFICATIONS_QUEUE } from './notifications.constants';
 import { NotificationsProcessor } from './notifications.processor';
 import { NotificationsService } from './notifications.service';
-import { SendgridEmailProvider } from './providers/sendgrid-email.provider';
+import { ResendEmailProvider } from './providers/resend-email.provider';
 import { TwilioSmsProvider } from './providers/twilio-sms.provider';
 import { TwilioWhatsAppProvider } from './providers/twilio-whatsapp.provider';
 
@@ -49,10 +49,10 @@ import { TwilioWhatsAppProvider } from './providers/twilio-whatsapp.provider';
     }),
   ],
   providers: [
-    SendgridEmailProvider,
+    ResendEmailProvider,
     TwilioSmsProvider,
     TwilioWhatsAppProvider,
-    { provide: EMAIL_PROVIDER, useExisting: SendgridEmailProvider },
+    { provide: EMAIL_PROVIDER, useExisting: ResendEmailProvider },
     { provide: SMS_PROVIDER, useExisting: TwilioSmsProvider },
     AppointmentActionService,
     NotificationsService,

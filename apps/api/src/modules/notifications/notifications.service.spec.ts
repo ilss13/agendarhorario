@@ -188,7 +188,7 @@ describe('NotificationsService', () => {
 
     it('records FAILED when email provider throws', async () => {
       appointments.findOne.mockResolvedValue(appointment);
-      emailProvider.send.mockRejectedValue(new Error('sendgrid down'));
+      emailProvider.send.mockRejectedValue(new Error('resend down'));
 
       await service.process({ appointmentId: 'appt-1', kind: 'CREATED' });
 
@@ -196,7 +196,7 @@ describe('NotificationsService', () => {
         expect.objectContaining({
           channel: 'EMAIL',
           status: 'FAILED',
-          errorMessage: 'sendgrid down',
+          errorMessage: 'resend down',
         }),
       );
     });

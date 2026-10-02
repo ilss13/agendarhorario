@@ -9,7 +9,7 @@ Projeto greenfield (`/Users/igorsousa/Projects/agendarhorario`). O objetivo é c
 - **Monorepo Nx** com `apps/api` (NestJS) e `apps/web` (Angular) + libs compartilhadas
 - **Multi-tenancy**: single DB MySQL, isolamento por `company_id` (TypeORM)
 - **Auth**: Firebase Authentication — frontend nunca chama Firebase direto, sempre via nosso backend (Firebase Admin SDK)
-- **Notificações**: SendGrid (email, **sempre incluído**) + Twilio (SMS **ou** WhatsApp, escolha exclusiva por empresa)
+- **Notificações**: Resend (email, **sempre incluído**) + Twilio (SMS **ou** WhatsApp, escolha exclusiva por empresa)
 - **Billing**: Stripe Billing (Subscriptions + Customer Portal + Webhooks) — todos os 4 planos cobrados em BRL, recorrência mensal, cartão de crédito + PIX/boleto via Stripe quando disponíveis
 - **Modelo de negócio**: assinatura por empresa, com **cota mensal de agendamentos** (ver §11). Ao estourar, a página pública mostra "indisponível" até o próximo ciclo ou upgrade
 - **Aquisição**: landing page de conversão em `/` (raiz), copy + UX otimizados para CTA "Comece grátis" / "Ver planos" (ver §12)
@@ -95,7 +95,7 @@ Cada _feature module_ contém:
 | Rate limit       | `@nestjs/throttler`                                                           |
 | Security headers | `helmet`, `compression`                                                       |
 | Filas/Jobs       | `bullmq` + Redis (Memorystore em prod)                                        |
-| Email            | `@sendgrid/mail`                                                              |
+| Email            | `resend`                                                                      |
 | SMS/WhatsApp     | `twilio`                                                                      |
 | Billing          | `stripe` (Subscriptions + Customer Portal + Webhooks)                         |
 | Date/timezone    | `luxon` (todos os cálculos em `America/Sao_Paulo`)                            |
@@ -119,7 +119,7 @@ Fluxo padrão:
 4. Em requisições subsequentes, `AuthGuard` lê o cookie, chama `auth.verifySessionCookie(cookie, /*checkRevoked*/ true)` e popula `req.user`
 5. CSRF protection: token CSRF em header `X-CSRF-Token` validado em mutations (`csurf` ou implementação dupla-submit cookie)
 
-**Cadastro de empresa**: cria usuário no Firebase Auth + registro `Company` + `User` (papel `OWNER`) na nossa DB.
+**Cadastro de empresa**: cria usuário no Firebase Auth + registro `Company` + `User` (papel `OWNER`) na nossa DB e envia e-mail de boas-vindas (Resend) com link para escolher o plano. O cadastro de cliente também recebe boas-vindas. Falha no envio não desfaz a conta.
 **Custom claims** no Firebase: `companyId`, `role` (`OWNER`/`STAFF`/`CUSTOMER`) — definidos via Admin SDK, lidos no `verifySessionCookie`.
 
 **Redefinição de senha**: `POST /auth/password/forgot` gera o link no Firebase Admin e envia um e-mail para `/redefinir-senha`. A resposta é a mesma quando o e-mail não existe. `POST /auth/password/reset` confirma o código do link e grava a nova senha no Identity Toolkit.
@@ -464,7 +464,7 @@ Ambiente local: `docker-compose` com MySQL 8, Redis, MailHog (SMTP de teste), e 
 3. **F3 — Página pública + agendamento (2 semanas)**
    - Módulo `availability` (com testes pesados de borda)
    - Página `/p/:slug` (mobile-first)
-   - Módulo `verification` (email link + SMS OTP, SendGrid + Twilio)
+   - Módulo `verification` (código por e-mail + SMS OTP, Resend + Twilio)
    - Endpoint criação de agendamento + integração com verification
 
 4. **F4 — Notificações + ações por link (1–2 semanas)**
@@ -533,7 +533,7 @@ Ambiente local: `docker-compose` com MySQL 8, Redis, MailHog (SMTP de teste), e 
 - `apps/api/src/modules/auth/` (controller, guards, service, session-cookie strategy)
 - `apps/api/src/modules/availability/availability.service.ts` (cálculo puro de slots)
 - `apps/api/src/modules/appointments/` (use cases de criação/remarcação com locking)
-- `apps/api/src/modules/notifications/providers/` (SendGridProvider, TwilioSmsProvider, TwilioWhatsappProvider implementando interface `NotificationProvider`)
+- `apps/api/src/modules/notifications/providers/` (ResendEmailProvider, TwilioSmsProvider, TwilioWhatsappProvider implementando `EmailProvider` / `SmsProvider`)
 - `apps/api/src/modules/billing/` (planos, subscription, invoice, billing.service, billing.controller, stripe.client, BillingService.canBook)
 - `apps/api/src/modules/webhooks/stripe.webhook.controller.ts` (raw body, signature validation, idempotência via `BillingEvent`)
 - `apps/web/src/app/features/public-booking/` (fluxo de agendamento + verificação)
@@ -614,7 +614,7 @@ Todos protegidos por `@CompanyScoped()` (role OWNER), salvo o webhook.
 
 Processados na ordem em que chegam; cada um é gravado em `BillingEvent` antes de mexer no domínio:
 
-- `customer.subscription.created` / `updated` / `deleted` → atualiza `Subscription` local + `Company.stripeSubscriptionId`
+- `customer.subscription.created` / `updated` / `deleted` → atualiza `Subscription` local + `Company.stripeSubscriptionId`. Quando a assinatura fica `active`/`trialing` pela primeira vez, ou o plano muda, envia e-mail de plano escolhido ao OWNER (Resend). Atualização do mesmo plano não reenvia.
 - `invoice.created` / `finalized` → upsert em `Invoice`
 - `invoice.paid` → marca `status='paid'`, `paidAt`
 - `invoice.payment_failed` → mantém `open`, dispara e-mail "pagamento não realizado" + grace period; depois de 2 falhas Stripe move sub para `past_due`

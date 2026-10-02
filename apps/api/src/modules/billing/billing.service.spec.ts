@@ -5,6 +5,8 @@ import type Stripe from 'stripe';
 import type { Repository, SelectQueryBuilder } from 'typeorm';
 import { Appointment } from '../appointments/appointment.entity';
 import { Company } from '../companies/company.entity';
+import type { EmailProvider } from '../notifications/notification.types';
+import { User } from '../users/user.entity';
 import { TenantContextService } from '../../shared/tenant/tenant-context.service';
 import { BillingEvent } from './billing-event.entity';
 import { BillingService } from './billing.service';
@@ -58,6 +60,8 @@ describe('BillingService', () => {
     customers: { create: jest.Mock };
   };
   let stripeClient: StripeClient;
+  let users: RepoMock;
+  let sendEmail: jest.Mock;
   let service: BillingService;
 
   const basicoPlan: Plan = {
@@ -143,6 +147,8 @@ describe('BillingService', () => {
     events = createRepoMock();
     companies = createRepoMock();
     appointments = createRepoMock();
+    users = createRepoMock();
+    sendEmail = jest.fn().mockResolvedValue(undefined);
 
     configValues = {
       'stripe.trialDays': 14,
@@ -205,6 +211,8 @@ describe('BillingService', () => {
       stripeClient,
       tenant,
       config,
+      users as unknown as Repository<User>,
+      { send: sendEmail } as unknown as EmailProvider,
     );
   });
 
@@ -764,6 +772,48 @@ describe('BillingService', () => {
       expect(subscriptions.save).toHaveBeenCalledWith(
         expect.objectContaining({ status: 'trialing' }),
       );
+    });
+
+    it('emails the owner when a billable plan is first saved', async () => {
+      plans.findOne.mockResolvedValue(basicoPlan);
+      subscriptions.findOne.mockResolvedValue(null);
+      companies.findOne.mockResolvedValue(company());
+      users.findOne.mockResolvedValue({
+        email: 'owner@example.com',
+        name: 'Ana',
+      });
+      configValues['webOrigin'] = 'http://localhost:4200';
+
+      await service.upsertSubscriptionFromStripe(stripeSub());
+
+      expect(sendEmail).toHaveBeenCalledWith(
+        expect.objectContaining({
+          to: 'owner@example.com',
+          subject: expect.stringContaining('Básico'),
+          text: expect.stringContaining('http://localhost:4200/dashboard/assinatura'),
+        }),
+      );
+    });
+
+    it('does not email when the same billable plan is refreshed', async () => {
+      plans.findOne.mockResolvedValue(basicoPlan);
+      subscriptions.findOne.mockResolvedValue(activeSubscription());
+      companies.findOne.mockResolvedValue(company());
+
+      await service.upsertSubscriptionFromStripe(stripeSub({ status: 'active' }));
+
+      expect(sendEmail).not.toHaveBeenCalled();
+    });
+
+    it('keeps the subscription when the plan email fails', async () => {
+      plans.findOne.mockResolvedValue(basicoPlan);
+      subscriptions.findOne.mockResolvedValue(null);
+      companies.findOne.mockResolvedValue(company());
+      users.findOne.mockResolvedValue({ email: 'owner@example.com', name: 'Ana' });
+      sendEmail.mockRejectedValue(new Error('resend down'));
+
+      await expect(service.upsertSubscriptionFromStripe(stripeSub())).resolves.toBeUndefined();
+      expect(subscriptions.save).toHaveBeenCalled();
     });
 
     it('clears company stripeSubscriptionId when canceled', async () => {
