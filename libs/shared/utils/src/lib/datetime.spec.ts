@@ -14,11 +14,15 @@ describe('datetime utils', () => {
     expect(result.zoneName).toBe(APP_TIMEZONE);
     expect(result.hour).toBe(0);
     expect(result.minute).toBe(0);
+    expect(startOfDayInAppTz(result).toISODate()).toBe(result.toISODate());
+    expect(startOfDayInAppTz(new Date('2026-05-13T15:30:00Z')).hour).toBe(0);
   });
 
   it('isPast returns true for dates before now', () => {
     expect(isPast(DateTime.now().minus({ hours: 1 }))).toBe(true);
     expect(isPast(DateTime.now().plus({ hours: 1 }))).toBe(false);
+    expect(isPast('2000-01-01T00:00:00Z')).toBe(true);
+    expect(isPast(new Date('2000-01-01T00:00:00Z'))).toBe(true);
   });
 
   it('isWithinAdvanceWindow enforces min advance', () => {
@@ -40,6 +44,8 @@ describe('datetime utils', () => {
   it('isWithinAdvanceWindow accepts within range', () => {
     const inTwoHours = DateTime.now().plus({ hours: 2 });
     expect(isWithinAdvanceWindow(inTwoHours, 60, 90)).toEqual({ ok: true });
+    expect(isWithinAdvanceWindow(inTwoHours.toISO() ?? '', 60, 90)).toEqual({ ok: true });
+    expect(isWithinAdvanceWindow(inTwoHours.toJSDate(), 60, 90)).toEqual({ ok: true });
   });
 
   it('rangeOverlaps detects overlapping ranges', () => {
@@ -49,10 +55,13 @@ describe('datetime utils', () => {
     const d = DateTime.fromISO('2026-05-13T11:30:00');
     expect(rangeOverlaps(a, b, c, d)).toBe(true);
     expect(rangeOverlaps(a, b, b, d)).toBe(false);
+    expect(rangeOverlaps(d, d.plus({ hours: 1 }), a, b)).toBe(false);
   });
 
   it('formatBrDateTime formats in pt-BR', () => {
     const result = formatBrDateTime('2026-05-13T15:30:00-03:00');
     expect(result).toBe('13/05/2026 15:30');
+    expect(formatBrDateTime(DateTime.fromISO('2026-05-13T15:30:00-03:00'))).toBe(result);
+    expect(formatBrDateTime(new Date('2026-05-13T18:30:00Z'))).toBe(result);
   });
 });
